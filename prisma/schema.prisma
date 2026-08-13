@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  role      String   @default("ADMIN") // ADMIN or STAFF
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Student {
+  id                String            @id @default(uuid())
+  rollNumber        Int               @default(1)
+  name              String
+  dob               String
+  grade             String
+  parentName        String
+  contact           String
+  address           String?
+  medicalNotes      String?
+  previousSchool    String?
+  status            String            @default("PENDING") // PENDING, ADMITTED, REJECTED
+  attendanceEntries AttendanceEntry[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+model Staff {
+  id                String             @id @default(uuid())
+  name              String
+  email             String             @unique
+  department        String
+  maxPeriodsPerDay  Int                @default(4)
+  avatar            String?
+  timetableSlots    TimetableSlot[]
+  attendanceRecords AttendanceRecord[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model Room {
+  id             String          @id @default(uuid())
+  roomNumber     String          @unique
+  building       String
+  capacity       Int
+  type           String          @default("LECTURE")
+  timetableSlots TimetableSlot[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model Subject {
+  id             String          @id @default(uuid())
+  code           String          @unique
+  name           String
+  weeklyPeriods  Int             @default(3)
+  timetableSlots TimetableSlot[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model TimetableSlot {
+  id        String   @id @default(uuid())
+  day       String   // Mon, Tue, Wed, Thu, Fri
+  period    Int      // 1 to 6
+  grade     String   // e.g., "Grade 10A"
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  teacherId String
+  teacher   Staff    @relation(fields: [teacherId], references: [id])
+  roomId    String
+  room      Room     @relation(fields: [roomId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TimetableConflict {
+  id            String   @id @default(uuid())
+  type          String   // TEACHER_CLASH, ROOM_CLASH, CAPACITY_EXCEEDED
+  severity      String   // CRITICAL, WARNING
+  description   String
+  suggestedFix  String
+  day           String
+  period        Int
+  affectedSlots String   // JSON serialized string of slot IDs or details
+  createdAt     DateTime @default(now())
+}
+
+model DocumentRecord {
+  id              String   @id @default(uuid())
+  fileName        String
+  documentType    String   @default("Admission Form")
+  status          String   @default("PROCESSING") // UPLOADING, PROCESSING, NEEDS_REVIEW, APPROVED, REJECTED
+  confidenceScore Float    @default(0.0)
+  rawText         String?
+  extractedFields String   // JSON serialized extracted fields
+  fileUrl         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model AttendanceRecord {
+  id               String            @id @default(uuid())
+  grade            String            // e.g. "Grade 10A"
+  section          String            @default("A")
+  date             String            // YYYY-MM-DD
+  period           Int               @default(1)
+  takenByTeacherId String
+  takenByTeacher   Staff             @relation(fields: [takenByTeacherId], references: [id])
+  status           String            @default("SUBMITTED") // SUBMITTED, DRAFT
+  entries          AttendanceEntry[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model AttendanceEntry {
+  id                 String           @id @default(uuid())
+  attendanceRecordId String
+  attendanceRecord   AttendanceRecord @relation(fields: [attendanceRecordId], references: [id], onDelete: Cascade)
+  studentId          String
+  student            Student          @relation(fields: [studentId], references: [id])
+  rollNumber         Int
+  status             String           @default("PRESENT") // PRESENT, ABSENT
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+}
