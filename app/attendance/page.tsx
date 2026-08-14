@@ -40,7 +40,8 @@ export default function AttendancePage() {
 
   // Load students for chosen class
   useEffect(() => {
-    // Generate 40 roll numbers for Grade 10A (or fetch from API)
+    // Keep a visual fallback while the registry loads, then use real IDs for the
+    // atomic attendance submission (AttendanceEntry has a database relation).
     const generateStudents = () => {
       const list: StudentRollState[] = [];
       for (let i = 1; i <= 40; i++) {
@@ -56,6 +57,17 @@ export default function AttendancePage() {
 
     setStudents(generateStudents());
     setIsSubmitted(false);
+
+    fetch("/api/students")
+      .then((res) => res.ok ? res.json() : [])
+      .then((records: Array<{ id: string; rollNumber: number; name: string; grade: string }>) => {
+        const classStudents = records
+          .filter((student) => student.grade === grade)
+          .sort((a, b) => a.rollNumber - b.rollNumber)
+          .map((student) => ({ id: student.id, rollNumber: student.rollNumber, name: student.name, status: "PRESENT" as const }));
+        if (classStudents.length) setStudents(classStudents);
+      })
+      .catch(() => {});
 
     // Check if existing record exists for today
     fetch(`/api/attendance?grade=${encodeURIComponent(grade)}&date=${date}&period=${period}`)

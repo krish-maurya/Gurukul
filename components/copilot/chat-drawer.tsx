@@ -1,227 +1,349 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  Sparkles,
-  ChevronDown,
-  ChevronUp,
-  Send,
-  Bot,
-  User,
-  ShieldAlert,
-  MessageSquare,
+  ArrowUp,
+  Loader2,
   Minus,
-  Maximize2,
+  RotateCcw,
+  ShieldCheck,
+  Sparkles,
+  X,
 } from "lucide-react";
-import { executeCopilotTool, CopilotToolResult } from "@/lib/copilot/tools";
+import { useAuth } from "@/lib/auth/session-context";
+import type { AssistantResponse } from "@/lib/copilot/types";
 import { StructuredResults } from "./structured-results";
 
-interface Message {
+type Message = {
   id: string;
   sender: "user" | "copilot";
   text: string;
-  toolResult?: CopilotToolResult;
-  timestamp: string;
-}
+  response?: AssistantResponse;
+};
+
+const SUGGESTIONS = [
+  { label: "Grade 10A timetable", icon: "📋" },
+  { label: "Who is absent today?", icon: "🔍" },
+  { label: "Timetable conflicts?", icon: "⚠️" },
+  { label: "Students at risk", icon: "📊" },
+];
 
 export function ChatDrawer() {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const { currentUser, isAuthenticated } = useAuth();
+  const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "msg-1",
-      sender: "copilot",
-      text: "Greetings! I am GURUKUL Copilot. I can query attendance risk flags, document OCR queues, or resolve timetable clashes for you.",
-      timestamp: "Just now",
-    },
-  ]);
-  const [isThinking, setIsThinking] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [animateIn, setAnimateIn] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isExpanded) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (open) {
+      requestAnimationFrame(() => setAnimateIn(true));
+      textareaRef.current?.focus();
+    } else {
+      setAnimateIn(false);
     }
-  }, [messages, isExpanded]);
+  }, [open]);
 
-  const handleSend = async (customQuery?: string) => {
-    const query = customQuery || input;
-    if (!query.trim()) return;
+  useEffect(() => {
+    if (open) endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [open, messages, loading]);
 
-    const userMsg: Message = {
-      id: `user-${Date.now()}`,
-      sender: "user",
-      text: query,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    };
+  useEffect(() => {
+    const node = textareaRef.current;
+    if (!node) return;
+    node.style.height = "0px";
+    node.style.height = `${Math.min(node.scrollHeight, 104)}px`;
+  }, [input]);
 
-    setMessages((prev) => [...prev, userMsg]);
-    if (!customQuery) setInput("");
-    setIsThinking(true);
+  async function send(value = input) {
+    const query = value.trim();
+    if (!query || loading) return;
+    setMessages((items) => [
+      ...items,
+      { id: `user-${Date.now()}`, sender: "user", text: query },
+    ]);
+    setInput("");
+    setLoading(true);
+    try {
+      // Send last 6 messages as context for follow-up understanding
+      const history = messages.slice(-6).map((m) => ({
+        role: m.sender === "user" ? "user" : "assistant",
+        content: m.text,
+        intent: m.response?.intent,
+      }));
+      const res = await fetch("/api/copilot", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(currentUser ? { "x-gurukul-user-id": currentUser.id } : {}),
+        },
+        body: JSON.stringify({ query, history }),
+      });
+      const response = (await res.json()) as AssistantResponse;
+      setMessages((items) => [
+        ...items,
+        {
+          id: `assistant-${Date.now()}`,
+          sender: "copilot",
+          text: response.message || "I couldn't complete that request.",
+          response,
+        },
+      ]);
+    } catch {
+      setMessages((items) => [
+        ...items,
+        {
+          id: `error-${Date.now()}`,
+          sender: "copilot",
+          text: "I couldn't connect just now. Please try again in a moment.",
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  }
 
-    const result = await executeCopilotTool(query);
+  function clear() {
+    setMessages([]);
+    setInput("");
+    textareaRef.current?.focus();
+  }
 
-    const copilotMsg: Message = {
-      id: `copilot-${Date.now()}`,
-      sender: "copilot",
-      text: result.summary,
-      toolResult: result,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    };
+  function handleClose() {
+    setAnimateIn(false);
+    setTimeout(() => setOpen(false), 250);
+  }
 
-    setIsThinking(false);
-    setMessages((prev) => [...prev, copilotMsg]);
-  };
+  if (!isAuthenticated) return null;
 
   return (
-    <div className="fixed bottom-0 right-6 z-50 flex flex-col items-end select-none">
-      {/* ------------------------------------------------------------- */}
-      {/* 1. LINKEDIN-STYLE MINIMIZED BAR (ALWAYS VISIBLE AT BOTTOM RIGHT) */}
-      {/* ------------------------------------------------------------- */}
-      {!isExpanded && (
+    <div className="fixed bottom-5 right-5 z-50 font-sans">
+      {/* ──────── Floating Action Button ──────── */}
+      {!open && (
         <button
-          onClick={() => setIsExpanded(true)}
-          className="bg-gurukul-dark text-white hover:bg-slate-900 border border-white/20 rounded-t-xl px-4 py-2.5 shadow-2xl flex items-center gap-3 transition-all duration-200 group hover:-translate-y-0.5"
+          onClick={() => setOpen(true)}
+          aria-label="Open GURUKUL Assistant"
+          className="copilot-fab group relative"
         >
-          <div className="relative">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-gurukul-tech to-gurukul-ocean flex items-center justify-center text-white">
-              <Sparkles className="w-4 h-4 text-white animate-pulse" />
-            </div>
-            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-gurukul-dark" />
-          </div>
-
-          <div className="text-left">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-bold text-white tracking-tight">GURUKUL Copilot</span>
-              <span className="text-[9px] bg-gurukul-tech/30 text-gurukul-ocean font-semibold px-1.5 py-0.2 rounded uppercase">
-                AI
-              </span>
-            </div>
-            <p className="text-[10px] text-slate-400 truncate max-w-[180px]">
-              Click to open assistant console
-            </p>
-          </div>
-
-          <ChevronUp className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors ml-1" />
+          {/* Pulse ring */}
+          <span className="copilot-fab-ring" />
+          {/* Icon */}
+          <span className="copilot-fab-icon">
+            <Sparkles className="h-5 w-5 text-white" strokeWidth={2.2} />
+          </span>
+          {/* Label */}
+          <span className="copilot-fab-label">
+            <span className="copilot-fab-title">GURUKUL AI</span>
+            <span className="copilot-fab-subtitle">Ask anything</span>
+          </span>
         </button>
       )}
 
-      {/* ------------------------------------------------------------- */}
-      {/* 2. EXPANDED MESSAGING PANEL (DRAWER OPENING UP FROM BOTTOM RIGHT) */}
-      {/* ------------------------------------------------------------- */}
-      {isExpanded && (
-        <div className="w-80 sm:w-96 h-[520px] bg-white rounded-t-2xl shadow-2xl border border-slate-300 flex flex-col justify-between overflow-hidden animate-in slide-in-from-bottom duration-200">
-          {/* LinkedIn-style Messaging Header */}
-          <div className="p-3.5 bg-gradient-to-r from-gurukul-dark via-[#0a1824] to-[#1e3bb3] text-white flex items-center justify-between border-b border-white/10 cursor-pointer"
-               onClick={() => setIsExpanded(false)}
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="relative">
-                <div className="w-8 h-8 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center text-gurukul-ocean">
-                  <Sparkles className="w-4 h-4 text-gurukul-ocean" />
+      {/* ──────── Chat Panel ──────── */}
+      {open && (
+        <section
+          aria-label="GURUKUL Assistant"
+          className={`copilot-panel ${animateIn ? "copilot-panel-open" : "copilot-panel-closed"}`}
+        >
+          {/* ── Header ── */}
+          <header className="copilot-header">
+            {/* Mesh gradient background */}
+            <div className="copilot-header-mesh" />
+            <div className="copilot-header-glow" />
+
+            <div className="relative flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="copilot-header-avatar">
+                  <Sparkles className="h-4 w-4 text-white" strokeWidth={2.5} />
                 </div>
-                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-gurukul-dark" />
+                <div>
+                  <h2 className="text-[13px] font-semibold tracking-tight text-white">
+                    GURUKUL Assistant
+                  </h2>
+                  <p className="mt-0.5 flex items-center gap-1 text-[10px] font-medium text-emerald-300/90">
+                    <span className="copilot-status-dot" />
+                    Online · Verified answers
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-xs font-bold tracking-tight text-white flex items-center gap-1.5">
-                  <span>GURUKUL Copilot</span>
-                  <span className="text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded font-semibold uppercase">
-                    Active
-                  </span>
-                </h3>
-                <p className="text-[10px] text-gurukul-ocean font-medium">Function Execution Engine</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-1">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsExpanded(false);
-                }}
-                className="p-1 rounded-md text-white/70 hover:bg-white/10 hover:text-white transition-colors"
-                title="Minimize Copilot"
-              >
-                <Minus className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Chat Transcript Stream */}
-          <div className="flex-1 p-3.5 overflow-y-auto space-y-3 bg-slate-50/70 text-xs">
-            {messages.map((m) => (
-              <div
-                key={m.id}
-                className={`flex flex-col ${m.sender === "user" ? "items-end" : "items-start"}`}
-              >
-                <div
-                  className={`max-w-[88%] p-3 rounded-xl text-xs leading-relaxed ${
-                    m.sender === "user"
-                      ? "bg-gurukul-dark text-white rounded-br-none shadow-xs"
-                      : "bg-white border border-slate-200 text-gurukul-dark rounded-bl-none shadow-subtle"
-                  }`}
+              <div className="flex items-center gap-0.5">
+                <button
+                  aria-label="New conversation"
+                  title="New conversation"
+                  onClick={clear}
+                  className="copilot-header-btn"
                 >
-                  <p>{m.text}</p>
-
-                  {/* Render Structured Inline Tables / Cards */}
-                  {m.toolResult && <StructuredResults result={m.toolResult} />}
-                </div>
-
-                <span className="text-[9px] text-slate-400 mt-1 px-1">{m.timestamp}</span>
+                  <RotateCcw className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  aria-label="Minimize"
+                  title="Minimize"
+                  onClick={handleClose}
+                  className="copilot-header-btn"
+                >
+                  <Minus className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  aria-label="Close"
+                  title="Close"
+                  onClick={handleClose}
+                  className="copilot-header-btn"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
               </div>
-            ))}
+            </div>
 
-            {isThinking && (
-              <div className="flex items-center gap-2 text-xs text-gurukul-tech font-medium p-2 bg-white rounded-lg border border-slate-200 w-fit animate-pulse shadow-xs">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Executing Service Tool & Structuring Response...</span>
+            {/* User badge */}
+            <div className="relative mt-2.5 flex items-center justify-between px-0.5">
+              <span className="text-[10px] text-white/50">
+                Signed in as{" "}
+                <strong className="font-medium text-white/80">
+                  {currentUser?.name}
+                </strong>
+              </span>
+              <span className="copilot-role-badge">{currentUser?.role}</span>
+            </div>
+          </header>
+
+          {/* ── Messages ── */}
+          <main className="copilot-messages">
+            {messages.length === 0 ? (
+              <div className="copilot-empty-state">
+                {/* Animated gradient icon */}
+                <div className="copilot-empty-icon">
+                  <Sparkles className="h-7 w-7" strokeWidth={1.8} />
+                </div>
+                <h3 className="mt-5 text-[15px] font-semibold tracking-tight text-gurukul-dark">
+                  How can I help you?
+                </h3>
+                <p className="mt-1.5 text-[11px] leading-[1.6] text-slate-400">
+                  Ask about students, attendance, timetables, rooms, or faculty.
+                  I&apos;ll pull verified data from school records.
+                </p>
+
+                {/* Suggestion chips */}
+                <div className="mt-6 flex flex-wrap justify-center gap-2">
+                  {SUGGESTIONS.map((s) => (
+                    <button
+                      key={s.label}
+                      onClick={() => send(s.label)}
+                      className="copilot-chip"
+                    >
+                      <span className="copilot-chip-icon">{s.icon}</span>
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {messages.map((message, idx) => (
+                  <div
+                    key={message.id}
+                    className={`copilot-msg-row ${message.sender === "user" ? "copilot-msg-user" : "copilot-msg-bot"}`}
+                    style={{ animationDelay: `${Math.min(idx * 40, 200)}ms` }}
+                  >
+                    {message.sender === "user" ? (
+                      <div className="copilot-bubble-user">
+                        {message.text}
+                      </div>
+                    ) : (
+                      <div className="copilot-bubble-wrapper">
+                        {/* Bot avatar */}
+                        <div className="copilot-bot-avatar">
+                          <Sparkles
+                            className="h-2.5 w-2.5 text-gurukul-tech"
+                            strokeWidth={2.5}
+                          />
+                        </div>
+                        <div className="copilot-bubble-bot">
+                          <p
+                            className="whitespace-pre-line"
+                            dangerouslySetInnerHTML={{
+                              __html: message.text
+                                .replace(/&/g, "&amp;")
+                                .replace(/</g, "&lt;")
+                                .replace(/>/g, "&gt;")
+                                .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+                                .replace(/\*(.+?)\*/g, "<em>$1</em>"),
+                            }}
+                          />
+                          {message.response && (
+                            <StructuredResults response={message.response} />
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
-            <div ref={messagesEndRef} />
-          </div>
 
-          {/* Quick Query Prompts */}
-          <div className="p-3 bg-white border-t border-slate-200 space-y-2">
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-              <button
-                onClick={() => handleSend("Show students below 75% attendance")}
-                className="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-2.5 py-1 rounded-full whitespace-nowrap border border-slate-200 transition-colors"
-              >
-                📊 Risk (&lt;75%)
-              </button>
-              <button
-                onClick={() => handleSend("Show pending document reviews")}
-                className="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-2.5 py-1 rounded-full whitespace-nowrap border border-slate-200 transition-colors"
-              >
-                📄 Pending Documents
-              </button>
-              <button
-                onClick={() => handleSend("Show timetable conflicts")}
-                className="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-2.5 py-1 rounded-full whitespace-nowrap border border-slate-200 transition-colors"
-              >
-                🗓️ Timetable Clashes
-              </button>
-            </div>
+            {/* Typing indicator */}
+            {loading && (
+              <div className="copilot-typing">
+                <div className="copilot-bot-avatar">
+                  <Sparkles
+                    className="h-2.5 w-2.5 text-gurukul-tech"
+                    strokeWidth={2.5}
+                  />
+                </div>
+                <div className="copilot-typing-dots">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+              </div>
+            )}
+            <div ref={endRef} />
+          </main>
 
-            {/* Input Bar */}
-            <div className="relative">
-              <input
-                type="text"
+          {/* ── Footer / Input ── */}
+          <footer className="copilot-footer">
+            <div className="copilot-input-wrapper">
+              <textarea
+                ref={textareaRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                placeholder="Ask Copilot (e.g. attendance risks)..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-10 py-2 text-xs text-gurukul-dark focus:outline-none focus:border-gurukul-tech"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    send();
+                  }
+                }}
+                rows={1}
+                placeholder="Ask about GURUKUL…"
+                className="copilot-input"
               />
               <button
-                onClick={() => handleSend()}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-gurukul-tech text-white rounded-lg hover:bg-gurukul-tech/90 transition-colors"
+                aria-label="Send message"
+                onClick={() => send()}
+                disabled={loading || !input.trim()}
+                className="copilot-send-btn"
               >
-                <Send className="w-3.5 h-3.5" />
+                {loading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ArrowUp className="h-4 w-4" strokeWidth={2.5} />
+                )}
               </button>
             </div>
-          </div>
-        </div>
+            <div className="copilot-footer-meta">
+              <span className="text-[9px] text-slate-400">
+                <kbd className="copilot-kbd">↵</kbd> Send ·{" "}
+                <kbd className="copilot-kbd">⇧↵</kbd> New line
+              </span>
+              <span className="flex items-center gap-1 text-[9px] text-slate-400">
+                <ShieldCheck className="h-3 w-3 text-emerald-500" />
+                Role-verified
+              </span>
+            </div>
+          </footer>
+        </section>
       )}
     </div>
   );

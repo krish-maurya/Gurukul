@@ -30,8 +30,53 @@ model Student {
   previousSchool    String?
   status            String            @default("PENDING") // PENDING, ADMITTED, REJECTED
   attendanceEntries AttendanceEntry[]
+  feeAccount         FeeAccount?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
+}
+
+model FeeAccount {
+  id            String       @id @default(uuid())
+  studentId     String       @unique
+  student       Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  academicYear  String       @default("2026-27")
+  amountDue     Int
+  amountPaid    Int          @default(0)
+  dueDate       String
+  status        String       @default("PENDING") // PAID, PARTIAL, PENDING, OVERDUE
+  payments      FeePayment[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model FeePayment {
+  id           String     @id @default(uuid())
+  feeAccountId String
+  feeAccount   FeeAccount @relation(fields: [feeAccountId], references: [id], onDelete: Cascade)
+  amount       Int
+  paidAt       String
+  method       String
+  receiptNo    String     @unique
+  createdAt    DateTime   @default(now())
+}
+
+model AIConversation {
+  id        String      @id @default(uuid())
+  userId    String
+  title     String      @default("New conversation")
+  messages  AIMessage[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model AIMessage {
+  id             String         @id @default(uuid())
+  conversationId String
+  conversation   AIConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String
+  content        String
+  metadata       String?
+  createdAt      DateTime       @default(now())
 }
 
 model Staff {

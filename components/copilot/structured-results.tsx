@@ -1,134 +1,183 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
-import { AlertTriangle, FileText, Calendar, ArrowRight, Phone, CheckCircle2 } from "lucide-react";
-import { CopilotToolResult, RiskStudent } from "@/lib/copilot/tools";
+import {
+  ArrowUpRight,
+  Database,
+  FileText,
+  ShieldAlert,
+  User,
+} from "lucide-react";
+import type { AssistantResponse } from "@/lib/copilot/types";
 
-interface StructuredResultsProps {
-  result: CopilotToolResult;
-}
+export function StructuredResults({
+  response,
+}: {
+  response: AssistantResponse;
+}) {
+  const rows = response.data?.rows || [];
+  const columns = rows.length ? Object.keys(rows[0]) : [];
+  const isProfile = response.data?.kind === "student_profile";
 
-export function StructuredResults({ result }: StructuredResultsProps) {
-  if (result.toolName === "getStudentsAtRisk") {
-    const students: RiskStudent[] = result.data;
-    return (
-      <div className="mt-3 bg-white rounded-xl border border-gurukul-gray p-4 shadow-subtle space-y-3">
-        <div className="flex items-center justify-between border-b border-gurukul-gray pb-2">
-          <span className="text-xs font-bold text-gurukul-dark flex items-center gap-1.5">
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
-            Filtered Table: Students Below 75% Attendance
-          </span>
-          <span className="text-[10px] bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded">
-            {students.length} Flagged
-          </span>
+  return (
+    <div className="mt-3 max-w-full space-y-2.5 overflow-hidden">
+      {/* ── Stat Cards ── */}
+      {response.data?.stats && (
+        <div className="grid grid-cols-2 gap-1.5">
+          {response.data.stats.map((stat) => (
+            <div key={stat.label} className="copilot-stat-card">
+              <p className="copilot-stat-label">{stat.label}</p>
+              <p className="copilot-stat-value">{stat.value}</p>
+            </div>
+          ))}
         </div>
+      )}
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 text-slate-500 font-semibold uppercase text-[9px]">
-              <tr>
-                <th className="p-2">Roll</th>
-                <th className="p-2">Student Name</th>
-                <th className="p-2">Grade</th>
-                <th className="p-2">Attendance %</th>
-                <th className="p-2">Absent Days</th>
-                <th className="p-2 text-right">Contact</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 font-medium">
-              {students.map((s) => (
-                <tr key={s.rollNumber} className="hover:bg-slate-50">
-                  <td className="p-2 font-mono font-bold text-gurukul-dark">#{s.rollNumber}</td>
-                  <td className="p-2 text-gurukul-dark font-semibold">{s.name}</td>
-                  <td className="p-2 text-slate-600">{s.grade}</td>
-                  <td className="p-2 text-rose-600 font-bold font-mono">{s.attendancePct}%</td>
-                  <td className="p-2 text-slate-700">{s.absentDays} Days</td>
-                  <td className="p-2 text-right text-slate-500 font-mono text-[10px]">
-                    {s.contact}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-          <span className="text-slate-500">Automated SMS alerts sent to guardians.</span>
-          <Link href="/students" className="text-gurukul-tech hover:underline font-semibold flex items-center gap-1">
-            <span>View Student Registry</span>
-            <ArrowRight className="w-3 h-3" />
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  if (result.toolName === "getPendingDocuments") {
-    const docs = result.data;
-    return (
-      <div className="mt-3 bg-white rounded-xl border border-gurukul-gray p-4 shadow-subtle space-y-3">
-        <div className="flex items-center justify-between border-b border-gurukul-gray pb-2">
-          <span className="text-xs font-bold text-gurukul-dark flex items-center gap-1.5">
-            <FileText className="w-3.5 h-3.5 text-gurukul-tech" />
-            Inline Card: Pending Document Intelligence OCR
-          </span>
-          <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded">
-            Needs Review
-          </span>
-        </div>
-
-        {docs.map((d: any) => (
-          <div key={d.id} className="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
+      {/* ── Student Profile Card (special layout for single student) ── */}
+      {isProfile && rows.length > 0 && (
+        <div className="copilot-profile-card">
+          <div className="copilot-profile-header">
+            <div className="copilot-profile-avatar">
+              <User className="h-4 w-4" />
+            </div>
             <div>
-              <p className="text-xs font-bold text-gurukul-dark">{d.fileName}</p>
-              <p className="text-[10px] text-slate-500 mt-0.5">
-                Applicant: {d.extractedName} ({d.grade}) • OCR Score: <strong className="text-amber-600">{d.confidence}%</strong>
+              <p className="copilot-profile-name">
+                {rows.find((r) => r.Field === "Name")?.Value || "Student"}
+              </p>
+              <p className="copilot-profile-meta">
+                {rows.find((r) => r.Field === "Class")?.Value} · Roll{" "}
+                {rows.find((r) => r.Field === "Roll Number")?.Value}
               </p>
             </div>
-            <Link
-              href="/documents"
-              className="text-xs bg-gurukul-tech text-white font-medium px-3 py-1.5 rounded-md hover:bg-gurukul-tech/90 transition-colors shadow-xs"
-            >
-              Open Review Panel
-            </Link>
           </div>
-        ))}
-      </div>
-    );
-  }
+          <div className="copilot-profile-fields">
+            {rows
+              .filter(
+                (r) =>
+                  r.Field !== "Name" &&
+                  r.Field !== "Roll Number" &&
+                  r.Field !== "Class",
+              )
+              .map((row) => (
+                <div key={row.Field} className="copilot-profile-row">
+                  <span className="copilot-profile-label">{row.Field}</span>
+                  <span
+                    className={`copilot-profile-value ${
+                      row.Field === "Status"
+                        ? String(row.Value).toUpperCase() === "ADMITTED"
+                          ? "text-emerald-600"
+                          : "text-amber-600"
+                        : ""
+                    }`}
+                  >
+                    {row.Value}
+                  </span>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
 
-  if (result.toolName === "getTimetableConflicts") {
-    const conflicts = result.data;
-    return (
-      <div className="mt-3 bg-white rounded-xl border border-gurukul-gray p-4 shadow-subtle space-y-3">
-        <div className="flex items-center justify-between border-b border-gurukul-gray pb-2">
-          <span className="text-xs font-bold text-gurukul-dark flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-rose-600" />
-            Inline Card: Master Timetable Clashes
-          </span>
-          <span className="text-[10px] bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded">
-            {conflicts.length} Clashes
+      {/* ── Data Table (for non-profile data) ── */}
+      {!isProfile && rows.length > 0 && (
+        <div className="copilot-table-container">
+          <div className="copilot-table-header">
+            <Database className="h-3 w-3 text-gurukul-tech/70" />
+            <span>Verified Records</span>
+          </div>
+          <div className="copilot-table-scroll">
+            <table className="w-full text-left text-[10px]">
+              <thead>
+                <tr className="copilot-table-thead">
+                  {columns.map((col) => (
+                    <th key={col} className="copilot-table-th">
+                      {col}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row, i) => (
+                  <tr key={i} className="copilot-table-tr">
+                    {columns.map((col) => (
+                      <td key={col} className="copilot-table-td">
+                        {col === "Status" ? (
+                          <span
+                            className={`copilot-status-pill ${
+                              String(row[col]).toUpperCase() === "PRESENT" ||
+                              String(row[col]).toUpperCase() === "ADMITTED" ||
+                              String(row[col]).toUpperCase() === "PAID"
+                                ? "copilot-status-good"
+                                : String(row[col]).toUpperCase() === "ABSENT" ||
+                                    String(row[col]).toUpperCase() ===
+                                      "REJECTED" ||
+                                    String(row[col]).toUpperCase() === "OVERDUE"
+                                  ? "copilot-status-bad"
+                                  : "copilot-status-neutral"
+                            }`}
+                          >
+                            {row[col]}
+                          </span>
+                        ) : (
+                          row[col]
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ── Confirmation Warning ── */}
+      {response.requiresConfirmation && (
+        <div className="copilot-confirmation-bar">
+          <ShieldAlert className="h-3.5 w-3.5 shrink-0" />
+          <span>
+            Confirmation required in the attendance workspace before any record
+            is changed.
           </span>
         </div>
+      )}
 
-        {conflicts.map((c: any) => (
-          <div key={c.id} className="p-3 bg-rose-50/50 rounded-lg border border-rose-200 space-y-1">
-            <p className="text-xs font-bold text-rose-900">{c.type.replace("_", " ")}</p>
-            <p className="text-[11px] text-slate-700">{c.description}</p>
-            <p className="text-[10px] text-gurukul-tech font-semibold">Suggested Fix: {c.suggestedFix}</p>
-          </div>
-        ))}
+      {/* ── Sources ── */}
+      {response.sources && response.sources.length > 0 && (
+        <div className="copilot-sources">
+          <p className="copilot-sources-title">
+            <FileText className="h-3 w-3" />
+            Sources
+          </p>
+          {response.sources.slice(0, 3).map((source) => (
+            <p
+              className="copilot-source-item"
+              key={`${source.type}-${source.id}`}
+            >
+              <span className="copilot-source-dot" />
+              {source.label}
+            </p>
+          ))}
+        </div>
+      )}
 
-        <Link
-          href="/timetable"
-          className="block text-center text-xs bg-gurukul-dark text-white font-semibold py-2 rounded-lg hover:bg-gurukul-dark/90 transition-colors"
-        >
-          Launch Timetable Inspector Matrix
-        </Link>
-      </div>
-    );
-  }
-
-  return null;
+      {/* ── Action Buttons ── */}
+      {response.actions && response.actions.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 pt-1">
+          {response.actions.map((action) =>
+            action.route ? (
+              <Link
+                key={action.id}
+                href={action.route}
+                className="copilot-action-btn"
+              >
+                {action.label}
+                <ArrowUpRight className="h-3 w-3 opacity-60" />
+              </Link>
+            ) : null,
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
