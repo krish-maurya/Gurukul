@@ -27,7 +27,7 @@ const NAV_ITEMS: NavItem[] = [
   { name: "Command Center", href: "/", icon: LayoutDashboard },
   { name: "Grid Attendance", href: "/attendance", icon: UserCheck, badge: "Roll 1-40" },
   { name: "Document Intelligence", href: "/documents", icon: FileText, badge: "OCR AI" },
-  { name: "Timetable Optimizer", href: "/timetable", icon: Calendar, badge: "Engine" },
+  { name: "Timetable Operations", href: "/timetable", icon: Calendar, badge: "Coverage" },
   { name: "Student Registry", href: "/students", icon: GraduationCap },
   { name: "Faculty & Staff", href: "/staff", icon: Users },
   { name: "Audit & Access (RBAC)", href: "/admin/roles", icon: ShieldAlert, adminOnly: true },

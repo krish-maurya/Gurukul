@@ -1,92 +1,22 @@
-import { evaluateTimetable, resolveConflictInSchedule, TimetableSlotInput } from "./optimizer";
+import { evaluateTimetable, TimetableSlotInput } from "./optimizer";
 
-const syntheticDatasetWithConflicts: TimetableSlotInput[] = [
-  // Intentional Teacher Clash: Prof. Alan Turing assigned twice at Mon Period 1
-  {
-    id: "slot-1",
-    day: "Mon",
-    period: 1,
-    grade: "Grade 10A",
-    subjectId: "subj-math",
-    subjectName: "Advanced Mathematics",
-    teacherId: "staff-turing",
-    teacherName: "Prof. Alan Turing",
-    roomId: "room-101",
-    roomName: "Room 101",
-  },
-  {
-    id: "slot-2",
-    day: "Mon",
-    period: 1,
-    grade: "Grade 11B",
-    subjectId: "subj-cs",
-    subjectName: "Algorithms & Logic",
-    teacherId: "staff-turing", // Clash!
-    teacherName: "Prof. Alan Turing",
-    roomId: "room-102",
-    roomName: "Room 102",
-  },
-
-  // Intentional Room Clash: Room 101 double booked at Mon Period 2
-  {
-    id: "slot-3",
-    day: "Mon",
-    period: 2,
-    grade: "Grade 10A",
-    subjectId: "subj-phys",
-    subjectName: "Quantum Physics",
-    teacherId: "staff-curie",
-    teacherName: "Dr. Marie Curie",
-    roomId: "room-101",
-    roomName: "Room 101",
-  },
-  {
-    id: "slot-4",
-    day: "Mon",
-    period: 2,
-    grade: "Grade 12A",
-    subjectId: "subj-chem",
-    subjectName: "Organic Chemistry",
-    teacherId: "staff-feynman",
-    teacherName: "Prof. Richard Feynman",
-    roomId: "room-101", // Clash!
-    roomName: "Room 101",
-  },
+const slots: TimetableSlotInput[] = [
+  { id: "one", day: "Mon", period: 1, grade: "Grade 10A", subjectId: "math", subjectName: "Math", teacherId: "teacher-a", teacherName: "Teacher A", roomId: "room-1", roomName: "Room 1", roomType: "LECTURE" },
+  { id: "two", day: "Mon", period: 1, grade: "Grade 11A", subjectId: "science", subjectName: "Science", teacherId: "teacher-a", teacherName: "Teacher A", roomId: "room-2", roomName: "Room 2", roomType: "LECTURE" },
+  { id: "three", day: "Mon", period: 2, grade: "Grade 10A", subjectId: "history", subjectName: "History", teacherId: "teacher-b", teacherName: "Teacher B", roomId: "room-1", roomName: "Room 1", roomType: "LECTURE" },
+  { id: "four", day: "Mon", period: 2, grade: "Grade 11A", subjectId: "english", subjectName: "English", teacherId: "teacher-c", teacherName: "Teacher C", roomId: "room-1", roomName: "Room 1", roomType: "LECTURE" },
+  { id: "five", day: "Tue", period: 3, grade: "Grade 12A", subjectId: "chem", subjectName: "Chemistry", teacherId: "teacher-d", teacherName: "Teacher D", roomId: "room-3", roomName: "Room 3", roomCapacity: 20, classSize: 30, roomType: "LECTURE" },
+  { id: "six", day: "Wed", period: 4, grade: "Grade 9A", subjectId: "bio", subjectName: "Biology", teacherId: "teacher-e", teacherName: "Teacher E", roomId: "room-4", roomName: "Room 4", roomType: "LECTURE", requiresLab: true },
+  { id: "seven", day: "Thu", period: 2, grade: "Grade 9B", subjectId: "physics", subjectName: "Physics", teacherId: "teacher-f", teacherName: "Teacher F", roomId: "lab-1", roomName: "Lab 1", roomType: "LAB" },
+  { id: "eight", day: "Thu", period: 2, grade: "Grade 9C", subjectId: "physics", subjectName: "Physics", teacherId: "teacher-g", teacherName: "Teacher G", roomId: "lab-1", roomName: "Lab 1", roomType: "LAB" },
 ];
 
-function runTest() {
-  console.log("=== Testing GURUKUL Timetable Optimization Engine ===");
-
-  const initialEvaluation = evaluateTimetable(syntheticDatasetWithConflicts);
-
-  console.log(`Initial Valid State: ${initialEvaluation.isValid}`);
-  console.log(`Total Slots Evaluated: ${initialEvaluation.totalSlots}`);
-  console.log(`Total Conflicts Detected: ${initialEvaluation.conflicts.length}`);
-
-  initialEvaluation.conflicts.forEach((conflict, idx) => {
-    console.log(`\nConflict #${idx + 1}: [${conflict.type}] (${conflict.severity})`);
-    console.log(`Description: ${conflict.description}`);
-    console.log(`Suggested Fix: ${conflict.suggestedFix}`);
-  });
-
-  if (initialEvaluation.conflicts.length > 0) {
-    console.log("\n--- Applying Automated Conflict Resolution ---");
-    let resolvedSlots = [...syntheticDatasetWithConflicts];
-
-    initialEvaluation.conflicts.forEach((conflict) => {
-      resolvedSlots = resolveConflictInSchedule(resolvedSlots, conflict);
-    });
-
-    const postEvaluation = evaluateTimetable(resolvedSlots);
-    console.log(`Post-Resolution Valid State: ${postEvaluation.isValid}`);
-    console.log(`Remaining Conflicts: ${postEvaluation.conflicts.length}`);
-
-    if (postEvaluation.conflicts.length === 0) {
-      console.log("\n✅ SUCCESS: All timetable conflicts resolved successfully!");
-    } else {
-      console.error("\n❌ FAILURE: Unresolved conflicts remain.");
-    }
-  }
+const result = evaluateTimetable(slots);
+const types = new Set(result.conflicts.map((conflict) => conflict.type));
+for (const expected of ["TEACHER_CLASH", "ROOM_CLASH", "CAPACITY_EXCEEDED", "LAB_REQUIRED", "LAB_CLASH"]) {
+  if (!types.has(expected as never)) throw new Error(`Expected ${expected}`);
 }
-
-runTest();
+if (result.optimizedSlots !== slots || result.conflicts.some((conflict) => !conflict.suggestedFix || !Array.isArray(conflict.possibleFreePeriods))) {
+  throw new Error("Expected deterministic suggestions without timetable mutation");
+}
+console.log("SUCCESS: teacher, room, lab, capacity, and suggestion constraints are deterministic.");
