@@ -105,10 +105,10 @@ export function ReviewPanel({ document, onApprove, onBack }: ReviewPanelProps) {
       </div>
 
       {/* Side-by-Side Review Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 divide-y lg:divide-y-0 lg:divide-x divide-gurukul-gray min-h-[500px]">
-        {/* Left Column: Scanned Image Preview / Raw OCR Text */}
-        <div className="lg:col-span-5 p-6 bg-slate-100 flex flex-col">
-          <div className="flex items-center justify-between mb-3">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 divide-y lg:divide-y-0 lg:divide-x divide-gurukul-gray h-[720px]">
+        {/* Left Column: Scanned Image Preview (Bigger Image) */}
+        <div className="lg:col-span-6 p-6 bg-slate-100 flex flex-col h-full overflow-hidden">
+          <div className="flex items-center justify-between mb-3 shrink-0">
             <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
               <ImageIcon className="w-3.5 h-3.5 text-gurukul-tech" />
               <span>Original Image / Source Stream</span>
@@ -116,47 +116,40 @@ export function ReviewPanel({ document, onApprove, onBack }: ReviewPanelProps) {
             <span className="text-[11px] text-slate-400 font-mono">Tesseract Engine</span>
           </div>
 
-          <div className="flex-1 bg-white rounded-lg border border-slate-300 p-4 flex flex-col justify-between shadow-xs relative overflow-hidden">
+          <div className="flex-1 bg-white rounded-lg border border-slate-300 p-3 flex items-center justify-center shadow-xs overflow-hidden relative">
             {document.fileUrl ? (
-              <div className="mb-4 overflow-hidden rounded border border-slate-200 bg-slate-50 flex items-center justify-center max-h-64">
-                <img
-                  src={document.fileUrl}
-                  alt="Original Document Preview"
-                  className="max-h-64 object-contain rounded"
-                />
-              </div>
+              <img
+                src={document.fileUrl}
+                alt="Original Document Preview"
+                className="w-full h-full object-contain rounded"
+              />
             ) : (
-              <div className="border-b-2 border-gurukul-dark pb-3 mb-3">
-                <div className="text-xs font-bold text-gurukul-dark tracking-widest uppercase">GURUKUL ACADEMY</div>
-                <div className="text-[10px] text-slate-500">Official Student Intake Record</div>
+              <div className="text-center p-8">
+                <FileText className="w-16 h-16 text-slate-300 mx-auto mb-2" />
+                <div className="text-sm font-bold text-gurukul-dark">GURUKUL ACADEMY</div>
+                <div className="text-xs text-slate-500">Official Student Intake Record</div>
               </div>
             )}
+          </div>
 
-            <div className="space-y-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Raw Extracted OCR Text:</span>
-              <div className="font-mono text-[11px] text-slate-700 bg-slate-50 p-3 rounded border border-slate-200 max-h-48 overflow-y-auto leading-relaxed whitespace-pre-wrap">
-                {document.rawText || "No text could be extracted from image."}
-              </div>
-            </div>
-
-            <div className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-400">
-              <span>Status: Scanned via Tesseract.js</span>
-              <span className="text-gurukul-tech font-medium">Original Upload</span>
-            </div>
+          <div className="mt-3 pt-2 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-400 shrink-0">
+            <span>Status: Scanned via Tesseract.js</span>
+            <span className="text-gurukul-tech font-medium">Original Upload</span>
           </div>
         </div>
 
-        {/* Right Column: Interactive Extracted Fields Form */}
-        <div className="lg:col-span-7 p-6 bg-white flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+        {/* Right Column: Interactive Extracted Fields Form (Only Fields Scrollable) */}
+        <div className="lg:col-span-6 p-6 bg-white flex flex-col h-full overflow-hidden justify-between">
+          <div className="flex flex-col h-full min-h-0">
+            <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100 shrink-0">
               <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
                 Extracted Fields (Blank if Not Found in Image)
               </h3>
               <span className="text-xs text-slate-400">Edit any field inline</span>
             </div>
 
-            <div className="space-y-3">
+            {/* ONLY this container is scrollable */}
+            <div className="flex-1 overflow-y-auto pr-2 space-y-3">
               {Object.entries(fields).map(([key, fieldData]) => {
                 const label =
                   FIELD_LABELS[key] ||
@@ -222,7 +215,7 @@ export function ReviewPanel({ document, onApprove, onBack }: ReviewPanelProps) {
             </div>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between shrink-0">
             <p className="text-xs text-slate-500">
               Human review verifies all extracted data before saving to student database.
             </p>
