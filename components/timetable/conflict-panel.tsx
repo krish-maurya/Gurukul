@@ -3,14 +3,16 @@
 import React from "react";
 import { TimetableConflictDetail } from "@/lib/timetable/optimizer";
 import { generateAIConflictExplanation } from "@/lib/timetable/ai-explainer";
-import { AlertOctagon, Sparkles, CheckCircle2, ShieldCheck, ArrowRight, RefreshCw } from "lucide-react";
+import { Sparkles, CheckCircle2, ShieldCheck, RefreshCw, MapPin, ArrowRight } from "lucide-react";
 
 interface ConflictPanelProps {
   conflicts: TimetableConflictDetail[];
   selectedConflict: TimetableConflictDetail | null;
   onSelectConflict: (conflict: TimetableConflictDetail) => void;
   onApplyFix: (conflict: TimetableConflictDetail) => void;
+  onAssignRoom?: (slotId: string, roomId: string) => void;
   onApproveTimetable: () => void;
+  busy?: boolean;
 }
 
 export function ConflictPanel({
@@ -18,10 +20,15 @@ export function ConflictPanel({
   selectedConflict,
   onSelectConflict,
   onApplyFix,
+  onAssignRoom,
   onApproveTimetable,
+  busy = false,
 }: ConflictPanelProps) {
   const activeConflict = selectedConflict || (conflicts.length > 0 ? conflicts[0] : null);
   const aiExplanation = activeConflict ? generateAIConflictExplanation(activeConflict) : null;
+
+  // For room/lab clashes with multiple affected slots, default to reassigning the secondary slot
+  const targetSlotId = activeConflict?.affectedSlotIds?.[activeConflict.affectedSlotIds.length - 1] || activeConflict?.affectedSlotIds?.[0];
 
   return (
     <div className="bg-white rounded-xl border border-gurukul-gray shadow-card p-6 flex flex-col justify-between h-full">
@@ -30,7 +37,7 @@ export function ConflictPanel({
         <div className="flex items-center justify-between pb-4 border-b border-gurukul-gray mb-5">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-gurukul-tech" />
-            <h3 className="text-sm font-semibold text-gurukul-dark">AI Intelligence & Clash Inspector</h3>
+            <h3 className="text-sm font-semibold text-gurukul-dark">Deterministic Conflict Inspector</h3>
           </div>
           <span
             className={`text-[10px] px-2.5 py-1 rounded-full font-bold uppercase ${
@@ -39,7 +46,7 @@ export function ConflictPanel({
                 : "bg-emerald-100 text-emerald-800 border border-emerald-200"
             }`}
           >
-            {conflicts.length > 0 ? `${conflicts.length} Conflict(s) Detected` : "Schedule Optimal"}
+            {conflicts.length > 0 ? `${conflicts.length} Clash Flagged` : "Schedule Optimal"}
           </span>
         </div>
 
@@ -59,7 +66,7 @@ export function ConflictPanel({
                       onClick={() => onSelectConflict(c)}
                       className={`w-full text-left p-3 rounded-lg border text-xs transition-all ${
                         isSelected
-                          ? "border-rose-500 bg-rose-50/50 shadow-xs font-semibold text-gurukul-dark"
+                          ? "border-rose-500 bg-rose-50/50 shadow-xs font-semibold text-gurukul-dark ring-1 ring-rose-500"
                           : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
                       }`}
                     >
@@ -76,40 +83,75 @@ export function ConflictPanel({
               </div>
             </div>
 
-            {/* AI Explanation Card */}
-            {aiExplanation && activeConflict && (
+            {/* AI Diagnosis & Suggested Alternatives */}
+            {activeConflict && (
               <div className="bg-slate-50 rounded-xl border border-gurukul-gray p-4 space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                   <span className="text-[11px] font-bold text-gurukul-dark flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-gurukul-tech" />
-                    Plain-Language AI Diagnosis
+                    Conflict Diagnosis & Resolution
                   </span>
                   <span className="text-[10px] font-mono text-gurukul-tech bg-gurukul-tech/10 px-2 py-0.5 rounded">
-                    Confidence {(aiExplanation.confidenceScore * 100).toFixed(0)}%
+                    {activeConflict.day} Period {activeConflict.period}
                   </span>
                 </div>
 
                 <div>
-                  <h4 className="text-xs font-bold text-rose-700 mb-1">{aiExplanation.headline}</h4>
-                  <p className="text-xs text-slate-700 leading-relaxed">{aiExplanation.cause}</p>
+                  <h4 className="text-xs font-bold text-rose-700 mb-1">{activeConflict.type.replace("_", " ")}</h4>
+                  <p className="text-xs text-slate-700 leading-relaxed">{activeConflict.description}</p>
                 </div>
 
-                <div className="p-3 bg-white rounded-lg border border-slate-200 space-y-2">
-                  <span className="text-[10px] font-bold text-gurukul-tech uppercase tracking-wider block">
-                    Recommended AI Optimization Fix:
-                  </span>
-                  <p className="text-xs text-gurukul-dark font-medium leading-relaxed">
-                    {aiExplanation.recommendation}
-                  </p>
-
-                  <button
-                    onClick={() => onApplyFix(activeConflict)}
-                    className="w-full mt-2 bg-gurukul-tech hover:bg-gurukul-tech/90 text-white text-xs font-semibold py-2 px-3 rounded-lg shadow-sm transition-all duration-150 flex items-center justify-center gap-2"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                    <span>Apply 1-Click Suggested Fix</span>
-                  </button>
-                </div>
+                {/* Available Alternatives List */}
+                {activeConflict.alternativeRooms && activeConflict.alternativeRooms.length > 0 ? (
+                  <div className="space-y-2 pt-2 border-t border-slate-200">
+                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block">
+                      Recommended Alternative Available Rooms:
+                    </span>
+                    <div className="space-y-1.5">
+                      {activeConflict.alternativeRooms.map((alt) => (
+                        <div
+                          key={alt.roomId}
+                          className="flex items-center justify-between p-2.5 bg-white rounded-lg border border-slate-200 text-xs shadow-xs"
+                        >
+                          <div className="flex items-center gap-2 truncate mr-2">
+                            <MapPin className="w-3.5 h-3.5 text-gurukul-ocean shrink-0" />
+                            <div className="truncate">
+                              <span className="font-bold text-gurukul-dark block">{alt.roomNumber}</span>
+                              <span className="text-[10px] text-slate-500 block truncate">{alt.reason}</span>
+                            </div>
+                          </div>
+                          <button
+                            disabled={busy || !targetSlotId}
+                            onClick={() => onAssignRoom && targetSlotId && onAssignRoom(targetSlotId, alt.roomId)}
+                            className="shrink-0 bg-gurukul-tech hover:bg-gurukul-tech/90 disabled:opacity-50 text-white text-[11px] font-semibold py-1.5 px-3 rounded-md transition-colors flex items-center gap-1"
+                          >
+                            <span>Assign</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  aiExplanation && (
+                    <div className="p-3 bg-white rounded-lg border border-slate-200 space-y-2">
+                      <span className="text-[10px] font-bold text-gurukul-tech uppercase tracking-wider block">
+                        Optimization Recommendation:
+                      </span>
+                      <p className="text-xs text-gurukul-dark font-medium leading-relaxed">
+                        {aiExplanation.recommendation}
+                      </p>
+                      <button
+                        disabled={busy}
+                        onClick={() => onApplyFix(activeConflict)}
+                        className="w-full mt-2 bg-gurukul-tech hover:bg-gurukul-tech/90 text-white text-xs font-semibold py-2 px-3 rounded-lg shadow-sm transition-all duration-150 flex items-center justify-center gap-2"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        <span>Apply Suggested Fix</span>
+                      </button>
+                    </div>
+                  )
+                )}
               </div>
             )}
           </div>
@@ -121,7 +163,7 @@ export function ConflictPanel({
             </div>
             <h4 className="text-sm font-bold text-gurukul-dark">Schedule Conflict-Free</h4>
             <p className="text-xs text-slate-500 max-w-xs mx-auto">
-              All constraint rules (teacher workload, room double-booking, and capacity) are fully satisfied.
+              All constraint rules (teacher workload, room double-booking, lab requirements, and capacity) are fully satisfied.
             </p>
           </div>
         )}
