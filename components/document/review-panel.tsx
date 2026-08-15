@@ -11,16 +11,36 @@ interface ReviewPanelProps {
 }
 
 export function ReviewPanel({ document, onApprove, onBack }: ReviewPanelProps) {
-  const [fields, setFields] = useState<Record<string, { value: string; confidence: number }>>({
-    studentName: document.extractedFields.studentName,
-    dob: document.extractedFields.dob,
-    grade: document.extractedFields.grade,
-    parentName: document.extractedFields.parentName,
-    contact: document.extractedFields.contact,
-    address: document.extractedFields.address,
-    medicalNotes: document.extractedFields.medicalNotes,
-    previousSchool: document.extractedFields.previousSchool,
-  });
+  // Generic: track ALL extracted fields (23-field admission schema)
+  const [fields, setFields] = useState<Record<string, { value: string; confidence: number }>>(
+    () => ({ ...document.extractedFields })
+  );
+
+  const FIELD_LABELS: Record<string, string> = {
+    academicYear: "Academic Year",
+    applicationDate: "Application Date",
+    studentName: "Full Name",
+    dob: "Date of Birth",
+    gender: "Gender",
+    nationality: "Nationality",
+    religion: "Religion",
+    address: "Residential Address",
+    cityStateZip: "City / State / Zip",
+    grade: "Grade / Class Applied For",
+    previousSchool: "Last School Attended",
+    mediumOfInstruction: "Medium of Instruction",
+    tcNumber: "Transfer Certificate No.",
+    fatherName: "Father's Name",
+    fatherOccupation: "Father's Occupation",
+    motherName: "Mother's Name",
+    motherOccupation: "Mother's Occupation",
+    parentName: "Parent / Guardian",
+    contact: "Primary Contact Number",
+    email: "Email Address",
+    emergencyContactPerson: "Emergency Contact Person",
+    emergencyPhone: "Emergency Contact Phone",
+    medicalNotes: "Medical Notes",
+  };
 
   const handleFieldChange = (key: string, newValue: string) => {
     setFields((prev) => ({
@@ -138,9 +158,9 @@ export function ReviewPanel({ document, onApprove, onBack }: ReviewPanelProps) {
 
             <div className="space-y-3">
               {Object.entries(fields).map(([key, fieldData]) => {
-                const label = key
-                  .replace(/([A-Z])/g, " $1")
-                  .replace(/^./, (str) => str.toUpperCase());
+                const label =
+                  FIELD_LABELS[key] ||
+                  key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase());
                 const isHighConfidence = fieldData.confidence >= 85;
                 const isBlank = !fieldData.value || fieldData.value.trim().length === 0;
 

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { FileDropzone } from "@/components/document/file-dropzone";
 import { ReviewPanel } from "@/components/document/review-panel";
-import { DocumentRecordData, parseAdmissionDocument } from "@/lib/document/ocr-engine";
+import { DocumentRecordData, parseAdmissionDocument, makeExtracted } from "@/lib/document/ocr-engine";
 import { processRealImageOCR } from "@/lib/document/real-ocr";
 import { FileText, CheckCircle, AlertCircle, Clock, Sparkles, Filter, Plus } from "lucide-react";
 
@@ -16,7 +16,7 @@ const INITIAL_QUEUE: DocumentRecordData[] = [
     status: "NEEDS_REVIEW",
     confidenceScore: 78.5,
     rawText: `GURUKUL HIGH SCHOOL ADMISSION FORM\nStudent Name: Aarav Sharma\nDate of Birth: 05/11/2008\nApplying Grade: Grade 11B\nParent/Guardian: Priya Sharma\nPhone: +1 555-345-6789\nMedical Notes: Mild Asthma - Needs Inhaler\nPrevious Institution: Valley Heights High`,
-    extractedFields: {
+    extractedFields: makeExtracted({
       studentName: { value: "Aarav Sharma", confidence: 96 },
       dob: { value: "2008-11-05", confidence: 92 },
       grade: { value: "Grade 11B", confidence: 89 },
@@ -25,7 +25,7 @@ const INITIAL_QUEUE: DocumentRecordData[] = [
       address: { value: "45 Lotus Parkway, Techville", confidence: 64 },
       medicalNotes: { value: "Mild Asthma - Needs Inhaler", confidence: 58 },
       previousSchool: { value: "Valley Heights High", confidence: 88 },
-    },
+    }),
     createdAt: "2026-08-13 10:30 AM",
   },
   {
@@ -35,7 +35,7 @@ const INITIAL_QUEUE: DocumentRecordData[] = [
     status: "APPROVED",
     confidenceScore: 94.2,
     rawText: `TRANSFER CERTIFICATE\nStudent: Sophia Chen\nDOB: 28/09/2009\nGrade: Grade 10A\nStatus: Clear Conduct`,
-    extractedFields: {
+    extractedFields: makeExtracted({
       studentName: { value: "Sophia Chen", confidence: 98 },
       dob: { value: "2009-09-28", confidence: 95 },
       grade: { value: "Grade 10A", confidence: 96 },
@@ -44,7 +44,7 @@ const INITIAL_QUEUE: DocumentRecordData[] = [
       address: { value: "128 Oakridge Lane, Metro City", confidence: 91 },
       medicalNotes: { value: "No known allergies", confidence: 89 },
       previousSchool: { value: "Metro Central Middle School", confidence: 94 },
-    },
+    }),
     createdAt: "2026-08-13 09:15 AM",
   },
 ];
@@ -109,20 +109,21 @@ export default function DocumentIntelligencePage() {
     setQueue((prev) =>
       prev.map((doc) => {
         if (doc.id === activeDocId) {
+          // Type-safe generic update: copy keeps the ExtractedDocument type,
+          // keyed assignment updates every field without any casting.
+          const updatedFields = { ...doc.extractedFields };
+          (Object.keys(updatedFields) as (keyof typeof updatedFields)[]).forEach((key) => {
+            updatedFields[key] = {
+              value: updatedValues[key] !== undefined ? updatedValues[key] : updatedFields[key].value,
+              confidence: 100,
+            };
+          });
+
           return {
             ...doc,
-            status: "APPROVED",
+            status: "APPROVED" as const,
             confidenceScore: 100,
-            extractedFields: {
-              studentName: { value: updatedValues.studentName || doc.extractedFields.studentName.value, confidence: 100 },
-              dob: { value: updatedValues.dob || doc.extractedFields.dob.value, confidence: 100 },
-              grade: { value: updatedValues.grade || doc.extractedFields.grade.value, confidence: 100 },
-              parentName: { value: updatedValues.parentName || doc.extractedFields.parentName.value, confidence: 100 },
-              contact: { value: updatedValues.contact || doc.extractedFields.contact.value, confidence: 100 },
-              address: { value: updatedValues.address || doc.extractedFields.address.value, confidence: 100 },
-              medicalNotes: { value: updatedValues.medicalNotes || doc.extractedFields.medicalNotes.value, confidence: 100 },
-              previousSchool: { value: updatedValues.previousSchool || doc.extractedFields.previousSchool.value, confidence: 100 },
-            },
+            extractedFields: updatedFields,
           };
         }
         return doc;
