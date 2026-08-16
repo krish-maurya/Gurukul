@@ -2,19 +2,16 @@ import { NextResponse } from "next/server";
 import { answerCopilot } from "@/lib/copilot/engine";
 import { generateCasualReply, isCasualGreeting, polishGroundedResponse, understandCopilotRequest } from "@/lib/copilot/nlp";
 import type { CopilotContext } from "@/lib/copilot/types";
+import { getSession } from "@/lib/auth/server";
 
-// This project currently uses client-side mock sessions. Keep identity mapping server-owned
-// so the caller cannot elevate a role by supplying a role header. Replace this resolver with
-// the application's authenticated server session when a real auth provider is connected.
-const DEVELOPMENT_SESSIONS: Record<string, CopilotContext> = {
-  "user-admin-1": { userId: "user-admin-1", name: "Dr. Eleanor Vance", role: "ADMIN" },
-  "user-teacher-1": { userId: "user-teacher-1", name: "Prof. Alan Turing", role: "TEACHER" },
-};
+export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  const userId = request.headers.get("x-gurukul-user-id");
-  const context = userId ? DEVELOPMENT_SESSIONS[userId] : undefined;
-  if (!context) return NextResponse.json({ message: "Sign in to use GURUKUL Assistant." }, { status: 401 });
+  // Identity comes from the authenticated server session cookie — the client
+  // can no longer choose its own identity via headers.
+  const session = await getSession();
+  if (!session) return NextResponse.json({ message: "Sign in to use GURUKUL Assistant." }, { status: 401 });
+  const context: CopilotContext = { userId: session.sub, name: session.name, role: session.role };
   try {
     const body = await request.json();
     if (typeof body?.query !== "string") return NextResponse.json({ message: "A valid question is required." }, { status: 400 });

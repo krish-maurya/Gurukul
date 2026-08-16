@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -24,31 +25,26 @@ async function main() {
   await prisma.subject.deleteMany();
   await prisma.room.deleteMany();
   await prisma.staff.deleteMany();
+  await prisma.invitation.deleteMany();
   await prisma.user.deleteMany();
 
   // ============================================================
   // 2. USERS
   // ============================================================
 
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD || "admin123";
   const adminUser = await prisma.user.create({
     data: {
       id: "user-admin",
       name: "Dr. Eleanor Vance",
-      email: "principal@gurukul.edu",
+      email: "admin@gurukul.edu",
+      passwordHash: await bcrypt.hash(adminPassword, 10),
       role: "ADMIN",
       avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150",
     },
   });
-
-  await prisma.user.create({
-    data: {
-      id: "user-staff",
-      name: "Prof. Alan Turing",
-      email: "turing@gurukul.edu",
-      role: "STAFF",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
-    },
-  });
+  console.log(`  Admin login -> admin@gurukul.edu / ${adminPassword}`);
+  // NOTE: the Turing teacher account is created AFTER staff records exist (see below)
 
   // ============================================================
   // 3. STAFF / TEACHERS
@@ -211,6 +207,20 @@ async function main() {
       },
     }),
   };
+
+  // Teacher demo account linked to the Turing staff record
+  await prisma.user.create({
+    data: {
+      id: "user-staff",
+      name: "Prof. Alan Turing",
+      email: "turing@gurukul.edu",
+      passwordHash: await bcrypt.hash(process.env.SEED_TEACHER_PASSWORD || "teacher123", 10),
+      role: "TEACHER",
+      staffId: staff.turing.id,
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
+    },
+  });
+  console.log(`  Teacher login -> turing@gurukul.edu / ${process.env.SEED_TEACHER_PASSWORD || "teacher123"}`);
 
   // ============================================================
   // 4. ROOMS

@@ -17,10 +17,8 @@ import {
   BarChart3,
   BookOpen,
 } from "lucide-react";
-import { useAuth } from "@/lib/auth/session-context";
 
 export default function LandingPage() {
-  const { login } = useAuth();
 
   return (
     <div className="min-h-screen bg-gurukul-dark text-white font-sans selection:bg-gurukul-tech selection:text-white">
@@ -69,7 +67,6 @@ export default function LandingPage() {
               Sign In
             </Link>
             <button
-              onClick={() => login("ADMIN")}
               className="text-xs font-bold bg-gradient-to-r from-gurukul-tech to-gurukul-ocean text-white px-5 py-2.5 rounded-xl shadow-lg shadow-gurukul-tech/25 hover:shadow-gurukul-tech/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2"
             >
               <span>Explore Command Center</span>
@@ -105,7 +102,6 @@ export default function LandingPage() {
             <span>Sign In to System</span>
           </Link>
           <button
-            onClick={() => login("TEACHER")}
             className="w-full sm:w-auto text-sm font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/15 px-7 py-3.5 rounded-xl backdrop-blur-md transition-all flex items-center justify-center gap-2"
           >
             <UserCheck className="w-4 h-4 text-emerald-400" />
@@ -177,7 +173,6 @@ export default function LandingPage() {
                 </li>
               </ul>
               <button
-                onClick={() => login("ADMIN")}
                 className="mt-8 w-full py-3 rounded-xl bg-gurukul-tech text-white font-semibold text-xs hover:bg-gurukul-tech/90 transition-colors shadow-lg shadow-gurukul-tech/20 flex items-center justify-center gap-2"
               >
                 <span>Enter as Admin</span>
@@ -212,7 +207,6 @@ export default function LandingPage() {
                 </li>
               </ul>
               <button
-                onClick={() => login("TEACHER")}
                 className="mt-8 w-full py-3 rounded-xl bg-emerald-600 text-white font-semibold text-xs hover:bg-emerald-500 transition-colors shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2"
               >
                 <span>Enter as Teacher</span>

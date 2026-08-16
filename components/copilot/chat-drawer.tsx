@@ -78,7 +78,6 @@ export function ChatDrawer() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(currentUser ? { "x-gurukul-user-id": currentUser.id } : {}),
         },
         body: JSON.stringify({ query, history }),
       });

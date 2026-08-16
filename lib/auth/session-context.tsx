@@ -1,67 +1,67 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { UserSession, UserRole, MOCK_USERS } from "./index";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { UserSession } from "./index";
 
 interface AuthContextType {
   currentUser: UserSession | null;
   isAuthenticated: boolean;
-  login: (role: UserRole, customEmail?: string) => void;
-  logout: () => void;
-  switchRole: (role: UserRole) => void;
+  login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  refresh: () => Promise<void>;
   isAdmin: boolean;
   isTeacher: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const STORAGE_KEY = "gurukul_auth_user_role";
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<UserSession | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  useEffect(() => {
+  const refresh = useCallback(async () => {
     try {
-      const savedRole = localStorage.getItem(STORAGE_KEY) as UserRole | null;
-      if (savedRole && MOCK_USERS[savedRole]) {
-        setCurrentUser(MOCK_USERS[savedRole]);
+      const res = await fetch("/api/auth/me", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentUser(data.user ?? null);
       } else {
-        // Default unauthenticated on initial load so landing page is shown
         setCurrentUser(null);
       }
     } catch {
       setCurrentUser(null);
-    } finally {
-      setIsLoaded(true);
     }
   }, []);
 
-  const login = (role: UserRole, customEmail?: string) => {
-    const baseUser = MOCK_USERS[role] || MOCK_USERS.ADMIN;
-    const userSession: UserSession = customEmail
-      ? { ...baseUser, email: customEmail }
-      : baseUser;
+  useEffect(() => {
+    refresh().finally(() => setIsLoaded(true));
+  }, [refresh]);
 
-    setCurrentUser(userSession);
+  const login = async (email: string, password: string): Promise<{ ok: boolean; error?: string }> => {
     try {
-      localStorage.setItem(STORAGE_KEY, role);
-    } catch (e) {
-      console.error(e);
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        return { ok: false, error: data.error || "Login failed" };
+      }
+      setCurrentUser(data.user);
+      return { ok: true };
+    } catch {
+      return { ok: false, error: "Network error — please try again" };
     }
   };
 
-  const logout = () => {
-    setCurrentUser(null);
+  const logout = async () => {
     try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch (e) {
-      console.error(e);
+      await fetch("/api/auth/logout", { method: "POST" });
+    } finally {
+      setCurrentUser(null);
+      window.location.href = "/landing";
     }
-  };
-
-  const switchRole = (role: UserRole) => {
-    login(role);
   };
 
   const isAdmin = currentUser?.role === "ADMIN";
@@ -81,15 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{
-        currentUser,
-        isAuthenticated,
-        login,
-        logout,
-        switchRole,
-        isAdmin,
-        isTeacher,
-      }}
+      value={{ currentUser, isAuthenticated, login, logout, refresh, isAdmin, isTeacher }}
     >
       {children}
     </AuthContext.Provider>

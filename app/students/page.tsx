@@ -1,162 +1,215 @@
 "use client";
 
-import React, { useState } from "react";
-import { GraduationCap, Search, Filter, Plus, CheckCircle, ShieldAlert, FileText } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { GraduationCap, Search, Filter, CheckCircle, ShieldAlert, FileText, X, Phone, MapPin, HeartPulse, School, User, ArrowRight } from "lucide-react";
 
 interface StudentRecord {
   id: string;
+  rollNumber: number;
   name: string;
   dob: string;
   grade: string;
   parentName: string;
   contact: string;
-  address: string;
-  medicalNotes: string;
+  address: string | null;
+  medicalNotes: string | null;
+  previousSchool: string | null;
   status: "ADMITTED" | "PENDING" | "REJECTED";
 }
 
-const SAMPLE_STUDENTS: StudentRecord[] = [
-  {
-    id: "std-101",
-    name: "Liam Sterling",
-    dob: "2009-04-12",
-    grade: "Grade 10A",
-    parentName: "Robert Sterling",
-    contact: "+1 (555) 234-5678",
-    address: "742 Evergreen Terrace, Springfield",
-    medicalNotes: "Asthma - Keep inhaler on file",
-    status: "ADMITTED",
-  },
-  {
-    id: "std-102",
-    name: "Sophia Chen",
-    dob: "2009-09-28",
-    grade: "Grade 10A",
-    parentName: "David Chen",
-    contact: "+1 (555) 876-5432",
-    address: "128 Oakridge Lane, Metro City",
-    medicalNotes: "No known allergies",
-    status: "ADMITTED",
-  },
-  {
-    id: "std-103",
-    name: "Aarav Sharma",
-    dob: "2008-11-05",
-    grade: "Grade 11B",
-    parentName: "Priya Sharma",
-    contact: "+1 (555) 345-6789",
-    address: "45 Lotus Parkway, Techville",
-    medicalNotes: "Peanut allergy",
-    status: "PENDING",
-  },
-];
+const STATUS_STYLES: Record<StudentRecord["status"], string> = {
+  ADMITTED: "bg-emerald-100 text-emerald-800 border border-emerald-200",
+  PENDING: "bg-amber-100 text-amber-800 border border-amber-200",
+  REJECTED: "bg-red-100 text-red-700 border border-red-200",
+};
 
 export default function StudentRegistryPage() {
+  const [students, setStudents] = useState<StudentRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedGrade, setSelectedGrade] = useState("ALL");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const filteredStudents = SAMPLE_STUDENTS.filter((s) => {
-    const matchesSearch =
-      s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.grade.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.parentName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesGrade = selectedGrade === "ALL" || s.grade === selectedGrade;
-    return matchesSearch && matchesGrade;
-  });
+  useEffect(() => {
+    fetch("/api/students")
+      .then((r) => r.json())
+      .then((data) => setStudents(Array.isArray(data) ? data : []))
+      .catch(() => setStudents([]))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const grades = useMemo(
+    () => ["ALL", ...Array.from(new Set(students.map((s) => s.grade))).sort()],
+    [students]
+  );
+
+  const filtered = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    return students.filter((s) => {
+      if (selectedGrade !== "ALL" && s.grade !== selectedGrade) return false;
+      if (!q) return true;
+      return (
+        s.name.toLowerCase().includes(q) ||
+        s.parentName.toLowerCase().includes(q) ||
+        s.contact.toLowerCase().includes(q) ||
+        String(s.rollNumber).includes(q)
+      );
+    });
+  }, [students, searchTerm, selectedGrade]);
+
+  // Auto-select the first match while searching so the preview follows the search
+  useEffect(() => {
+    if (searchTerm && filtered.length > 0) setSelectedId(filtered[0].id);
+  }, [searchTerm, filtered]);
+
+  const selected = students.find((s) => s.id === selectedId) || null;
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gurukul-gray pb-5">
-        <div>
-          <h1 className="text-xl font-bold text-gurukul-dark tracking-tight">Student Registry</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Centralized student database indexed automatically from approved Document Intelligence admissions.
-          </p>
+      <div className="flex items-center justify-between border-b border-gurukul-gray pb-5">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-gurukul-tech/10 text-gurukul-tech flex items-center justify-center">
+            <GraduationCap className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-gurukul-dark">Student Registry</h1>
+            <p className="text-xs text-slate-500">
+              {isLoading ? "Loading..." : `${filtered.length} of ${students.length} students · live from database`}
+            </p>
+          </div>
         </div>
-
-        <Link
-          href="/documents"
-          className="bg-gurukul-tech hover:bg-gurukul-tech/90 text-white font-medium text-xs px-4 py-2.5 rounded-lg shadow-sm transition-colors flex items-center gap-2 self-start"
-        >
-          <FileText className="w-4 h-4" />
-          <span>Ingest New Admission Form</span>
-        </Link>
       </div>
 
-      {/* Search & Filter Toolbar */}
-      <div className="bg-white rounded-xl border border-gurukul-gray p-4 shadow-subtle flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="relative w-full sm:w-80">
+      {/* Search + Filter */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
-            type="text"
-            placeholder="Filter by student name, grade, or guardian..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-slate-50 border border-gurukul-gray rounded-lg pl-9 pr-4 py-2 text-xs text-gurukul-dark focus:outline-none focus:border-gurukul-tech"
+            placeholder="Search by name, parent, contact or roll number..."
+            className="w-full text-sm pl-9 pr-3 py-2.5 rounded-lg border border-slate-300 bg-white focus:border-gurukul-tech focus:outline-none"
           />
         </div>
-
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Filter className="w-4 h-4 text-slate-400" />
+        <div className="relative">
+          <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <select
             value={selectedGrade}
             onChange={(e) => setSelectedGrade(e.target.value)}
-            className="bg-slate-50 border border-gurukul-gray text-xs text-gurukul-dark rounded-lg px-3 py-2 focus:outline-none focus:border-gurukul-tech"
+            className="text-sm pl-9 pr-8 py-2.5 rounded-lg border border-slate-300 bg-white focus:border-gurukul-tech focus:outline-none appearance-none"
           >
-            <option value="ALL">All Grade Levels</option>
-            <option value="Grade 10A">Grade 10A</option>
-            <option value="Grade 11B">Grade 11B</option>
-            <option value="Grade 12A">Grade 12A</option>
+            {grades.map((g) => (
+              <option key={g} value={g}>{g === "ALL" ? "All Grades" : g}</option>
+            ))}
           </select>
         </div>
       </div>
 
-      {/* Student Table */}
-      <div className="bg-white rounded-xl border border-gurukul-gray shadow-subtle overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-100/70 border-b border-gurukul-gray text-slate-600 font-semibold uppercase tracking-wider text-[10px]">
-              <tr>
-                <th className="px-6 py-3">Student Name</th>
-                <th className="px-6 py-3">Grade</th>
-                <th className="px-6 py-3">Date of Birth</th>
-                <th className="px-6 py-3">Guardian</th>
-                <th className="px-6 py-3">Contact</th>
-                <th className="px-6 py-3">Medical Notes</th>
-                <th className="px-6 py-3 text-right">Admission Status</th>
+      {/* List + Preview Panel */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+        {/* Student list */}
+        <div className="lg:col-span-2 bg-white rounded-xl border border-gurukul-gray shadow-subtle overflow-hidden">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-slate-50 border-b border-gurukul-gray text-[10px] uppercase tracking-wider text-slate-500">
+                <th className="px-4 py-3 font-semibold">Roll</th>
+                <th className="px-4 py-3 font-semibold">Student</th>
+                <th className="px-4 py-3 font-semibold hidden md:table-cell">Grade</th>
+                <th className="px-4 py-3 font-semibold hidden md:table-cell">Parent</th>
+                <th className="px-4 py-3 font-semibold">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gurukul-gray">
-              {filteredStudents.map((s) => (
-                <tr key={s.id} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="px-6 py-4 font-semibold text-gurukul-dark flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gurukul-tech/10 text-gurukul-tech flex items-center justify-center font-bold text-xs">
-                      {s.name.split(" ").map((n) => n[0]).join("")}
-                    </div>
-                    <span>{s.name}</span>
-                  </td>
-                  <td className="px-6 py-4 font-medium text-slate-700">{s.grade}</td>
-                  <td className="px-6 py-4 text-slate-600 font-mono">{s.dob}</td>
-                  <td className="px-6 py-4 text-slate-800">{s.parentName}</td>
-                  <td className="px-6 py-4 text-slate-600 font-mono">{s.contact}</td>
-                  <td className="px-6 py-4 text-slate-600 max-w-xs truncate">{s.medicalNotes}</td>
-                  <td className="px-6 py-4 text-right">
-                    <span
-                      className={`text-[10px] px-2.5 py-1 rounded-full font-bold uppercase ${
-                        s.status === "ADMITTED"
-                          ? "bg-emerald-100 text-emerald-800"
-                          : "bg-amber-100 text-amber-800"
-                      }`}
-                    >
-                      {s.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {isLoading ? (
+                <tr><td colSpan={5} className="px-4 py-10 text-center text-sm text-slate-400">Loading students...</td></tr>
+              ) : filtered.length === 0 ? (
+                <tr><td colSpan={5} className="px-4 py-10 text-center text-sm text-slate-400">No students match your search.</td></tr>
+              ) : (
+                filtered.map((s) => (
+                  <tr
+                    key={s.id}
+                    onClick={() => setSelectedId(s.id)}
+                    className={`cursor-pointer transition-colors text-xs ${
+                      selectedId === s.id ? "bg-gurukul-tech/5 border-l-2 border-l-gurukul-tech" : "hover:bg-slate-50"
+                    }`}
+                  >
+                    <td className="px-4 py-3 font-mono text-slate-500">{s.rollNumber}</td>
+                    <td className="px-4 py-3 font-semibold text-gurukul-dark">{s.name}</td>
+                    <td className="px-4 py-3 text-slate-600 hidden md:table-cell">{s.grade}</td>
+                    <td className="px-4 py-3 text-slate-600 hidden md:table-cell">{s.parentName}</td>
+                    <td className="px-4 py-3">
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${STATUS_STYLES[s.status]}`}>
+                        {s.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
+        </div>
+
+        {/* Right-side preview panel */}
+        <div className="lg:sticky lg:top-20">
+          {selected ? (
+            <div className="bg-white rounded-xl border border-gurukul-gray shadow-card overflow-hidden">
+              <div className="bg-gurukul-dark px-5 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-gurukul-tech/20 text-gurukul-tech font-bold text-sm flex items-center justify-center">
+                    {selected.name.charAt(0)}
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-white leading-tight">{selected.name}</h3>
+                    <p className="text-[10px] text-slate-400">Roll {selected.rollNumber} · {selected.grade}</p>
+                  </div>
+                </div>
+                <button onClick={() => setSelectedId(null)} className="p-1 rounded text-slate-400 hover:text-white">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="p-5 space-y-3 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${STATUS_STYLES[selected.status]}`}>
+                    {selected.status === "ADMITTED" ? <span className="inline-flex items-center gap-1"><CheckCircle className="w-3 h-3" />ADMITTED</span> : selected.status}
+                  </span>
+                  <span className="text-slate-400">DOB: {selected.dob}</span>
+                </div>
+
+                {[
+                  { icon: User, label: "Parent / Guardian", value: selected.parentName },
+                  { icon: Phone, label: "Contact", value: selected.contact },
+                  { icon: MapPin, label: "Address", value: selected.address || "—" },
+                  { icon: HeartPulse, label: "Medical Notes", value: selected.medicalNotes || "—" },
+                  { icon: School, label: "Previous School", value: selected.previousSchool || "—" },
+                ].map(({ icon: Icon, label, value }) => (
+                  <div key={label} className="flex gap-2.5">
+                    <Icon className="w-3.5 h-3.5 text-slate-400 mt-0.5 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">{label}</p>
+                      <p className="text-gurukul-dark font-medium break-words">{value}</p>
+                    </div>
+                  </div>
+                ))}
+
+                <Link
+                  href={`/students/${selected.id}`}
+                  className="mt-2 w-full bg-gurukul-tech hover:bg-gurukul-tech/90 text-white font-medium text-xs py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>Open Full Profile</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl border border-dashed border-slate-300 p-8 text-center">
+              <ShieldAlert className="w-8 h-8 text-slate-300 mx-auto mb-3" />
+              <p className="text-xs font-medium text-slate-500">Select a student (or search) to preview their record here.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

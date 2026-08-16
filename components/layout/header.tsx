@@ -8,13 +8,12 @@ import { GlobalPersonSearch } from "./global-person-search";
 
 export function Header() {
   const router = useRouter();
-  const { currentUser, switchRole, logout, isAdmin } = useAuth();
+  const { currentUser, logout, isAdmin } = useAuth();
 
   if (!currentUser) return null;
 
   const handleLogout = () => {
     logout();
-    router.push("/landing");
   };
 
   return (
@@ -22,35 +21,22 @@ export function Header() {
       {/* Search Bar */}
       <GlobalPersonSearch />
 
-      {/* Toolbar & Active Role Switcher */}
+      {/* Toolbar */}
       <div className="flex items-center gap-4">
-        {/* Active Role Toggle */}
-        <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-gurukul-gray">
-          <span className="text-[10px] font-semibold text-slate-500 uppercase px-2 hidden sm:inline">
-            Role:
-          </span>
-          <button
-            onClick={() => switchRole("ADMIN")}
-            className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-all flex items-center gap-1.5 ${
-              currentUser.role === "ADMIN"
-                ? "bg-gurukul-dark text-white shadow-xs"
-                : "text-slate-600 hover:text-gurukul-dark hover:bg-white"
-            }`}
-          >
+        {/* Role badge (assigned at login — no client-side switching) */}
+        <div
+          className={`text-xs px-2.5 py-1 rounded-lg font-medium flex items-center gap-1.5 border ${
+            isAdmin
+              ? "bg-gurukul-dark text-white border-gurukul-dark"
+              : "bg-emerald-700 text-white border-emerald-700"
+          }`}
+        >
+          {isAdmin ? (
             <ShieldCheck className="w-3.5 h-3.5 text-gurukul-ocean" />
-            <span>Admin</span>
-          </button>
-          <button
-            onClick={() => switchRole("TEACHER")}
-            className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-all flex items-center gap-1.5 ${
-              currentUser.role === "TEACHER"
-                ? "bg-emerald-700 text-white shadow-xs"
-                : "text-slate-600 hover:text-gurukul-dark hover:bg-white"
-            }`}
-          >
-            <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Teacher</span>
-          </button>
+          ) : (
+            <UserCheck className="w-3.5 h-3.5 text-emerald-300" />
+          )}
+          <span>{isAdmin ? "Admin" : "Teacher"}</span>
         </div>
 
         {/* Notifications */}

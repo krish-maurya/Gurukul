@@ -114,7 +114,21 @@ export async function processRealImageOCR(
     const source = await preprocessForOCR(fileOrUrl);
 
     if (progressCallback) progressCallback("Initializing Tesseract OCR Engine...", 12);
+
+    // SELF-HOSTED assets (no CDN downloads in production).
+    // Served from /public/tesseract — kept in sync by scripts/copy-tesseract-assets.js
+    // which runs on `npm install` (postinstall). Applied only in the browser.
+    const selfHosted =
+      typeof window !== "undefined"
+        ? {
+            workerPath: "/tesseract/worker.min.js",
+            corePath: "/tesseract/core",
+            langPath: "/tesseract/lang",
+          }
+        : {};
+
     const worker = await createWorker("eng", 1, {
+      ...selfHosted,
       logger: (m) => {
         if (progressCallback && m.status) {
           const pct = Math.round((m.progress || 0) * 100);

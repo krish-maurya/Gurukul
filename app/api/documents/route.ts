@@ -8,6 +8,7 @@ export async function GET() {
     });
     return NextResponse.json(documents);
   } catch (error) {
+    console.error("[api/documents] request failed:", error);
     return NextResponse.json({ error: "Failed to fetch documents" }, { status: 500 });
   }
 }
@@ -27,6 +28,7 @@ export async function POST(req: Request) {
     });
     return NextResponse.json(document, { status: 201 });
   } catch (error) {
+    console.error("[api/documents] request failed:", error);
     return NextResponse.json({ error: "Failed to create document record" }, { status: 500 });
   }
 }

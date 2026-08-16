@@ -4,7 +4,7 @@
   "description": "GURUKUL - AI-first Operating System for Schools",
   "main": "index.js",
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts"
   },
   "scripts": {
     "dev": "next dev",
@@ -14,15 +14,18 @@
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
-    "test:optimizer": "tsx lib/timetable/optimizer.test.ts"
+    "test:optimizer": "tsx lib/timetable/optimizer.test.ts",
+    "postinstall": "node scripts/copy-tesseract-assets.js"
   },
   "keywords": [],
   "author": "GURUKUL Engineering",
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^5.10.0",
+    "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "framer-motion": "^11.18.2",
+    "jose": "^6.2.9",
     "lucide-react": "^0.354.0",
     "next": "^14.1.3",
     "openai": "^7.4.0",
@@ -33,6 +36,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.19.43",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
