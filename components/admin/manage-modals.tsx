@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { X, Save, AlertCircle, CheckCircle, IndianRupee, Receipt, Pencil } from "lucide-react";
+import { X, Save, AlertCircle, CheckCircle, IndianRupee, Receipt, Pencil, GraduationCap } from "lucide-react";
 
 /* =========================================================================
  * Edit Student modal (ADMIN only) — includes the parent email field
@@ -376,11 +376,30 @@ export function EditStaffModal({ staff, onClose, onSaved }: { staff: StaffEditDa
 }
 
 /* =========================================================================
- * Class Fees modal (ADMIN only) — same fee for a whole class in one go
+ * Class Fees modal (ADMIN only) — same fee for a whole STANDARD in one go.
+ * Fees don't differ by division: "Grade 10" covers 10A + 10B together.
  * =======================================================================*/
 
+/** "Grade 10A" -> { standard: "Grade 10", division: "A" } */
+function splitGrade(g: string): { standard: string; division: string } {
+  const m = g.match(/^(.*\d)\s*([A-Za-z])$/);
+  return m ? { standard: m[1].trim(), division: m[2].toUpperCase() } : { standard: g, division: "" };
+}
+
 export function BatchFeesModal({ grades, onClose, onDone }: { grades: string[]; onClose: () => void; onDone?: () => void }) {
-  const [grade, setGrade] = useState(grades[0] || "");
+  // Group divisions under their standard: Grade 10 -> [A, B]
+  const standards = React.useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const g of grades) {
+      const { standard, division } = splitGrade(g);
+      const list = map.get(standard) || [];
+      if (division && !list.includes(division)) list.push(division);
+      map.set(standard, list.sort());
+    }
+    return Array.from(map.entries()).map(([standard, divisions]) => ({ standard, divisions }));
+  }, [grades]);
+
+  const [standard, setStandard] = useState(standards[0]?.standard || "");
   const [amountDue, setAmountDue] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [academicYear, setAcademicYear] = useState("2026-27");
@@ -396,7 +415,7 @@ export function BatchFeesModal({ grades, onClose, onDone }: { grades: string[]; 
       const res = await fetch("/api/fees/batch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ grade, amountDue: Number(amountDue), dueDate, academicYear, overwrite }),
+        body: JSON.stringify({ grade: standard, amountDue: Number(amountDue), dueDate, academicYear, overwrite }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) setError(data.error || "Failed to set class fees");
@@ -419,8 +438,9 @@ export function BatchFeesModal({ grades, onClose, onDone }: { grades: string[]; 
         </div>
 
         <p className="text-xs text-slate-500 mb-4">
-          Apply the same fee to every admitted student of a class in one go. You can still adjust
-          any single student afterwards via <strong>Manage Fees</strong>.
+          Fees are the same for every division of a standard. Pick a standard and the fee is
+          applied to <strong>all its divisions</strong> at once — you can still fine-tune any
+          single student later via <strong>Manage Fees</strong>.
         </p>
 
         {error && (
@@ -432,7 +452,7 @@ export function BatchFeesModal({ grades, onClose, onDone }: { grades: string[]; 
         {summary ? (
           <div className="space-y-4">
             <div className="text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-3 space-y-1 font-medium">
-              <div className="flex items-center gap-2 font-bold"><CheckCircle className="w-4 h-4 shrink-0" /><span>{summary.grade}: ₹{summary.amountDue.toLocaleString("en-IN")} applied</span></div>
+              <div className="flex items-center gap-2 font-bold"><CheckCircle className="w-4 h-4 shrink-0" /><span>{summary.grade} (all divisions): ₹{summary.amountDue.toLocaleString("en-IN")} applied</span></div>
               <p>• {summary.created} student{summary.created === 1 ? "" : "s"} — fee account created</p>
               {summary.updated > 0 && <p>• {summary.updated} — existing fee updated (payments kept)</p>}
               {summary.skipped > 0 && <p>• {summary.skipped} — skipped (already had a fee; tick the overwrite box to update them too)</p>}
@@ -440,12 +460,39 @@ export function BatchFeesModal({ grades, onClose, onDone }: { grades: string[]; 
             <button onClick={onClose} className="w-full border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-medium py-2.5 rounded-lg">Done</button>
           </div>
         ) : (
-          <form onSubmit={submit} className="space-y-3">
+          <form onSubmit={submit} className="space-y-4">
             <div>
-              <label className={label}>Class</label>
-              <select required className={input} value={grade} onChange={(e) => setGrade(e.target.value)}>
-                {grades.map((g) => <option key={g} value={g}>{g}</option>)}
-              </select>
+              <label className={label}>Standard</label>
+              <div className="grid grid-cols-3 gap-2">
+                {standards.map(({ standard: st, divisions }) => {
+                  const active = st === standard;
+                  return (
+                    <button
+                      key={st}
+                      type="button"
+                      onClick={() => setStandard(st)}
+                      className={`group relative rounded-xl border-2 px-2 py-3 text-center transition-all ${
+                        active
+                          ? "border-gurukul-tech bg-gurukul-tech text-white shadow-md"
+                          : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                      }`}
+                    >
+                      <GraduationCap className={`w-4 h-4 mx-auto mb-1 ${active ? "text-white" : "text-slate-400 group-hover:text-slate-500"}`} />
+                      <span className="block text-xs font-bold leading-tight">{st}</span>
+                      {divisions.length > 0 && (
+                        <span className={`block text-[10px] mt-0.5 ${active ? "text-white/70" : "text-slate-400"}`}>
+                          Div {divisions.join(" · ")}
+                        </span>
+                      )}
+                      {active && (
+                        <span className="absolute -top-1.5 -right-1.5 bg-white rounded-full shadow">
+                          <CheckCircle className="w-4 h-4 text-gurukul-tech" />
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             <div className="grid grid-cols-3 gap-2">
               <div><label className={label}>Amount (₹)</label><input required type="number" min="1" className={input} value={amountDue} onChange={(e) => setAmountDue(e.target.value)} placeholder="45000" /></div>
@@ -455,11 +502,11 @@ export function BatchFeesModal({ grades, onClose, onDone }: { grades: string[]; 
             <label className="flex items-start gap-2 text-xs text-slate-600 py-1 cursor-pointer">
               <input type="checkbox" checked={overwrite} onChange={(e) => setOverwrite(e.target.checked)}
                 className="w-4 h-4 mt-0.5 rounded border-slate-300 text-gurukul-tech focus:ring-gurukul-tech" />
-              <span>Also update students who <strong>already have a fee</strong> set for this class (their payments are kept, only the amount/due date changes)</span>
+              <span>Also update students who <strong>already have a fee</strong> set for this standard (their payments are kept, only the amount/due date changes)</span>
             </label>
             <button type="submit" disabled={isBusy}
               className="w-full bg-gurukul-tech hover:bg-gurukul-tech/90 disabled:opacity-60 text-white font-semibold text-sm py-2.5 rounded-lg flex items-center justify-center gap-2">
-              <IndianRupee className="w-4 h-4" /><span>{isBusy ? "Applying..." : "Apply to Whole Class"}</span>
+              <IndianRupee className="w-4 h-4" /><span>{isBusy ? "Applying..." : "Apply to Whole Standard"}</span>
             </button>
           </form>
         )}

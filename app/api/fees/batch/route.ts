@@ -12,12 +12,13 @@ function computeStatus(amountDue: number, amountPaid: number, dueDate: string): 
 }
 
 /**
- * POST /api/fees/batch — set the SAME fee for every admitted student in a
- * class at once (ADMIN only). Individual students can still be adjusted
- * afterwards through Manage Fees on the student panel.
+ * POST /api/fees/batch — set the SAME fee for every admitted student of a
+ * STANDARD at once (ADMIN only). Fees don't differ by division, so
+ * "Grade 10" covers Grade 10A + Grade 10B together. Individual students
+ * can still be adjusted afterwards through Manage Fees on the student panel.
  *
  * Body: {
- *   grade: string,
+ *   grade: string,      // standard, e.g. "Grade 10" (matches all divisions)
  *   amountDue: number,
  *   dueDate: "YYYY-MM-DD",
  *   academicYear?: string,
@@ -36,7 +37,7 @@ export async function POST(req: Request) {
     const academicYear = String(body.academicYear || "2026-27");
     const overwrite = body.overwrite === true;
 
-    if (!grade) return NextResponse.json({ error: "Choose a class" }, { status: 400 });
+    if (!grade) return NextResponse.json({ error: "Choose a standard" }, { status: 400 });
     if (!Number.isFinite(amountDue) || amountDue <= 0) {
       return NextResponse.json({ error: "Amount due must be a positive number" }, { status: 400 });
     }
@@ -44,8 +45,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Due date must be YYYY-MM-DD" }, { status: 400 });
     }
 
+    // Match every division of the standard: "Grade 10" -> Grade 10A, Grade 10B...
     const students = await prisma.student.findMany({
-      where: { grade, status: "ADMITTED" },
+      where: { grade: { startsWith: grade, mode: "insensitive" }, status: "ADMITTED" },
       select: { id: true, feeAccount: { select: { id: true, amountPaid: true } } },
     });
     if (students.length === 0) {
