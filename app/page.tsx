@@ -1,33 +1,31 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
-import { 
-  FileText, 
-  Calendar, 
-  Users, 
-  GraduationCap, 
-  CheckCircle2, 
-  AlertTriangle, 
-  Sparkles, 
-  ArrowRight, 
-  ShieldCheck,
+import {
+  FileText,
+  Calendar,
+  Users,
+  GraduationCap,
+  CheckCircle2,
+  AlertTriangle,
+  Sparkles,
+  ArrowRight,
   TrendingUp,
   Clock,
   UserCheck,
-  AlertCircle,
-  ChevronRight
+  ChevronRight,
+  X,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/session-context";
-import LandingPage from "@/app/landing/page";
+import { SkeletonDashboard } from "@/components/ui/loaders";
 
-export default function Home() {
+function DashboardContent() {
   const { isAuthenticated, currentUser } = useAuth();
   const [dismissedAlerts, setDismissedAlerts] = useState<string[]>([]);
 
-  // If not authenticated, display Landing Page directly on root path /
   if (!isAuthenticated) {
-    return <LandingPage />;
+    return null;
   }
 
   const dismissAlert = (id: string) => {
@@ -35,207 +33,150 @@ export default function Home() {
   };
 
   return (
-    <div className="space-y-8 pb-16">
-      {/* 1. Proactive Top Alerts Bar (Surfaced Automatically) */}
-      <div className="space-y-3">
+    <div className="space-y-6 pb-16 animate-fade-in">
+      {/* Top Alerts */}
+      <div className="space-y-2">
         {!dismissedAlerts.includes("alert-doc") && (
-          <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between shadow-xs">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center font-bold">
-                <FileText className="w-4 h-4" />
+          <div className="flex items-center justify-between gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg animate-slide-up">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-7 h-7 rounded-md bg-amber-500 text-white flex items-center justify-center shrink-0">
+                <FileText className="w-3.5 h-3.5" />
               </div>
-              <div>
-                <p className="text-xs font-bold text-amber-900">Proactive Alert: 1 Document Pending Human Review</p>
-                <p className="text-[11px] text-amber-700">Admission_Form_Aarav_Sharma.pdf contains low-confidence fields (Address & Medical Notes).</p>
+              <div className="min-w-0">
+                <p className="text-[11px] font-medium text-amber-900 truncate">1 Document Pending Review</p>
+                <p className="text-[10px] text-amber-700 truncate">Low-confidence fields detected.</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Link
-                href="/documents"
-                className="text-xs bg-amber-600 hover:bg-amber-700 text-white font-semibold px-3 py-1.5 rounded-lg transition-colors shadow-xs"
-              >
-                Review Fields
+            <div className="flex items-center gap-2 shrink-0">
+              <Link href="/documents" className="text-[10px] font-medium bg-amber-600 hover:bg-amber-700 text-white px-2.5 py-1 rounded-md transition-colors">
+                Review
               </Link>
-              <button
-                onClick={() => dismissAlert("alert-doc")}
-                className="text-xs text-amber-700 hover:text-amber-900"
-              >
-                Dismiss
+              <button onClick={() => dismissAlert("alert-doc")} className="p-1 text-amber-400 hover:text-amber-600">
+                <X className="w-3 h-3" />
               </button>
             </div>
           </div>
         )}
 
         {!dismissedAlerts.includes("alert-clash") && (
-          <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-center justify-between shadow-xs">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-rose-600 text-white flex items-center justify-center font-bold">
-                <AlertTriangle className="w-4 h-4" />
+          <div className="flex items-center justify-between gap-3 p-3 bg-red-50 border border-red-200 rounded-lg animate-slide-up">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-7 h-7 rounded-md bg-red-500 text-white flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-3.5 h-3.5" />
               </div>
-              <div>
-                <p className="text-xs font-bold text-rose-900">Proactive Alert: 2 Timetable Clashes Flagged</p>
-                <p className="text-[11px] text-rose-700">Prof. Alan Turing double-booked at Mon Period 1; Room 101 double-booked at Mon Period 2.</p>
+              <div className="min-w-0">
+                <p className="text-[11px] font-medium text-red-900 truncate">2 Timetable Clashes Flagged</p>
+                <p className="text-[10px] text-red-700 truncate">Double-booked teacher and room.</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Link
-                href="/timetable"
-                className="text-xs bg-rose-600 hover:bg-rose-700 text-white font-semibold px-3 py-1.5 rounded-lg transition-colors shadow-xs"
-              >
-                Inspect Clashes
+            <div className="flex items-center gap-2 shrink-0">
+              <Link href="/timetable" className="text-[10px] font-medium bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded-md transition-colors">
+                Inspect
               </Link>
-              <button
-                onClick={() => dismissAlert("alert-clash")}
-                className="text-xs text-rose-700 hover:text-rose-900"
-              >
-                Dismiss
+              <button onClick={() => dismissAlert("alert-clash")} className="p-1 text-red-400 hover:text-red-600">
+                <X className="w-3 h-3" />
               </button>
             </div>
           </div>
         )}
 
         {!dismissedAlerts.includes("alert-attendance") && (
-          <div className="p-4 bg-gurukul-tech/10 border border-gurukul-tech/20 rounded-xl flex items-center justify-between shadow-xs">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gurukul-tech text-white flex items-center justify-center font-bold">
-                <UserCheck className="w-4 h-4" />
+          <div className="flex items-center justify-between gap-3 p-3 bg-neutral-100 border border-neutral-200 rounded-lg animate-slide-up">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-7 h-7 rounded-md bg-gurukul-dark text-white flex items-center justify-center shrink-0">
+                <UserCheck className="w-3.5 h-3.5" />
               </div>
-              <div>
-                <p className="text-xs font-bold text-gurukul-dark">Proactive Alert: 3 Students Below 75% Attendance Risk</p>
-                <p className="text-[11px] text-slate-600">Roll #7 (Mason Miller) & Roll #19 (Alexander Robinson) flagged in Grade 10A.</p>
+              <div className="min-w-0">
+                <p className="text-[11px] font-medium text-gurukul-dark truncate">3 Students Below 75% Attendance</p>
+                <p className="text-[10px] text-neutral-500 truncate">Roll #7 and #19 flagged in Grade 10A.</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Link
-                href="/attendance"
-                className="text-xs bg-gurukul-tech hover:bg-gurukul-tech/90 text-white font-semibold px-3 py-1.5 rounded-lg transition-colors shadow-xs"
-              >
-                View Attendance Grid
+            <div className="flex items-center gap-2 shrink-0">
+              <Link href="/attendance" className="text-[10px] font-medium bg-gurukul-dark hover:bg-neutral-800 text-white px-2.5 py-1 rounded-md transition-colors">
+                View
               </Link>
-              <button
-                onClick={() => dismissAlert("alert-attendance")}
-                className="text-xs text-slate-500 hover:text-gurukul-dark"
-              >
-                Dismiss
+              <button onClick={() => dismissAlert("alert-attendance")} className="p-1 text-neutral-400 hover:text-gurukul-dark">
+                <X className="w-3 h-3" />
               </button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Hero Panel */}
-      <div className="rounded-2xl p-8 bg-gradient-to-r from-gurukul-dark via-[#0c1f2b] to-[#1a34a8] text-white shadow-floating relative overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      {/* Welcome Banner */}
+      <div className="card p-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-xs text-gurukul-ocean font-medium mb-3 backdrop-blur-sm">
-              <Sparkles className="w-3.5 h-3.5 text-gurukul-ocean" />
-              <span>GURUKUL AI School OS Console • Logged in as {currentUser?.name} ({currentUser?.role})</span>
-            </div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
-              Executive Command Center
-            </h1>
-            <p className="text-xs md:text-sm text-gurukul-gray/90 mt-1 max-w-xl leading-relaxed">
-              Automated document OCR, single-transaction roll-number attendance, constraint timetable optimizer, and AI Copilot.
+            <p className="text-xs text-neutral-400 mb-1">
+              {currentUser?.role} &middot; {currentUser?.name}
             </p>
+            <h1 className="text-lg font-semibold tracking-tight text-gurukul-dark">Dashboard</h1>
+            <p className="text-xs text-neutral-400 mt-1">Overview of school operations and key metrics.</p>
           </div>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/attendance"
-              className="bg-gurukul-tech hover:bg-gurukul-tech/90 text-white font-semibold text-xs px-5 py-3 rounded-lg shadow-sm transition-all duration-150 flex items-center gap-2 border border-white/20"
-            >
-              <UserCheck className="w-4 h-4" />
-              <span>Grid Attendance</span>
+          <div className="flex items-center gap-2">
+            <Link href="/attendance" className="btn-primary btn-sm">
+              <UserCheck className="w-3.5 h-3.5" />
+              <span>Attendance</span>
             </Link>
-            <Link
-              href="/timetable"
-              className="bg-white/10 hover:bg-white/20 text-white font-semibold text-xs px-5 py-3 rounded-lg backdrop-blur-sm transition-all duration-150 flex items-center gap-2 border border-white/20"
-            >
-              <Calendar className="w-4 h-4 text-gurukul-ocean" />
-              <span>Timetable Optimizer</span>
+            <Link href="/timetable" className="btn-secondary btn-sm">
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Timetable</span>
             </Link>
           </div>
         </div>
       </div>
 
       {/* Key Metric Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-        <div className="bg-white rounded-xl border border-gurukul-gray p-5 shadow-subtle flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-slate-500">Total Students</p>
-            <h3 className="text-2xl font-bold text-gurukul-dark mt-1">342 Active</h3>
-            <p className="text-[11px] text-emerald-600 font-semibold mt-1">40 Grade 10A Roll Cards</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: "Total Students", value: "342", detail: "40 Grade 10A", icon: GraduationCap, color: "text-neutral-500" },
+          { label: "Staff Utilization", value: "91.5%", detail: "4 Max Periods/Day", icon: Users, color: "text-neutral-500" },
+          { label: "Today's Attendance", value: "96.4%", detail: "37 Present / 3 Absent", icon: UserCheck, color: "text-neutral-500" },
+          { label: "Pending Reviews", value: "1", detail: "78.5% OCR Score", icon: FileText, color: "text-neutral-500" },
+        ].map((metric) => (
+          <div key={metric.label} className="card p-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider">{metric.label}</p>
+                <h3 className="text-xl font-bold text-gurukul-dark mt-1">{metric.value}</h3>
+                <p className="text-[10px] text-neutral-400 mt-0.5">{metric.detail}</p>
+              </div>
+              <div className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center">
+                <metric.icon className={`w-4 h-4 ${metric.color}`} />
+              </div>
+            </div>
           </div>
-          <div className="w-10 h-10 rounded-lg bg-gurukul-tech/10 text-gurukul-tech flex items-center justify-center font-bold">
-            <GraduationCap className="w-5 h-5" />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-gurukul-gray p-5 shadow-subtle flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-slate-500">Staff Utilization</p>
-            <h3 className="text-2xl font-bold text-gurukul-dark mt-1">91.5%</h3>
-            <p className="text-[11px] text-gurukul-ocean font-semibold mt-1">4 Max Periods/Day</p>
-          </div>
-          <div className="w-10 h-10 rounded-lg bg-gurukul-dark text-white flex items-center justify-center font-bold">
-            <Users className="w-5 h-5 text-gurukul-ocean" />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-gurukul-gray p-5 shadow-subtle flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-slate-500">Today's Attendance %</p>
-            <h3 className="text-2xl font-bold text-gurukul-dark mt-1">96.4%</h3>
-            <p className="text-[11px] text-emerald-600 font-semibold mt-1">37 Present / 3 Absent</p>
-          </div>
-          <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-            <UserCheck className="w-5 h-5" />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-gurukul-gray p-5 shadow-subtle flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-slate-500">Pending Reviews</p>
-            <h3 className="text-2xl font-bold text-gurukul-dark mt-1">1 Document</h3>
-            <p className="text-[11px] text-amber-600 font-semibold mt-1">78.5% OCR Score</p>
-          </div>
-          <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
-            <FileText className="w-5 h-5" />
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* Charts & Activity Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Attendance & Utilization Trend Chart */}
-        <div className="lg:col-span-8 bg-white rounded-xl border border-gurukul-gray p-6 shadow-subtle">
-          <div className="flex items-center justify-between mb-6 pb-3 border-b border-gurukul-gray">
+      {/* Charts & Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* Chart */}
+        <div className="lg:col-span-8 card p-5">
+          <div className="flex items-center justify-between mb-4 pb-3 border-b border-neutral-100">
             <div>
-              <h3 className="text-sm font-bold text-gurukul-dark">Attendance & Facility Utilization Trend</h3>
-              <p className="text-xs text-slate-500">Weekly student attendance rate vs physical classroom occupancy.</p>
+              <h3 className="text-xs font-semibold text-gurukul-dark">Weekly Trends</h3>
+              <p className="text-[10px] text-neutral-400">Attendance vs room utilization.</p>
             </div>
-            <div className="flex items-center gap-4 text-xs font-medium">
+            <div className="flex items-center gap-4 text-[10px] font-medium">
               <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded bg-gurukul-ocean" />
-                <span className="text-slate-600">Attendance % (Ocean Blue)</span>
+                <span className="w-2.5 h-2.5 rounded-sm bg-neutral-800" />
+                <span className="text-neutral-500">Attendance</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded bg-gurukul-tech" />
-                <span className="text-slate-600">Room Utilization % (Tech Blue)</span>
+                <span className="w-2.5 h-2.5 rounded-sm bg-neutral-300" />
+                <span className="text-neutral-500">Room Util.</span>
               </div>
             </div>
           </div>
 
-          <div className="h-64 flex items-end justify-between gap-4 pt-8 px-4 border-b border-slate-200 relative">
-            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none text-[10px] text-slate-300">
-              <div className="border-b border-slate-100 pb-1">100%</div>
-              <div className="border-b border-slate-100 pb-1">75%</div>
-              <div className="border-b border-slate-100 pb-1">50%</div>
-              <div className="border-b border-slate-100 pb-1">25%</div>
+          <div className="h-48 flex items-end justify-between gap-3 pt-4 px-2 border-b border-neutral-100 relative">
+            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none text-[9px] text-neutral-300">
+              <div className="border-b border-neutral-50 pb-1">100%</div>
+              <div className="border-b border-neutral-50 pb-1">75%</div>
+              <div className="border-b border-neutral-50 pb-1">50%</div>
+              <div className="border-b border-neutral-50 pb-1">25%</div>
             </div>
-
             {[
               { day: "Mon", attendance: 95, room: 88 },
               { day: "Tue", attendance: 98, room: 92 },
@@ -243,73 +184,65 @@ export default function Home() {
               { day: "Thu", attendance: 96, room: 90 },
               { day: "Fri", attendance: 97, room: 94 },
             ].map((d) => (
-              <div key={d.day} className="flex-1 flex flex-col items-center gap-2 z-10">
-                <div className="w-full flex justify-center items-end gap-2 h-44">
+              <div key={d.day} className="flex-1 flex flex-col items-center gap-1.5 z-10">
+                <div className="w-full flex justify-center items-end gap-1.5 h-36">
                   <div
-                    className="w-5 bg-gurukul-ocean rounded-t-md transition-all duration-300 hover:brightness-110"
+                    className="w-4 bg-gurukul-dark rounded-t-sm transition-all duration-300"
                     style={{ height: `${d.attendance}%` }}
-                    title={`Attendance: ${d.attendance}%`}
                   />
                   <div
-                    className="w-5 bg-gurukul-tech rounded-t-md transition-all duration-300 hover:brightness-110"
+                    className="w-4 bg-neutral-300 rounded-t-sm transition-all duration-300"
                     style={{ height: `${d.room}%` }}
-                    title={`Room Utilization: ${d.room}%`}
                   />
                 </div>
-                <span className="text-xs font-bold text-gurukul-dark">{d.day}</span>
+                <span className="text-[10px] font-medium text-neutral-500">{d.day}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Audit Feed */}
-        <div className="lg:col-span-4 bg-white rounded-xl border border-gurukul-gray p-6 shadow-subtle flex flex-col justify-between">
-          <div>
-            <h3 className="text-sm font-bold text-gurukul-dark pb-3 border-b border-gurukul-gray mb-4">
-              Real-Time Audit Activity Feed
-            </h3>
+        <div className="lg:col-span-4 card p-5 flex flex-col">
+          <h3 className="text-xs font-semibold text-gurukul-dark pb-3 border-b border-neutral-100 mb-3">
+            Recent Activity
+          </h3>
 
-            <div className="space-y-4 text-xs">
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0" />
+          <div className="space-y-3 flex-1">
+            {[
+              { dot: "bg-emerald-500", title: "Grade 10A Attendance Submitted", detail: "37 Present / 3 Absent", time: "10:15 AM" },
+              { dot: "bg-amber-500", title: "OCR Document Ingested", detail: "Admission form (78.5%)", time: "09:45 AM" },
+              { dot: "bg-red-500", title: "Timetable Conflict Detected", detail: "Turing double booked Mon P1", time: "09:00 AM" },
+            ].map((item) => (
+              <div key={item.title} className="flex items-start gap-2.5">
+                <div className={`w-1.5 h-1.5 rounded-full ${item.dot} mt-1.5 shrink-0`} />
                 <div>
-                  <p className="font-semibold text-gurukul-dark">Grade 10A Attendance Submitted</p>
-                  <p className="text-slate-500 text-[11px]">Period 1 • 37 Present / 3 Absent</p>
-                  <p className="text-[10px] text-slate-400 font-mono mt-0.5">10:15 AM by Prof. Alan Turing</p>
+                  <p className="text-[11px] font-medium text-gurukul-dark">{item.title}</p>
+                  <p className="text-[10px] text-neutral-400">{item.detail}</p>
+                  <p className="text-[9px] text-neutral-300 font-mono mt-0.5">{item.time}</p>
                 </div>
               </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 rounded-full bg-amber-500 mt-1.5 flex-shrink-0" />
-                <div>
-                  <p className="font-semibold text-gurukul-dark">OCR Document Ingested</p>
-                  <p className="text-slate-500 text-[11px]">Admission_Form_Aarav_Sharma.pdf (78.5%)</p>
-                  <p className="text-[10px] text-slate-400 font-mono mt-0.5">09:45 AM by System OCR</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 rounded-full bg-rose-500 mt-1.5 flex-shrink-0" />
-                <div>
-                  <p className="font-semibold text-gurukul-dark">Timetable Conflict Detected</p>
-                  <p className="text-slate-500 text-[11px]">Prof. Turing double booked Mon P1</p>
-                  <p className="text-[10px] text-slate-400 font-mono mt-0.5">09:00 AM by Solver Engine</p>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
 
-          <div className="pt-4 border-t border-gurukul-gray mt-6">
+          <div className="pt-3 border-t border-neutral-100 mt-3">
             <Link
               href="/admin/roles"
-              className="text-xs font-semibold text-gurukul-tech hover:underline flex items-center justify-between"
+              className="text-[10px] font-medium text-neutral-500 hover:text-gurukul-dark transition-colors flex items-center gap-1"
             >
-              <span>View Security Audit Matrix</span>
-              <ChevronRight className="w-4 h-4" />
+              <span>View security audit</span>
+              <ChevronRight className="w-3 h-3" />
             </Link>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<SkeletonDashboard />}>
+      <DashboardContent />
+    </Suspense>
   );
 }

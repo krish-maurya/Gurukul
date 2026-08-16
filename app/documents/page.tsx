@@ -5,7 +5,7 @@ import { FileDropzone } from "@/components/document/file-dropzone";
 import { ReviewPanel } from "@/components/document/review-panel";
 import { DocumentRecordData, parseAdmissionDocument, makeExtracted } from "@/lib/document/ocr-engine";
 import { processRealImageOCR } from "@/lib/document/real-ocr";
-import { FileText, CheckCircle, AlertCircle, Clock, Sparkles, Filter, Plus } from "lucide-react";
+import { FileText, CheckCircle, AlertCircle } from "lucide-react";
 
 // Initial Mock Queue
 const INITIAL_QUEUE: DocumentRecordData[] = [
@@ -61,7 +61,6 @@ export default function DocumentIntelligencePage() {
     let newDoc: DocumentRecordData;
 
     if (typeof fileOrName === "string") {
-      // Demo test document
       setOcrProgressStatus("Parsing sample document...");
       const parsed = await parseAdmissionDocument(fileOrName);
       newDoc = {
@@ -75,7 +74,6 @@ export default function DocumentIntelligencePage() {
         createdAt: "Just now",
       };
     } else {
-      // Real File dropped/uploaded by user
       const realResult = await processRealImageOCR(fileOrName, (status) => {
         setOcrProgressStatus(status);
       });
@@ -109,8 +107,6 @@ export default function DocumentIntelligencePage() {
     setQueue((prev) =>
       prev.map((doc) => {
         if (doc.id === activeDocId) {
-          // Type-safe generic update: copy keeps the ExtractedDocument type,
-          // keyed assignment updates every field without any casting.
           const updatedFields = { ...doc.extractedFields };
           (Object.keys(updatedFields) as (keyof typeof updatedFields)[]).forEach((key) => {
             updatedFields[key] = {
@@ -142,13 +138,13 @@ export default function DocumentIntelligencePage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Page Header */}
-      <div className="flex items-center justify-between border-b border-gurukul-gray pb-5">
+      <div className="flex items-center justify-between border-b border-neutral-200 pb-4">
         <div>
-          <h1 className="text-xl font-bold text-gurukul-dark tracking-tight">Document Intelligence Pipeline</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Automated document ingestion, real Tesseract image OCR parsing, exact field matching (unmatched fields left blank), and human verification.
+          <h1 className="text-base font-semibold text-gurukul-dark tracking-tight">Document Intelligence</h1>
+          <p className="text-[11px] text-gurukul-ocean mt-0.5">
+            Automated ingestion, OCR parsing, and human verification.
           </p>
         </div>
       </div>
@@ -169,21 +165,21 @@ export default function DocumentIntelligencePage() {
           />
 
           {/* Processing Queue & Records Table */}
-          <div className="bg-white rounded-xl border border-gurukul-gray shadow-subtle overflow-hidden">
-            <div className="p-5 border-b border-gurukul-gray bg-slate-50 flex items-center justify-between">
+          <div className="bg-white rounded-xl border border-neutral-200/80 overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-neutral-200 flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-semibold text-gurukul-dark">Document Processing Queue</h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Click any document needing review to open the side-by-side verification view.
+                <h3 className="text-sm font-semibold text-gurukul-dark">Processing Queue</h3>
+                <p className="text-[11px] text-gurukul-ocean mt-0.5">
+                  Click any document to open the verification view.
                 </p>
               </div>
 
               {/* Status Filter Tabs */}
-              <div className="flex items-center gap-1 bg-white p-1 rounded-lg border border-gurukul-gray text-xs font-medium">
+              <div className="flex items-center gap-0.5 bg-neutral-50 p-0.5 rounded-lg border border-neutral-200/80 text-[11px] font-medium">
                 <button
                   onClick={() => setFilterStatus("ALL")}
                   className={`px-3 py-1 rounded-md transition-colors ${
-                    filterStatus === "ALL" ? "bg-gurukul-tech text-white" : "text-slate-600 hover:text-gurukul-dark"
+                    filterStatus === "ALL" ? "bg-gurukul-dark text-white" : "text-gurukul-ocean hover:text-gurukul-dark"
                   }`}
                 >
                   All ({queue.length})
@@ -192,16 +188,16 @@ export default function DocumentIntelligencePage() {
                   onClick={() => setFilterStatus("NEEDS_REVIEW")}
                   className={`px-3 py-1 rounded-md transition-colors ${
                     filterStatus === "NEEDS_REVIEW"
-                      ? "bg-gurukul-tech text-white"
-                      : "text-slate-600 hover:text-gurukul-dark"
+                      ? "bg-gurukul-dark text-white"
+                      : "text-gurukul-ocean hover:text-gurukul-dark"
                   }`}
                 >
-                  Needs Review ({queue.filter((q) => q.status === "NEEDS_REVIEW").length})
+                  Review ({queue.filter((q) => q.status === "NEEDS_REVIEW").length})
                 </button>
                 <button
                   onClick={() => setFilterStatus("APPROVED")}
                   className={`px-3 py-1 rounded-md transition-colors ${
-                    filterStatus === "APPROVED" ? "bg-gurukul-tech text-white" : "text-slate-600 hover:text-gurukul-dark"
+                    filterStatus === "APPROVED" ? "bg-gurukul-dark text-white" : "text-gurukul-ocean hover:text-gurukul-dark"
                   }`}
                 >
                   Approved ({queue.filter((q) => q.status === "APPROVED").length})
@@ -212,91 +208,91 @@ export default function DocumentIntelligencePage() {
             {/* Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-100/70 border-b border-gurukul-gray text-slate-600 font-semibold uppercase tracking-wider text-[10px]">
+                <thead className="border-b border-neutral-200 text-neutral-500 font-medium uppercase tracking-wider text-[10px]">
                   <tr>
-                    <th className="px-6 py-3">Document Name</th>
-                    <th className="px-6 py-3">Type</th>
-                    <th className="px-6 py-3">OCR Score</th>
-                    <th className="px-6 py-3">Status</th>
-                    <th className="px-6 py-3">Extracted Student</th>
-                    <th className="px-6 py-3 text-right">Action</th>
+                    <th className="px-5 py-2.5">Document</th>
+                    <th className="px-5 py-2.5">Type</th>
+                    <th className="px-5 py-2.5">Score</th>
+                    <th className="px-5 py-2.5">Status</th>
+                    <th className="px-5 py-2.5">Student</th>
+                    <th className="px-5 py-2.5 text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gurukul-gray">
+                <tbody className="divide-y divide-neutral-100">
                   {filteredQueue.map((doc) => (
                     <tr
                       key={doc.id}
-                      className="hover:bg-slate-50/80 transition-colors group cursor-pointer"
+                      className="hover:bg-neutral-50 transition-colors group cursor-pointer"
                       onClick={() => setActiveDocId(doc.id)}
                     >
-                      <td className="px-6 py-4 font-medium text-gurukul-dark flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-gurukul-tech/10 text-gurukul-tech flex items-center justify-center font-bold">
-                          <FileText className="w-4 h-4" />
+                      <td className="px-5 py-3 font-medium text-gurukul-dark flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-md bg-neutral-100 text-neutral-400 flex items-center justify-center">
+                          <FileText className="w-3.5 h-3.5" />
                         </div>
                         <div>
-                          <p className="font-semibold text-gurukul-dark group-hover:text-gurukul-tech transition-colors">
+                          <p className="font-medium text-gurukul-dark text-xs">
                             {doc.fileName}
                           </p>
-                          <p className="text-[10px] text-slate-400">{doc.createdAt}</p>
+                          <p className="text-[10px] text-neutral-400">{doc.createdAt}</p>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-slate-600">{doc.documentType}</td>
-                      <td className="px-6 py-4">
+                      <td className="px-5 py-3 text-gurukul-ocean text-xs">{doc.documentType}</td>
+                      <td className="px-5 py-3">
                         <div className="flex items-center gap-2">
-                          <div className="w-16 bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                          <div className="w-12 bg-neutral-100 rounded-full h-1 overflow-hidden">
                             <div
-                              className={`h-1.5 rounded-full ${
-                                doc.confidenceScore >= 85 ? "bg-gurukul-tech" : "bg-amber-500"
+                              className={`h-1 rounded-full ${
+                                doc.confidenceScore >= 85 ? "bg-gurukul-dark" : "bg-neutral-400"
                               }`}
                               style={{ width: `${doc.confidenceScore}%` }}
                             />
                           </div>
-                          <span className="font-mono text-slate-700 font-medium">
+                          <span className="font-mono text-neutral-600 text-[11px]">
                             {doc.confidenceScore.toFixed(1)}%
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-5 py-3">
                         <span
-                          className={`text-[10px] px-2.5 py-1 rounded-full font-bold inline-flex items-center gap-1 uppercase tracking-wider ${
+                          className={`text-[10px] px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1 ${
                             doc.status === "APPROVED"
-                              ? "bg-emerald-100 text-emerald-800"
-                              : "bg-gurukul-gray text-slate-700 font-bold"
+                              ? "bg-neutral-100 text-neutral-600"
+                              : "bg-amber-50 text-amber-700"
                           }`}
                         >
                           {doc.status === "APPROVED" ? (
                             <>
-                              <CheckCircle className="w-3 h-3 text-emerald-600" />
+                              <CheckCircle className="w-2.5 h-2.5" />
                               Approved
                             </>
                           ) : (
                             <>
-                              <AlertCircle className="w-3 h-3 text-amber-600" />
-                              Needs Review
+                              <AlertCircle className="w-2.5 h-2.5" />
+                              Review
                             </>
                           )}
                         </span>
                       </td>
-                      <td className="px-6 py-4 font-medium text-slate-800">
+                      <td className="px-5 py-3 text-xs text-neutral-600">
                         {doc.extractedFields.studentName.value ? (
-                          `${doc.extractedFields.studentName.value} (${doc.extractedFields.grade.value || "Grade N/A"})`
+                          `${doc.extractedFields.studentName.value} (${doc.extractedFields.grade.value || "—"})`
                         ) : (
-                          <span className="text-amber-600 font-normal italic">[Name not detected]</span>
+                          <span className="text-neutral-400 italic">[Not detected]</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-5 py-3 text-right">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             setActiveDocId(doc.id);
                           }}
-                          className={`text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${
+                          className={`text-[11px] px-3 py-1.5 rounded-md font-medium transition-colors ${
                             doc.status === "APPROVED"
-                              ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                              : "bg-gurukul-tech text-white hover:bg-gurukul-tech/90 shadow-xs"
+                              ? "bg-white text-gurukul-dark border border-neutral-200 hover:bg-neutral-50"
+                              : "bg-gurukul-dark text-white hover:bg-neutral-800"
                           }`}
                         >
-                          {doc.status === "APPROVED" ? "View Verification" : "Review Fields"}
+                          {doc.status === "APPROVED" ? "View" : "Review"}
                         </button>
                       </td>
                     </tr>

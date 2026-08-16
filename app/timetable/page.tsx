@@ -21,18 +21,18 @@ export default function TimetablePage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="border-b border-gurukul-gray pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-gurukul-dark tracking-tight">
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-lg font-semibold text-gurukul-dark tracking-tight">
               {isAdmin ? "Timetable Operations & Dispatch" : "School Timetable"}
             </h1>
-            <span className="text-[10px] bg-gurukul-tech text-white font-bold px-2 py-0.5 rounded uppercase">
+            <span className="badge-default">
               {isAdmin ? "Admin Console" : "Teacher View"}
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-gurukul-ocean mt-1.5">
             {isAdmin
               ? "Absence coverage and room clashes are date-isolated. Absences marked for one day do not affect other dates."
               : "Teachers can view the official approved schedule. Coverage and room modifications are managed by school administrators."}
@@ -43,20 +43,20 @@ export default function TimetablePage() {
         <div className="flex items-center gap-2 self-start sm:self-auto">
           <button
             onClick={() => setShowAddSlot(true)}
-            className="bg-gurukul-tech hover:bg-gurukul-tech/90 text-white font-medium text-xs px-3.5 py-2 rounded-xl shadow-sm transition-all flex items-center gap-1.5"
+            className="btn-primary flex items-center gap-1.5"
           >
-            <CalendarPlus className="w-4 h-4" />
+            <CalendarPlus className="w-3.5 h-3.5" />
             <span>{isAdmin ? "Add Slot" : "Add My Lecture"}</span>
           </button>
-          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
-            <Calendar className="w-4 h-4 text-gurukul-tech" />
-            <span className="text-xs font-medium text-slate-600">Schedule Date:</span>
+          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-neutral-200/80 shadow-subtle">
+            <Calendar className="w-3.5 h-3.5 text-gurukul-muted" />
+            <span className="text-xs font-medium text-gurukul-ocean">Schedule Date:</span>
             <input
               type="date"
               aria-label="Select Date"
               value={activeDate}
               onChange={(e) => e.target.value && setActiveDate(e.target.value)}
-              className="text-xs font-semibold bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-2.5 py-1 text-slate-800 outline-none transition-colors cursor-pointer"
+              className="input !py-1 !px-2.5 !text-xs"
             />
           </div>
         </div>

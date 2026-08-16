@@ -68,7 +68,6 @@ export function ChatDrawer() {
     setInput("");
     setLoading(true);
     try {
-      // Send last 6 messages as context for follow-up understanding
       const history = messages.slice(-6).map((m) => ({
         role: m.sender === "user" ? "user" : "assistant",
         content: m.text,
@@ -76,9 +75,7 @@ export function ChatDrawer() {
       }));
       const res = await fetch("/api/copilot", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query, history }),
       });
       const response = (await res.json()) as AssistantResponse;
@@ -97,7 +94,7 @@ export function ChatDrawer() {
         {
           id: `error-${Date.now()}`,
           sender: "copilot",
-          text: "I couldn't connect just now. Please try again in a moment.",
+          text: "I couldn't connect just now. Please try again.",
         },
       ]);
     } finally {
@@ -119,52 +116,45 @@ export function ChatDrawer() {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 font-sans">
-      {/* ──────── Floating Action Button ──────── */}
+    <div className="fixed bottom-4 right-4 z-50 font-sans">
+      {/* FAB */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          aria-label="Open GURUKUL Assistant"
+          aria-label="Open Assistant"
           className="copilot-fab group relative"
         >
-          {/* Pulse ring */}
           <span className="copilot-fab-ring" />
-          {/* Icon */}
           <span className="copilot-fab-icon">
-            <Sparkles className="h-5 w-5 text-white" strokeWidth={2.2} />
+            <Sparkles className="h-4 w-4 text-white" strokeWidth={2} />
           </span>
-          {/* Label */}
           <span className="copilot-fab-label">
-            <span className="copilot-fab-title">GURUKUL AI</span>
+            <span className="copilot-fab-title">Ask AI</span>
             <span className="copilot-fab-subtitle">Ask anything</span>
           </span>
         </button>
       )}
 
-      {/* ──────── Chat Panel ──────── */}
+      {/* Chat Panel */}
       {open && (
         <section
           aria-label="GURUKUL Assistant"
           className={`copilot-panel ${animateIn ? "copilot-panel-open" : "copilot-panel-closed"}`}
         >
-          {/* ── Header ── */}
+          {/* Header */}
           <header className="copilot-header">
-            {/* Mesh gradient background */}
-            <div className="copilot-header-mesh" />
-            <div className="copilot-header-glow" />
-
-            <div className="relative flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
                 <div className="copilot-header-avatar">
-                  <Sparkles className="h-4 w-4 text-white" strokeWidth={2.5} />
+                  <Sparkles className="h-3.5 w-3.5 text-neutral-500" strokeWidth={2} />
                 </div>
                 <div>
-                  <h2 className="text-[13px] font-semibold tracking-tight text-white">
-                    GURUKUL Assistant
+                  <h2 className="text-[12px] font-semibold tracking-tight text-gurukul-dark">
+                    Gurukul Assistant
                   </h2>
-                  <p className="mt-0.5 flex items-center gap-1 text-[10px] font-medium text-emerald-300/90">
+                  <p className="mt-0.5 flex items-center gap-1 text-[10px] text-neutral-400">
                     <span className="copilot-status-dot" />
-                    Online · Verified answers
+                    Online
                   </p>
                 </div>
               </div>
@@ -175,7 +165,7 @@ export function ChatDrawer() {
                   onClick={clear}
                   className="copilot-header-btn"
                 >
-                  <RotateCcw className="h-3.5 w-3.5" />
+                  <RotateCcw className="h-3 w-3" />
                 </button>
                 <button
                   aria-label="Minimize"
@@ -183,7 +173,7 @@ export function ChatDrawer() {
                   onClick={handleClose}
                   className="copilot-header-btn"
                 >
-                  <Minus className="h-3.5 w-3.5" />
+                  <Minus className="h-3 w-3" />
                 </button>
                 <button
                   aria-label="Close"
@@ -191,41 +181,35 @@ export function ChatDrawer() {
                   onClick={handleClose}
                   className="copilot-header-btn"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-3 w-3" />
                 </button>
               </div>
             </div>
 
             {/* User badge */}
-            <div className="relative mt-2.5 flex items-center justify-between px-0.5">
-              <span className="text-[10px] text-white/50">
-                Signed in as{" "}
-                <strong className="font-medium text-white/80">
-                  {currentUser?.name}
-                </strong>
+            <div className="mt-2 flex items-center justify-between">
+              <span className="text-[9px] text-neutral-400">
+                {currentUser?.name}
               </span>
               <span className="copilot-role-badge">{currentUser?.role}</span>
             </div>
           </header>
 
-          {/* ── Messages ── */}
+          {/* Messages */}
           <main className="copilot-messages">
             {messages.length === 0 ? (
               <div className="copilot-empty-state">
-                {/* Animated gradient icon */}
                 <div className="copilot-empty-icon">
-                  <Sparkles className="h-7 w-7" strokeWidth={1.8} />
+                  <Sparkles className="h-5 w-5" strokeWidth={1.5} />
                 </div>
-                <h3 className="mt-5 text-[15px] font-semibold tracking-tight text-gurukul-dark">
-                  How can I help you?
+                <h3 className="mt-4 text-[13px] font-semibold tracking-tight text-gurukul-dark">
+                  How can I help?
                 </h3>
-                <p className="mt-1.5 text-[11px] leading-[1.6] text-slate-400">
-                  Ask about students, attendance, timetables, rooms, or faculty.
-                  I&apos;ll pull verified data from school records.
+                <p className="mt-1 text-[10px] leading-relaxed text-neutral-400">
+                  Ask about students, attendance, timetables, or faculty.
                 </p>
 
-                {/* Suggestion chips */}
-                <div className="mt-6 flex flex-wrap justify-center gap-2">
+                <div className="mt-5 flex flex-wrap justify-center gap-1.5">
                   {SUGGESTIONS.map((s) => (
                     <button
                       key={s.label}
@@ -239,12 +223,12 @@ export function ChatDrawer() {
                 </div>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {messages.map((message, idx) => (
                   <div
                     key={message.id}
                     className={`copilot-msg-row ${message.sender === "user" ? "copilot-msg-user" : "copilot-msg-bot"}`}
-                    style={{ animationDelay: `${Math.min(idx * 40, 200)}ms` }}
+                    style={{ animationDelay: `${Math.min(idx * 30, 150)}ms` }}
                   >
                     {message.sender === "user" ? (
                       <div className="copilot-bubble-user">
@@ -252,12 +236,8 @@ export function ChatDrawer() {
                       </div>
                     ) : (
                       <div className="copilot-bubble-wrapper">
-                        {/* Bot avatar */}
                         <div className="copilot-bot-avatar">
-                          <Sparkles
-                            className="h-2.5 w-2.5 text-gurukul-tech"
-                            strokeWidth={2.5}
-                          />
+                          <Sparkles className="h-2 w-2 text-neutral-400" strokeWidth={2.5} />
                         </div>
                         <div className="copilot-bubble-bot">
                           <p
@@ -282,14 +262,11 @@ export function ChatDrawer() {
               </div>
             )}
 
-            {/* Typing indicator */}
+            {/* Typing */}
             {loading && (
               <div className="copilot-typing">
                 <div className="copilot-bot-avatar">
-                  <Sparkles
-                    className="h-2.5 w-2.5 text-gurukul-tech"
-                    strokeWidth={2.5}
-                  />
+                  <Sparkles className="h-2 w-2 text-neutral-400" strokeWidth={2.5} />
                 </div>
                 <div className="copilot-typing-dots">
                   <span />
@@ -301,7 +278,7 @@ export function ChatDrawer() {
             <div ref={endRef} />
           </main>
 
-          {/* ── Footer / Input ── */}
+          {/* Footer */}
           <footer className="copilot-footer">
             <div className="copilot-input-wrapper">
               <textarea
@@ -315,7 +292,7 @@ export function ChatDrawer() {
                   }
                 }}
                 rows={1}
-                placeholder="Ask about GURUKUL…"
+                placeholder="Ask about Gurukul..."
                 className="copilot-input"
               />
               <button
@@ -325,20 +302,19 @@ export function ChatDrawer() {
                 className="copilot-send-btn"
               >
                 {loading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : (
-                  <ArrowUp className="h-4 w-4" strokeWidth={2.5} />
+                  <ArrowUp className="h-3.5 w-3.5" strokeWidth={2.5} />
                 )}
               </button>
             </div>
             <div className="copilot-footer-meta">
-              <span className="text-[9px] text-slate-400">
-                <kbd className="copilot-kbd">↵</kbd> Send ·{" "}
-                <kbd className="copilot-kbd">⇧↵</kbd> New line
+              <span className="text-[9px] text-neutral-400">
+                <kbd className="copilot-kbd">↵</kbd> Send
               </span>
-              <span className="flex items-center gap-1 text-[9px] text-slate-400">
-                <ShieldCheck className="h-3 w-3 text-emerald-500" />
-                Role-verified
+              <span className="flex items-center gap-1 text-[9px] text-neutral-400">
+                <ShieldCheck className="h-2.5 w-2.5 text-emerald-500" />
+                Verified
               </span>
             </div>
           </footer>

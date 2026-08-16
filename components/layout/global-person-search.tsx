@@ -71,8 +71,6 @@ export function GlobalPersonSearch() {
   const selectResult = (result: SearchResult) => {
     setIsOpen(false);
     setQuery("");
-    setQuery("");
-    // Open the person highlighted in their registry with the preview panel
     router.push(result.type === "student" ? `/students?sel=${result.id}` : `/staff?sel=${result.id}`);
   };
 
@@ -96,29 +94,34 @@ export function GlobalPersonSearch() {
   };
 
   return (
-    <div ref={containerRef} className="relative w-full max-w-md">
-      <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+    <div ref={containerRef} className="relative w-full max-w-sm">
+      <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
       <input
         type="search"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         onFocus={() => query.trim() && setIsOpen(true)}
         onKeyDown={handleKeyDown}
-        placeholder={isTeacher ? "Search students..." : "Search students or teachers..."}
+        placeholder={isTeacher ? "Search students..." : "Search people..."}
+        role="combobox"
         aria-label={isTeacher ? "Search students" : "Search students and teachers"}
         aria-autocomplete="list"
+        aria-controls="global-person-search-results"
         aria-expanded={isOpen}
-        className="w-full bg-slate-50 border border-gurukul-gray rounded-lg pl-9 pr-4 py-1.5 text-xs text-gurukul-dark placeholder:text-slate-400 focus:outline-none focus:border-gurukul-tech transition-colors"
+        className="w-full bg-neutral-50 border border-neutral-200 rounded-lg pl-8 pr-3 py-1.5 text-xs text-gurukul-dark placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-200 focus:border-neutral-300 transition-all"
       />
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 max-h-80 overflow-y-auto rounded-xl border border-gurukul-gray bg-white shadow-floating z-50">
+        <div className="absolute top-full left-0 right-0 mt-1.5 max-h-72 overflow-y-auto rounded-xl border border-neutral-200 bg-white shadow-floating z-50 custom-scrollbar">
           {isLoading ? (
-            <p className="px-4 py-3 text-xs text-slate-500">Searching {isTeacher ? "students" : "students and teachers"}...</p>
+            <div className="px-3 py-3 text-xs text-neutral-400 flex items-center gap-2">
+              <div className="w-3 h-3 border-2 border-neutral-200 border-t-neutral-500 rounded-full animate-spin" />
+              <span>Searching...</span>
+            </div>
           ) : results.length === 0 ? (
-            <p className="px-4 py-3 text-xs text-slate-500">No {isTeacher ? "students" : "students or teachers"} found.</p>
+            <p className="px-3 py-3 text-xs text-neutral-400">No results found.</p>
           ) : (
-            <ul role="listbox" aria-label="Search results" className="py-1.5">
+            <ul id="global-person-search-results" role="listbox" aria-label="Search results" className="py-1">
               {results.map((result, index) => {
                 const Icon = result.type === "student" ? GraduationCap : Users;
                 return (
@@ -127,16 +130,21 @@ export function GlobalPersonSearch() {
                       type="button"
                       onClick={() => selectResult(result)}
                       onMouseEnter={() => setActiveIndex(index)}
-                      className={`w-full px-4 py-2.5 text-left flex items-center gap-3 transition-colors ${
-                        activeIndex === index ? "bg-slate-100" : "hover:bg-slate-50"
+                      className={`w-full px-3 py-2 text-left flex items-center gap-2.5 transition-colors ${
+                        activeIndex === index ? "bg-neutral-50" : "hover:bg-neutral-50"
                       }`}
                     >
-                      <span className={`w-7 h-7 rounded-full flex items-center justify-center ${result.type === "student" ? "bg-gurukul-tech/10 text-gurukul-tech" : "bg-gurukul-dark text-white"}`}>
-                        <Icon className="w-3.5 h-3.5" />
+                      <span className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                        result.type === "student" ? "bg-neutral-100 text-neutral-500" : "bg-gurukul-dark text-white"
+                      }`}>
+                        <Icon className="w-3 h-3" />
                       </span>
                       <span className="min-w-0">
-                        <span className="block text-xs font-semibold text-gurukul-dark truncate">{result.name} <span className="font-normal text-slate-500">- {result.type === "student" ? "Student" : "Teacher"}</span></span>
-                        <span className="block text-[11px] text-slate-500 truncate">{result.detail}</span>
+                        <span className="block text-xs font-medium text-gurukul-dark truncate">
+                          {result.name}
+                          <span className="font-normal text-neutral-400"> — {result.type === "student" ? "Student" : "Teacher"}</span>
+                        </span>
+                        <span className="block text-[10px] text-neutral-400 truncate">{result.detail}</span>
                       </span>
                     </button>
                   </li>

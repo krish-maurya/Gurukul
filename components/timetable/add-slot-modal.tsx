@@ -81,58 +81,55 @@ export function AddSlotModal({ onClose, onCreated }: { onClose: () => void; onCr
     }
   };
 
-  const selectCls =
-    "w-full text-sm px-3 py-2.5 rounded-lg border border-slate-300 bg-white focus:border-gurukul-tech focus:outline-none";
-
   return (
-    <div className="fixed inset-0 bg-gurukul-dark/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-gurukul-dark/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl border border-neutral-200/80 shadow-subtle w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto animate-slide-up">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-base font-bold text-gurukul-dark flex items-center gap-2">
-            <CalendarPlus className="w-4 h-4 text-gurukul-tech" />
+          <h2 className="text-sm font-semibold text-gurukul-dark flex items-center gap-2">
+            <CalendarPlus className="w-4 h-4 text-gurukul-muted" />
             <span>{isAdmin ? "Add Timetable Slot" : "Add to My Timetable"}</span>
           </h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100">
+          <button onClick={onClose} className="btn-ghost !p-1.5">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {!meta ? (
-          <p className="text-sm text-slate-500 py-8 text-center">{error || "Loading..."}</p>
+          <p className="text-sm text-gurukul-ocean py-8 text-center">{error || "Loading..."}</p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5">
-                <div className="flex items-center gap-2 font-semibold"><AlertCircle className="w-4 h-4 shrink-0" /><span>{error}</span></div>
+              <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5">
+                <div className="flex items-center gap-2 font-medium"><AlertCircle className="w-4 h-4 shrink-0" /><span>{error}</span></div>
                 {details.length > 0 && (
                   <ul className="mt-1.5 ml-6 list-disc space-y-0.5">{details.map((d) => <li key={d}>{d}</li>)}</ul>
                 )}
               </div>
             )}
             {success && (
-              <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2.5 font-medium">
+              <div className="flex items-center gap-2 text-xs text-gurukul-dark bg-neutral-50 border border-neutral-200/80 rounded-lg px-3 py-2.5 font-medium">
                 <CheckCircle className="w-4 h-4 shrink-0" /><span>{success}</span>
               </div>
             )}
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-semibold text-slate-600 mb-1.5 block">Day</label>
-                <select value={day} onChange={(e) => setDay(e.target.value)} className={selectCls}>
+                <label className="text-xs font-medium text-gurukul-ocean mb-1.5 block">Day</label>
+                <select value={day} onChange={(e) => setDay(e.target.value)} className="select">
                   {DAYS.map((d) => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-600 mb-1.5 block">Period</label>
-                <select value={period} onChange={(e) => setPeriod(Number(e.target.value))} className={selectCls}>
+                <label className="text-xs font-medium text-gurukul-ocean mb-1.5 block">Period</label>
+                <select value={period} onChange={(e) => setPeriod(Number(e.target.value))} className="select">
                   {PERIODS.map((p) => <option key={p} value={p}>Period {p}</option>)}
                 </select>
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-600 mb-1.5 block">Grade / Class</label>
-              <select value={grade} onChange={(e) => setGrade(e.target.value)} className={selectCls}>
+              <label className="text-xs font-medium text-gurukul-ocean mb-1.5 block">Grade / Class</label>
+              <select value={grade} onChange={(e) => setGrade(e.target.value)} className="select">
                 {meta.grades.map((g) => <option key={g} value={g}>{g}</option>)}
                 <option value="__custom__">+ New grade…</option>
               </select>
@@ -142,14 +139,14 @@ export function AddSlotModal({ onClose, onCreated }: { onClose: () => void; onCr
                   onChange={(e) => setCustomGrade(e.target.value)}
                   placeholder="e.g. Grade 9C"
                   required
-                  className="mt-2 w-full text-sm px-3 py-2.5 rounded-lg border border-slate-300 focus:border-gurukul-tech focus:outline-none"
+                  className="input mt-2"
                 />
               )}
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-600 mb-1.5 block">Subject</label>
-              <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)} className={selectCls}>
+              <label className="text-xs font-medium text-gurukul-ocean mb-1.5 block">Subject</label>
+              <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)} className="select">
                 {meta.subjects.map((s) => (
                   <option key={s.id} value={s.id}>{s.name} ({s.code}){s.requiresLab ? " — needs lab" : ""}</option>
                 ))}
@@ -158,22 +155,22 @@ export function AddSlotModal({ onClose, onCreated }: { onClose: () => void; onCr
 
             {isAdmin ? (
               <div>
-                <label className="text-xs font-semibold text-slate-600 mb-1.5 block">Teacher</label>
-                <select value={teacherId} onChange={(e) => setTeacherId(e.target.value)} className={selectCls}>
+                <label className="text-xs font-medium text-gurukul-ocean mb-1.5 block">Teacher</label>
+                <select value={teacherId} onChange={(e) => setTeacherId(e.target.value)} className="select">
                   {meta.teachers.map((t) => (
                     <option key={t.id} value={t.id}>{t.name} — {t.department}</option>
                   ))}
                 </select>
               </div>
             ) : (
-              <div className="text-[11px] text-slate-500 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5">
-                This lecture will be added to <strong>your own</strong> timetable ({currentUser?.name}).
+              <div className="text-[11px] text-gurukul-ocean bg-neutral-50 border border-neutral-200/80 rounded-lg px-3 py-2.5">
+                This lecture will be added to <strong className="text-gurukul-dark">your own</strong> timetable ({currentUser?.name}).
               </div>
             )}
 
             <div>
-              <label className="text-xs font-semibold text-slate-600 mb-1.5 block">Room</label>
-              <select value={roomId} onChange={(e) => setRoomId(e.target.value)} className={selectCls}>
+              <label className="text-xs font-medium text-gurukul-ocean mb-1.5 block">Room</label>
+              <select value={roomId} onChange={(e) => setRoomId(e.target.value)} className="select">
                 {meta.rooms.map((r) => (
                   <option key={r.id} value={r.id}>{r.roomNumber} · {r.building} · {r.type} (cap {r.capacity})</option>
                 ))}
@@ -184,7 +181,7 @@ export function AddSlotModal({ onClose, onCreated }: { onClose: () => void; onCr
               <button
                 type="submit"
                 disabled={isSubmitting || !effectiveGrade}
-                className="flex-1 bg-gurukul-tech hover:bg-gurukul-tech/90 disabled:opacity-60 text-white font-semibold text-sm py-2.5 rounded-lg flex items-center justify-center gap-2"
+                className="btn-primary flex-1 flex items-center justify-center gap-2"
               >
                 <CalendarPlus className="w-4 h-4" />
                 <span>{isSubmitting ? "Checking conflicts..." : "Add Slot"}</span>
@@ -192,7 +189,7 @@ export function AddSlotModal({ onClose, onCreated }: { onClose: () => void; onCr
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-lg"
+                className="btn-secondary"
               >
                 Close
               </button>

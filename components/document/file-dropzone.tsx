@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { UploadCloud, FileText, CheckCircle2, AlertCircle, Sparkles, ArrowRight } from "lucide-react";
+import { UploadCloud, FileText } from "lucide-react";
 
 interface FileDropzoneProps {
   onFileSelect: (fileOrName: File | string) => void;
@@ -37,32 +37,32 @@ export function FileDropzone({ onFileSelect, isProcessing, ocrProgressStatus }: 
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gurukul-gray p-6 shadow-subtle mb-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
+    <div className="bg-white rounded-xl border border-neutral-200/80 p-5 mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-3">
         <div>
           <h3 className="text-sm font-semibold text-gurukul-dark flex items-center gap-2">
-            <FileText className="w-4 h-4 text-gurukul-tech" />
+            <FileText className="w-3.5 h-3.5 text-neutral-400" />
             <span>Scan Admission Forms</span>
           </h3>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Upload a photo or scan of an admission form and the details are read automatically.
+          <p className="text-[11px] text-gurukul-ocean mt-0.5">
+            Upload a photo or scan — details are read automatically.
           </p>
         </div>
 
         {/* Quick Demo Pre-load Triggers */}
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-medium text-slate-400">Quick Samples:</span>
+          <span className="text-[11px] text-neutral-400">Samples:</span>
           <button
             onClick={() => onFileSelect("Admission_Form_Aarav_Sharma.pdf")}
             disabled={isProcessing}
-            className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-2.5 py-1 rounded-md transition-colors border border-gurukul-gray disabled:opacity-50"
+            className="text-[11px] bg-neutral-50 hover:bg-neutral-100 text-gurukul-dark font-medium px-2.5 py-1 rounded-md transition-colors border border-neutral-200 disabled:opacity-40"
           >
             Aarav Sharma (Flagged)
           </button>
           <button
             onClick={() => onFileSelect("Admission_Form_Sophia_Chen.pdf")}
             disabled={isProcessing}
-            className="text-xs bg-gurukul-tech/10 hover:bg-gurukul-tech/20 text-gurukul-tech font-medium px-2.5 py-1 rounded-md transition-colors border border-gurukul-tech/20 disabled:opacity-50"
+            className="text-[11px] bg-neutral-50 hover:bg-neutral-100 text-gurukul-dark font-medium px-2.5 py-1 rounded-md transition-colors border border-neutral-200 disabled:opacity-40"
           >
             Sophia Chen (Passed)
           </button>
@@ -75,10 +75,10 @@ export function FileDropzone({ onFileSelect, isProcessing, ocrProgressStatus }: 
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 ${
+        className={`border border-dashed rounded-lg p-8 text-center cursor-pointer transition-all duration-150 ${
           isDragging
-            ? "border-gurukul-tech bg-gurukul-tech/5 scale-[0.99]"
-            : "border-slate-300 hover:border-gurukul-ocean hover:bg-slate-50/50"
+            ? "border-neutral-400 bg-neutral-50"
+            : "border-neutral-300 hover:border-neutral-400"
         }`}
       >
         <input
@@ -89,25 +89,25 @@ export function FileDropzone({ onFileSelect, isProcessing, ocrProgressStatus }: 
           className="hidden"
         />
 
-        <div className="w-12 h-12 rounded-full bg-gurukul-tech/10 text-gurukul-tech flex items-center justify-center mx-auto mb-3">
-          <UploadCloud className="w-6 h-6" />
+        <div className="w-9 h-9 rounded-full bg-neutral-100 text-neutral-400 flex items-center justify-center mx-auto mb-2.5">
+          <UploadCloud className="w-4 h-4" />
         </div>
 
-        <p className="text-sm font-medium text-gurukul-dark">
-          Click to browse or drag & drop your original document image
+        <p className="text-xs font-medium text-gurukul-dark">
+          Drop your document here, or click to browse
         </p>
-        <p className="text-xs text-slate-400 mt-1">
-          PNG, JPG or WebP work best
+        <p className="text-[11px] text-neutral-400 mt-0.5">
+          PNG, JPG, WebP, or PDF
         </p>
 
         {isProcessing && (
-          <div className="mt-4 p-3 bg-gurukul-tech/10 rounded-lg border border-gurukul-tech/20 flex flex-col items-center justify-center gap-1.5 text-xs text-gurukul-tech font-semibold animate-pulse">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-gurukul-tech" />
-              <span>{ocrProgressStatus || "Reading the document..."}</span>
-            </div>
-            <p className="text-[10px] text-slate-500 font-normal">
-              Anything the scan cannot read is left empty so you can fill it in during review.
+          <div className="mt-3 flex flex-col items-center gap-1.5">
+            <div className="w-4 h-4 border-2 border-neutral-300 border-t-gurukul-dark rounded-full animate-spin" />
+            <span className="text-[11px] text-gurukul-ocean font-medium">
+              {ocrProgressStatus || "Reading the document..."}
+            </span>
+            <p className="text-[10px] text-neutral-400">
+              Undetected fields will be left blank for manual entry.
             </p>
           </div>
         )}

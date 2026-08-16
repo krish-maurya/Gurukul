@@ -14,10 +14,10 @@ interface NotificationItem {
 }
 
 const TYPE_META: Record<NotificationItem["type"], { icon: React.ElementType; cls: string; label: string }> = {
-  DOCUMENT: { icon: FileText, cls: "bg-sky-100 text-sky-700", label: "Documents" },
-  PROXY: { icon: CalendarClock, cls: "bg-amber-100 text-amber-700", label: "Coverage" },
-  ADMISSION: { icon: UserPlus2, cls: "bg-emerald-100 text-emerald-700", label: "Admissions" },
-  LEAVE: { icon: UserMinus, cls: "bg-rose-100 text-rose-700", label: "Leave" },
+  DOCUMENT: { icon: FileText, cls: "bg-neutral-100 text-neutral-600", label: "Documents" },
+  PROXY: { icon: CalendarClock, cls: "bg-neutral-100 text-neutral-600", label: "Coverage" },
+  ADMISSION: { icon: UserPlus2, cls: "bg-neutral-100 text-neutral-600", label: "Admissions" },
+  LEAVE: { icon: UserMinus, cls: "bg-neutral-100 text-neutral-600", label: "Leave" },
 };
 
 function timeAgo(iso: string): string {
@@ -30,7 +30,6 @@ function timeAgo(iso: string): string {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-/** Bell button with count badge + a right-side slide-in panel. */
 export function NotificationsBell() {
   const router = useRouter();
   const [items, setItems] = useState<NotificationItem[]>([]);
@@ -46,7 +45,6 @@ export function NotificationsBell() {
       .finally(() => setIsLoading(false));
   }, []);
 
-  // initial + refresh every 60s so the badge stays current
   useEffect(() => {
     load();
     const t = setInterval(load, 60000);
@@ -62,12 +60,12 @@ export function NotificationsBell() {
     <>
       <button
         onClick={() => { setIsOpen(true); load(); }}
-        className="relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-gurukul-dark transition-colors"
+        className="relative p-1.5 rounded-md text-neutral-400 hover:text-gurukul-dark hover:bg-neutral-100 transition-colors"
         aria-label={`Notifications${items.length ? ` (${items.length})` : ""}`}
       >
         <Bell className="w-4 h-4" />
         {items.length > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-gurukul-tech text-white text-[9px] font-bold flex items-center justify-center border border-white">
+          <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 px-1 rounded-full bg-gurukul-dark text-white text-[8px] font-bold flex items-center justify-center">
             {items.length > 99 ? "99+" : items.length}
           </span>
         )}
@@ -75,42 +73,31 @@ export function NotificationsBell() {
 
       {isOpen && (
         <div className="fixed inset-0 z-50">
-          {/* overlay */}
-          <div className="absolute inset-0 bg-gurukul-dark/40" onClick={() => setIsOpen(false)} />
+          <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" onClick={() => setIsOpen(false)} />
+          <aside className="absolute right-0 top-0 h-full w-full max-w-sm bg-white border-l border-neutral-200 shadow-modal flex flex-col animate-[notifSlide_.2s_ease-out]">
+            <style>{`@keyframes notifSlide { from { transform: translateX(100%); } to { transform: translateX(0); } }`}</style>
 
-          {/* right slide-in panel */}
-          <aside className="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col animate-[notificationSlideIn_.24s_cubic-bezier(0.16,1,0.3,1)]">
-            <style>{`@keyframes notificationSlideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }`}</style>
-
-            <div className="px-5 py-4 border-b border-gurukul-gray flex items-center justify-between bg-slate-50">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-gurukul-tech/10 text-gurukul-tech flex items-center justify-center">
-                  <Bell className="w-4 h-4" />
-                </div>
-                <div>
-                  <h2 className="text-sm font-bold text-gurukul-dark">Notifications</h2>
-                  <p className="text-[10px] text-slate-500">{items.length} item{items.length === 1 ? "" : "s"} need attention</p>
-                </div>
-              </div>
+            <div className="px-4 py-3 border-b border-neutral-200 flex items-center justify-between">
+              <h2 className="text-xs font-semibold text-gurukul-dark">Notifications</h2>
               <div className="flex items-center gap-1">
-                <button onClick={load} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-200 transition-colors" aria-label="Refresh">
-                  <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+                <button onClick={load} className="p-1 rounded-md text-neutral-400 hover:bg-neutral-100 transition-colors" aria-label="Refresh">
+                  <RefreshCw className={`w-3 h-3 ${isLoading ? "animate-spin" : ""}`} />
                 </button>
-                <button onClick={() => setIsOpen(false)} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-200 transition-colors" aria-label="Close">
-                  <X className="w-4 h-4" />
+                <button onClick={() => setIsOpen(false)} className="p-1 rounded-md text-neutral-400 hover:bg-neutral-100 transition-colors" aria-label="Close">
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
               {items.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-center px-8">
-                  <Inbox className="w-10 h-10 text-slate-300 mb-3" />
-                  <p className="text-sm font-semibold text-slate-500">All caught up</p>
-                  <p className="text-xs text-slate-400 mt-1">Nothing needs your attention right now.</p>
+                <div className="h-full flex flex-col items-center justify-center text-center px-6">
+                  <Inbox className="w-8 h-8 text-neutral-200 mb-2" />
+                  <p className="text-xs font-medium text-neutral-500">All caught up</p>
+                  <p className="text-[10px] text-neutral-400 mt-0.5">No notifications.</p>
                 </div>
               ) : (
-                <ul className="divide-y divide-gurukul-gray">
+                <ul className="divide-y divide-neutral-100">
                   {items.map((item) => {
                     const meta = TYPE_META[item.type];
                     const Icon = meta.icon;
@@ -118,17 +105,17 @@ export function NotificationsBell() {
                       <li key={item.id}>
                         <button
                           onClick={() => openItem(item)}
-                          className="w-full text-left px-5 py-3.5 hover:bg-slate-50 transition-colors flex gap-3"
+                          className="w-full text-left px-4 py-3 hover:bg-neutral-50 transition-colors flex gap-2.5"
                         >
-                          <div className={`w-8 h-8 rounded-lg ${meta.cls} flex items-center justify-center shrink-0 mt-0.5`}>
-                            <Icon className="w-4 h-4" />
+                          <div className={`w-7 h-7 rounded-lg ${meta.cls} flex items-center justify-center shrink-0`}>
+                            <Icon className="w-3.5 h-3.5" />
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center justify-between gap-2">
-                              <p className="text-xs font-semibold text-gurukul-dark">{item.title}</p>
-                              <span className="text-[10px] text-slate-400 shrink-0">{timeAgo(item.createdAt)}</span>
+                              <p className="text-[11px] font-medium text-gurukul-dark">{item.title}</p>
+                              <span className="text-[9px] text-neutral-400 shrink-0">{timeAgo(item.createdAt)}</span>
                             </div>
-                            <p className="text-[11px] text-slate-500 truncate mt-0.5">{item.detail}</p>
+                            <p className="text-[10px] text-neutral-400 truncate mt-0.5">{item.detail}</p>
                           </div>
                         </button>
                       </li>

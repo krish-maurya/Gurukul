@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { CheckCircle2, AlertTriangle, ArrowLeft, Send, RotateCcw } from "lucide-react";
+import { ArrowLeft, Send, RotateCcw, Loader2 } from "lucide-react";
 
 interface StudentRollInfo {
   rollNumber: number;
@@ -37,100 +37,93 @@ export function ReviewModal({
   const presentCount = students.length - absentRolls.length;
 
   return (
-    <div className="fixed inset-0 z-50 bg-gurukul-dark/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl border border-gurukul-gray shadow-floating max-w-lg w-full overflow-hidden animate-in fade-in zoom-in duration-150">
+    <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-[2px] flex items-center justify-center p-4 animate-fade-in">
+      <div className="bg-white rounded-xl border border-neutral-200 shadow-modal max-w-md w-full overflow-hidden animate-scale-in">
         {/* Header */}
-        <div className="p-6 border-b border-gurukul-gray bg-slate-50 flex items-center justify-between">
+        <div className="p-4 border-b border-neutral-200 flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold text-gurukul-dark">
-                {isEditMode ? "Update Attendance Review" : "Attendance Final Review"}
-              </h3>
-              <span className="text-[10px] bg-gurukul-tech text-white font-bold px-2 py-0.5 rounded">
-                Review & Submit
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-1">
-              {grade} (Sec {section}) • Daily attendance • {date}
+            <h3 className="text-sm font-semibold text-gurukul-dark">
+              {isEditMode ? "Update Review" : "Confirm Attendance"}
+            </h3>
+            <p className="text-[10px] text-neutral-400 mt-0.5">
+              {grade} (Sec {section}) &middot; {date}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-200 transition-colors"
+            className="p-1.5 rounded-md text-neutral-400 hover:bg-neutral-100 transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        {/* Content Body */}
-        <div className="p-6 space-y-5">
-          {/* Summary Pills */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-center">
-              <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Present Count</p>
-              <p className="text-2xl font-bold text-emerald-900 mt-1">{presentCount}</p>
+        {/* Body */}
+        <div className="p-4 space-y-4">
+          {/* Summary */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-3 rounded-lg bg-neutral-50 border border-neutral-200 text-center">
+              <p className="text-[9px] font-medium text-neutral-500 uppercase tracking-wider">Present</p>
+              <p className="text-lg font-bold text-gurukul-dark mt-0.5">{presentCount}</p>
             </div>
-            <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-center">
-              <p className="text-xs font-semibold text-rose-700 uppercase tracking-wider">Absent Count</p>
-              <p className="text-2xl font-bold text-rose-900 mt-1">{absentRolls.length}</p>
+            <div className="p-3 rounded-lg bg-neutral-50 border border-neutral-200 text-center">
+              <p className="text-[9px] font-medium text-neutral-500 uppercase tracking-wider">Absent</p>
+              <p className="text-lg font-bold text-gurukul-dark mt-0.5">{absentRolls.length}</p>
             </div>
           </div>
 
-          {/* Absentee List Breakdown */}
+          {/* Absentee List */}
           <div>
-            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2">
-              Marked Absent Absentees ({absentRolls.length}):
-            </label>
+            <p className="text-[10px] font-medium text-neutral-500 uppercase tracking-wider mb-2">
+              Absent Students ({absentRolls.length})
+            </p>
 
             {absentRolls.length > 0 ? (
-              <div className="max-h-48 overflow-y-auto border border-rose-200 bg-rose-50/40 rounded-xl divide-y divide-rose-100">
+              <div className="max-h-40 overflow-y-auto border border-neutral-200 rounded-lg divide-y divide-neutral-100 custom-scrollbar">
                 {absentStudents.map((s) => (
-                  <div key={s.id} className="p-3 flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-3">
-                      <span className="w-7 h-7 rounded-lg bg-rose-600 text-white font-bold flex items-center justify-center text-xs">
+                  <div key={s.id} className="p-2.5 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-6 h-6 rounded-md bg-gurukul-dark text-white font-bold flex items-center justify-center text-[10px]">
                         #{s.rollNumber}
                       </span>
-                      <span className="font-semibold text-gurukul-dark">{s.name}</span>
+                      <span className="text-[11px] font-medium text-gurukul-dark">{s.name}</span>
                     </div>
-                    <span className="text-[10px] bg-rose-200 text-rose-900 font-bold px-2 py-0.5 rounded uppercase">
-                      ABSENT
-                    </span>
+                    <span className="badge-default text-[9px]">ABSENT</span>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-center text-xs text-emerald-800 font-medium">
-                🎉 Perfect Attendance! All {students.length} students are present today.
+              <div className="p-3 bg-neutral-50 border border-neutral-200 rounded-lg text-center text-xs text-neutral-500">
+                All {students.length} students are present.
               </div>
             )}
           </div>
 
-          <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-[11px] text-slate-600">
-            Attendance for all {students.length} students will be saved together when you submit.
-          </div>
+          <p className="text-[10px] text-neutral-400">
+            Attendance for {students.length} students will be saved.
+          </p>
         </div>
 
-        {/* Footer Actions */}
-        <div className="p-5 border-t border-gurukul-gray bg-slate-50 flex items-center justify-between gap-3">
+        {/* Footer */}
+        <div className="p-4 border-t border-neutral-200 flex items-center justify-between gap-3">
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="text-xs font-semibold text-slate-600 hover:bg-slate-200 px-4 py-2.5 rounded-lg transition-colors border border-gurukul-gray"
+            className="btn-secondary btn-sm"
           >
-            Go Back & Edit
+            Go Back
           </button>
 
           <button
             onClick={onConfirmSubmit}
             disabled={isSubmitting}
-            className="bg-gurukul-tech hover:bg-gurukul-tech/90 text-white font-bold text-xs px-6 py-2.5 rounded-lg shadow-sm transition-all duration-150 flex items-center gap-2 disabled:opacity-50"
+            className="btn-primary btn-sm"
           >
             {isSubmitting ? (
-              <RotateCcw className="w-4 h-4 animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
             ) : (
-              <Send className="w-4 h-4" />
+              <Send className="w-3.5 h-3.5" />
             )}
-            <span>{isEditMode ? "Confirm & Update" : "Confirm & Write Record"}</span>
+            <span>{isEditMode ? "Update" : "Submit"}</span>
           </button>
         </div>
       </div>

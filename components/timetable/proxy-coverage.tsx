@@ -162,18 +162,18 @@ export function ProxyCoverage({
   }
 
   return (
-    <div className="space-y-6">
-      <section className="bg-white rounded-xl border border-gurukul-gray p-5 shadow-subtle">
+    <div className="space-y-6 animate-fade-in">
+      <section className="card p-5">
         <div className="flex items-center gap-2 mb-4">
-          <UserPlus className="w-4 h-4 text-gurukul-tech" />
-          <h2 className="font-semibold text-gurukul-dark">Teacher Absence & Coverage Dispatch</h2>
+          <UserPlus className="w-4 h-4 text-gurukul-muted" />
+          <h2 className="text-sm font-semibold text-gurukul-dark">Teacher Absence & Coverage Dispatch</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <select
             aria-label="Teacher"
             value={teacherId}
             onChange={(event) => setTeacherId(event.target.value)}
-            className="rounded-lg border border-slate-200 px-3 py-2 text-sm bg-white"
+            className="select"
           >
             {teachers.map((teacher) => (
               <option key={teacher.id} value={teacher.id}>
@@ -186,25 +186,25 @@ export function ProxyCoverage({
             type="date"
             value={date}
             onChange={(event) => handleDateChange(event.target.value)}
-            className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            className="input"
           />
           <input
             aria-label="Reason"
             value={reason}
             onChange={(event) => setReason(event.target.value)}
             placeholder="Optional reason (e.g. Medical leave)"
-            className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            className="input"
           />
           <button
             onClick={reportAbsence}
             disabled={busy || !teacherId}
-            className="rounded-lg bg-gurukul-tech hover:bg-gurukul-tech/90 text-white text-sm font-semibold px-4 py-2 disabled:opacity-50 flex items-center justify-center gap-2 transition-colors"
+            className="btn-primary flex items-center justify-center gap-2"
           >
             {busy && <Loader2 className="w-4 h-4 animate-spin" />}
             <span>Mark absent & find coverage</span>
           </button>
         </div>
-        {message && <p className="mt-3 text-xs text-slate-600 font-medium">{message}</p>}
+        {message && <p className="mt-3 text-xs text-gurukul-ocean font-medium">{message}</p>}
       </section>
 
       {lectures.map((lecture) => {
@@ -213,21 +213,21 @@ export function ProxyCoverage({
         const showRecommendations = !isAssigned || isReOpening;
 
         return (
-          <section key={lecture.proxyAssignmentId} className="bg-white rounded-xl border border-gurukul-gray p-5 shadow-subtle space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 border-b border-slate-100 pb-4">
+          <section key={lecture.proxyAssignmentId} className="card p-5 space-y-4 animate-slide-up">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 border-b border-gurukul-gray pb-4">
               <div>
-                <h3 className="font-semibold text-gurukul-dark">
+                <h3 className="text-sm font-semibold text-gurukul-dark">
                   {lecture.grade} · {lecture.subject.name}
                 </h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  {lecture.day}, Period {lecture.period} · {lecture.room.roomNumber} · Originally assigned to: <span className="font-semibold text-slate-700">{lecture.absentTeacher.name}</span>
+                <p className="text-xs text-gurukul-ocean mt-1">
+                  {lecture.day}, Period {lecture.period} · {lecture.room.roomNumber} · Originally assigned to: <span className="font-medium text-gurukul-dark">{lecture.absentTeacher.name}</span>
                 </p>
               </div>
               <span
                 className={
                   isAssigned
-                    ? "text-xs font-semibold bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full border border-emerald-200 self-start"
-                    : "text-xs font-semibold bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full border border-amber-200 self-start"
+                    ? "badge-success self-start"
+                    : "badge-warning self-start"
                 }
               >
                 {isAssigned ? "Coverage Assigned" : "Awaiting Selection"}
@@ -236,19 +236,19 @@ export function ProxyCoverage({
 
             {!showRecommendations ? (
               /* Clean Assigned State Card - Other suggested teachers are hidden once selected */
-              <div className="p-4 bg-emerald-50/80 border border-emerald-200 rounded-lg flex items-center justify-between">
+              <div className="p-4 bg-neutral-50 border border-gurukul-gray rounded-lg flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0">
-                    <Check className="w-5 h-5 text-emerald-700" />
+                  <div className="w-9 h-9 rounded-full bg-white border border-neutral-200/80 text-gurukul-dark flex items-center justify-center shrink-0">
+                    <Check className="w-5 h-5" />
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-emerald-700 tracking-wider block">
+                    <span className="text-[10px] uppercase font-medium text-gurukul-muted tracking-wider block">
                       Covering Proxy Teacher Assigned
                     </span>
-                    <h4 className="text-sm font-bold text-gurukul-dark">
+                    <h4 className="text-sm font-semibold text-gurukul-dark">
                       {lecture.assignedProxyTeacher?.name || "Selected Proxy Teacher"}
                     </h4>
-                    <p className="text-[11px] text-slate-500">
+                    <p className="text-[11px] text-gurukul-ocean">
                       {lecture.assignedProxyTeacher?.department ? `${lecture.assignedProxyTeacher.department} · ` : ""}Covering for {lecture.absentTeacher.name} on {date} (Period {lecture.period})
                     </p>
                   </div>
@@ -256,7 +256,7 @@ export function ProxyCoverage({
                 <button
                   disabled={busy}
                   onClick={() => reOpenSelection(lecture.proxyAssignmentId)}
-                  className="text-xs text-slate-600 hover:text-gurukul-tech underline font-medium px-3 py-1.5 rounded hover:bg-white transition-colors"
+                  className="btn-ghost text-xs px-3 py-1.5"
                 >
                   Change Teacher
                 </button>
@@ -266,14 +266,14 @@ export function ProxyCoverage({
               lecture.recommendations.length > 0 ? (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                      <Sparkles className="w-3.5 h-3.5 text-gurukul-tech" />
-                      <span>Deterministic Top Proxy Candidates:</span>
+                    <div className="flex items-center gap-1.5 text-xs text-gurukul-ocean font-medium">
+                      <Sparkles className="w-3.5 h-3.5 text-gurukul-muted" />
+                      <span>Top Proxy Candidates:</span>
                     </div>
                     {isAssigned && (
                       <button
                         onClick={() => setReOpening((prev) => ({ ...prev, [lecture.proxyAssignmentId]: false }))}
-                        className="text-xs text-slate-500 hover:text-slate-700 underline"
+                        className="text-xs text-gurukul-ocean hover:text-gurukul-dark transition-colors"
                       >
                         Cancel Reassignment
                       </button>
@@ -281,24 +281,24 @@ export function ProxyCoverage({
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {lecture.recommendations.map((candidate, index) => (
-                      <article key={candidate.teacherId} className="rounded-lg border border-slate-200 p-4 bg-slate-50/50 flex flex-col justify-between">
+                      <article key={candidate.teacherId} className="rounded-lg border border-neutral-200/80 p-4 bg-white flex flex-col justify-between hover:border-neutral-300 transition-colors">
                         <div>
                           <div className="flex justify-between items-start gap-2">
-                            <h4 className="font-semibold text-sm text-gurukul-dark">{candidate.teacherName}</h4>
-                            <span className="text-xs font-bold text-gurukul-tech bg-gurukul-tech/10 px-2 py-0.5 rounded">
+                            <h4 className="font-medium text-sm text-gurukul-dark">{candidate.teacherName}</h4>
+                            <span className="badge-default">
                               {candidate.score}/100
                             </span>
                           </div>
-                          <p className="text-[11px] text-slate-500 mt-1">
+                          <p className="text-[11px] text-gurukul-ocean mt-1">
                             Rank #{index + 1} · {candidate.department ?? "Department unavailable"}
                           </p>
-                          <p className="text-[11px] text-slate-500">
+                          <p className="text-[11px] text-gurukul-ocean">
                             {candidate.currentLectures} lecture{candidate.currentLectures === 1 ? "" : "s"} today · {candidate.currentProxies} proxy assignment{candidate.currentProxies === 1 ? "" : "s"}
                           </p>
-                          <ul className="mt-3 space-y-1 text-xs text-slate-600">
+                          <ul className="mt-3 space-y-1 text-xs text-gurukul-ocean">
                             {candidate.reasons.map((item) => (
                               <li key={item} className="flex items-center gap-1.5">
-                                <span className="text-emerald-600 font-bold">✓</span>
+                                <span className="text-gurukul-dark font-medium">✓</span>
                                 <span>{item}</span>
                               </li>
                             ))}
@@ -307,7 +307,7 @@ export function ProxyCoverage({
                         <button
                           disabled={busy}
                           onClick={() => selectProxy(lecture.proxyAssignmentId, candidate.teacherId)}
-                          className="mt-4 w-full rounded-md bg-gurukul-dark hover:bg-gurukul-dark/90 text-white text-xs font-semibold py-2 disabled:opacity-40 transition-colors"
+                          className="btn-primary mt-4 w-full"
                         >
                           Select Teacher
                         </button>
@@ -316,7 +316,7 @@ export function ProxyCoverage({
                   </div>
                 </div>
               ) : (
-                <p className="pt-2 text-sm text-amber-700">
+                <p className="pt-2 text-sm text-gurukul-ocean">
                   No eligible teacher meets the configured workload and availability constraints.
                 </p>
               )
@@ -326,16 +326,16 @@ export function ProxyCoverage({
       })}
 
       {conflicts.length > 0 && (
-        <section className="bg-white rounded-xl border border-rose-200 p-5 shadow-subtle">
+        <section className="card p-5 border-red-200">
           <div className="flex gap-2">
-            <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0" />
+            <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
             <div>
-              <h2 className="font-semibold text-rose-800">Room conflicts flagged on schedule</h2>
+              <h2 className="text-sm font-semibold text-gurukul-dark">Room conflicts flagged on schedule</h2>
               {conflicts.map((conflict) => (
-                <div key={`${conflict.timetableSlotId}-${conflict.type}`} className="mt-3 text-sm text-slate-700">
-                  <p className="font-medium">{conflict.description}</p>
+                <div key={`${conflict.timetableSlotId}-${conflict.type}`} className="mt-3 text-sm text-gurukul-ocean">
+                  <p className="font-medium text-gurukul-dark">{conflict.description}</p>
                   {conflict.alternativeRooms.length > 0 && (
-                    <p className="text-xs mt-1 text-slate-500">
+                    <p className="text-xs mt-1 text-gurukul-muted">
                       Alternative rooms: {conflict.alternativeRooms.map((room) => room.roomNumber).join(", ")}
                     </p>
                   )}
@@ -347,7 +347,7 @@ export function ProxyCoverage({
       )}
 
       {lectures.length > 0 && conflicts.length === 0 && (
-        <div className="text-xs text-emerald-700 flex items-center gap-2">
+        <div className="text-xs text-gurukul-dark flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4" />
           <span>No room conflicts detected for the selected day.</span>
         </div>

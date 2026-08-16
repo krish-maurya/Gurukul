@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ShieldAlert, ShieldCheck, Lock, CheckCircle, XCircle } from "lucide-react";
+import { ShieldAlert, ShieldCheck, CheckCircle, XCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth/session-context";
 
 interface PermissionRow {
@@ -48,28 +48,24 @@ export default function AdminRolesPage() {
   const { currentUser, isAdmin } = useAuth();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="border-b border-gurukul-gray pb-5 flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-gurukul-dark tracking-tight">Audit & Access Control (RBAC)</h1>
-            <span className="text-[10px] bg-gurukul-dark text-white font-bold px-2 py-0.5 rounded uppercase">
-              Security Matrix
-            </span>
-          </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Role-Based Access Control matrix governing system boundaries between Executive Admin and Teaching Staff.
-          </p>
+      <div className="border-b border-gurukul-gray pb-5">
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-bold text-gurukul-dark tracking-tight">Audit & Access Control</h1>
+          <span className="badge-dark">RBAC</span>
         </div>
+        <p className="text-xs text-gurukul-ocean mt-1.5">
+          Role-Based Access Control matrix governing system boundaries between Executive Admin and Teaching Staff.
+        </p>
       </div>
 
       {!isAdmin && (
-        <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3 text-xs text-amber-800">
-          <ShieldAlert className="w-5 h-5 text-amber-600 flex-shrink-0" />
+        <div className="flex items-start gap-3 p-4 bg-gurukul-highlight border border-neutral-200/80 rounded-xl text-xs">
+          <ShieldAlert className="w-5 h-5 text-gurukul-ocean flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-bold">Restricted View (Staff Role Active)</p>
-            <p className="text-amber-700 mt-0.5">
+            <p className="font-semibold text-gurukul-dark">Restricted View (Staff Role Active)</p>
+            <p className="text-gurukul-ocean mt-0.5">
               You are currently viewing this page in Staff simulation mode. Use the Role Simulator pill in the header to switch to Administrator mode.
             </p>
           </div>
@@ -77,56 +73,56 @@ export default function AdminRolesPage() {
       )}
 
       {/* Permission Matrix Table */}
-      <div className="bg-white rounded-xl border border-gurukul-gray shadow-subtle overflow-hidden">
-        <div className="p-5 border-b border-gurukul-gray bg-slate-50 flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-semibold text-gurukul-dark">Access Permission Boundaries</h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Strict RBAC enforcement across all API endpoints and server actions.
-            </p>
-          </div>
+      <div className="card overflow-hidden">
+        <div className="px-5 py-4 border-b border-neutral-200/80 bg-gurukul-white">
+          <h3 className="text-sm font-semibold text-gurukul-dark">Access Permission Boundaries</h3>
+          <p className="text-xs text-gurukul-ocean mt-0.5">
+            Strict RBAC enforcement across all API endpoints and server actions.
+          </p>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-100/70 border-b border-gurukul-gray text-slate-600 font-semibold uppercase tracking-wider text-[10px]">
-              <tr>
-                <th className="px-6 py-3">Permission / Capability</th>
-                <th className="px-6 py-3">Scope Description</th>
-                <th className="px-6 py-3 text-center">Administrator Role</th>
-                <th className="px-6 py-3 text-center">Staff / Faculty Role</th>
+            <thead>
+              <tr className="bg-gurukul-highlight border-b border-neutral-200/80">
+                <th className="px-5 py-3 text-[10px] font-semibold uppercase tracking-wider text-gurukul-muted">Permission / Capability</th>
+                <th className="px-5 py-3 text-[10px] font-semibold uppercase tracking-wider text-gurukul-muted">Scope Description</th>
+                <th className="px-5 py-3 text-[10px] font-semibold uppercase tracking-wider text-gurukul-muted text-center">Administrator</th>
+                <th className="px-5 py-3 text-[10px] font-semibold uppercase tracking-wider text-gurukul-muted text-center">Staff / Faculty</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gurukul-gray">
+            <tbody className="divide-y divide-neutral-100">
               {PERMISSION_MATRIX.map((row) => (
-                <tr key={row.permission} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="px-6 py-4 font-semibold text-gurukul-dark flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-gurukul-tech" />
-                    <span>{row.permission}</span>
+                <tr key={row.permission} className="hover:bg-gurukul-highlight/50 transition-colors">
+                  <td className="px-5 py-4 font-medium text-gurukul-dark">
+                    <span className="flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4 text-gurukul-dark" />
+                      <span>{row.permission}</span>
+                    </span>
                   </td>
-                  <td className="px-6 py-4 text-slate-600 max-w-sm">{row.description}</td>
-                  <td className="px-6 py-4 text-center">
+                  <td className="px-5 py-4 text-gurukul-ocean max-w-sm">{row.description}</td>
+                  <td className="px-5 py-4 text-center">
                     {row.admin ? (
-                      <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full font-bold text-[10px]">
-                        <CheckCircle className="w-3 h-3 text-emerald-600" />
+                      <span className="badge-dark gap-1">
+                        <CheckCircle className="w-3 h-3" />
                         Allowed
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full font-bold text-[10px]">
-                        <XCircle className="w-3 h-3 text-slate-400" />
+                      <span className="badge-default gap-1">
+                        <XCircle className="w-3 h-3" />
                         Denied
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-center">
+                  <td className="px-5 py-4 text-center">
                     {row.staff ? (
-                      <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full font-bold text-[10px]">
-                        <CheckCircle className="w-3 h-3 text-emerald-600" />
+                      <span className="badge-dark gap-1">
+                        <CheckCircle className="w-3 h-3" />
                         Allowed
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full font-bold text-[10px]">
-                        <XCircle className="w-3 h-3 text-slate-400" />
+                      <span className="badge-default gap-1">
+                        <XCircle className="w-3 h-3" />
                         Restricted
                       </span>
                     )}

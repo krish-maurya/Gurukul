@@ -62,47 +62,51 @@ export default function AcceptInvitePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gurukul-dark flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gurukul-white flex items-center justify-center p-6 animate-fade-in">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-gurukul-tech/20 text-gurukul-tech flex items-center justify-center mx-auto mb-4">
+          <div className="w-14 h-14 rounded-2xl bg-gurukul-dark text-white flex items-center justify-center mx-auto mb-4">
             <GraduationCap className="w-7 h-7" />
           </div>
-          <h1 className="text-2xl font-bold text-white">Join GURUKUL</h1>
-          <p className="text-xs text-slate-400 mt-1">Activate your staff account</p>
+          <h1 className="text-2xl font-bold text-gurukul-dark tracking-tight">Join GURUKUL</h1>
+          <p className="text-xs text-gurukul-ocean mt-1">Activate your staff account</p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-xl">
+        <div className="card p-6">
           {isLoading ? (
-            <p className="text-sm text-slate-500 text-center py-6">Checking invitation...</p>
+            <div className="flex items-center justify-center py-6">
+              <div className="page-loader-spinner" />
+            </div>
           ) : loadError ? (
             <div className="text-center py-6">
-              <AlertCircle className="w-10 h-10 text-red-400 mx-auto mb-3" />
-              <p className="text-sm font-semibold text-slate-700">{loadError}</p>
-              <p className="text-xs text-slate-400 mt-2">Ask your administrator for a new invitation link.</p>
+              <div className="w-10 h-10 rounded-full bg-gurukul-highlight border border-neutral-200 flex items-center justify-center mx-auto mb-3">
+                <AlertCircle className="w-5 h-5 text-gurukul-ocean" />
+              </div>
+              <p className="text-sm font-semibold text-gurukul-dark">{loadError}</p>
+              <p className="text-xs text-gurukul-ocean mt-2">Ask your administrator for a new invitation link.</p>
             </div>
           ) : invite ? (
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs space-y-1">
-                <div className="flex items-center gap-2 text-gurukul-tech font-semibold">
+              <div className="bg-gurukul-highlight border border-neutral-200/80 rounded-lg p-3 text-xs space-y-1">
+                <div className="flex items-center gap-2 text-gurukul-dark font-semibold">
                   <ShieldCheck className="w-4 h-4" />
                   <span>Invitation verified</span>
                 </div>
-                <p className="text-slate-600"><strong>{invite.name}</strong> · {invite.email}</p>
-                <p className="text-slate-500">{invite.department || invite.role}</p>
+                <p className="text-gurukul-ocean"><strong className="text-gurukul-dark">{invite.name}</strong> · {invite.email}</p>
+                <p className="text-gurukul-muted">{invite.department || invite.role}</p>
               </div>
 
               {error && (
-                <div className="flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5">
+                <div className="flex items-center gap-2 text-xs text-gurukul-dark bg-gurukul-highlight border border-neutral-200 rounded-lg px-3 py-2.5">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
 
               <div>
-                <label className="text-xs font-semibold text-slate-600 mb-1.5 block">Create Password</label>
+                <label className="text-xs font-medium text-gurukul-dark mb-1.5 block">Create Password</label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gurukul-muted" />
                   <input
                     type="password"
                     required
@@ -111,15 +115,15 @@ export default function AcceptInvitePage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="At least 8 characters"
-                    className="w-full text-sm pl-9 pr-3 py-2.5 rounded-lg border border-slate-300 focus:border-gurukul-tech focus:outline-none"
+                    className="input pl-9"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-600 mb-1.5 block">Confirm Password</label>
+                <label className="text-xs font-medium text-gurukul-dark mb-1.5 block">Confirm Password</label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gurukul-muted" />
                   <input
                     type="password"
                     required
@@ -127,7 +131,7 @@ export default function AcceptInvitePage() {
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
                     placeholder="Repeat password"
-                    className="w-full text-sm pl-9 pr-3 py-2.5 rounded-lg border border-slate-300 focus:border-gurukul-tech focus:outline-none"
+                    className="input pl-9"
                   />
                 </div>
               </div>
@@ -135,7 +139,7 @@ export default function AcceptInvitePage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-gurukul-tech hover:bg-gurukul-tech/90 disabled:opacity-60 text-white font-semibold text-sm py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="btn-primary w-full"
               >
                 <CheckCircle className="w-4 h-4" />
                 <span>{isSubmitting ? "Activating..." : "Activate Account & Sign In"}</span>

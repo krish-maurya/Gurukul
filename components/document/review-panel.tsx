@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { CheckCircle, AlertTriangle, FileText, UserCheck, ShieldCheck, Edit3, ArrowLeft, Image as ImageIcon } from "lucide-react";
+import { CheckCircle, ArrowLeft, Image as ImageIcon, Edit3, FileText } from "lucide-react";
 import { DocumentRecordData } from "@/lib/document/ocr-engine";
 
 interface ReviewPanelProps {
@@ -11,7 +11,6 @@ interface ReviewPanelProps {
 }
 
 export function ReviewPanel({ document, onApprove, onBack }: ReviewPanelProps) {
-  // Generic: track ALL extracted fields (23-field admission schema)
   const [fields, setFields] = useState<Record<string, { value: string; confidence: number }>>(
     () => ({ ...document.extractedFields })
   );
@@ -48,7 +47,7 @@ export function ReviewPanel({ document, onApprove, onBack }: ReviewPanelProps) {
       [key]: {
         ...prev[key],
         value: newValue,
-        confidence: 100, // Editing manually marks field as 100% human verified
+        confidence: 100,
       },
     }));
   };
@@ -64,59 +63,58 @@ export function ReviewPanel({ document, onApprove, onBack }: ReviewPanelProps) {
   const lowConfidenceCount = Object.values(fields).filter((f) => f.confidence < 85).length;
 
   return (
-    <div className="bg-white rounded-xl border border-gurukul-gray shadow-card overflow-hidden">
+    <div className="bg-white rounded-xl border border-neutral-200/80 overflow-hidden">
       {/* Header Bar */}
-      <div className="px-6 py-4 border-b border-gurukul-gray bg-slate-50 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="px-5 py-3.5 border-b border-neutral-200 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
           {onBack && (
             <button
               onClick={onBack}
-              className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-200 transition-colors"
+              className="p-1 rounded-md text-neutral-400 hover:text-gurukul-dark hover:bg-neutral-100 transition-colors"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-3.5 h-3.5" />
             </button>
           )}
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-semibold text-gurukul-dark">{document.fileName}</h2>
+              <h2 className="text-sm font-semibold text-gurukul-dark">{document.fileName}</h2>
               <span
-                className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide ${
+                className={`text-[10px] px-2 py-0.5 rounded-full font-medium tracking-wide ${
                   lowConfidenceCount > 0
-                    ? "bg-amber-100 text-amber-700 border border-amber-200"
-                    : "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                    ? "bg-amber-50 text-amber-700 border border-amber-200/60"
+                    : "bg-neutral-100 text-neutral-600"
                 }`}
               >
-                {lowConfidenceCount > 0 ? `${lowConfidenceCount} Field(s) Blank / Review` : "High Confidence Ready"}
+                {lowConfidenceCount > 0 ? `${lowConfidenceCount} field(s) need review` : "High confidence"}
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Overall OCR Confidence Score: <span className="font-semibold text-gurukul-dark">{document.confidenceScore.toFixed(1)}%</span>
+            <p className="text-[11px] text-gurukul-ocean mt-0.5">
+              Confidence: <span className="font-medium text-gurukul-dark">{document.confidenceScore.toFixed(1)}%</span>
             </p>
           </div>
         </div>
 
         <button
           onClick={handleApprove}
-          className="bg-gurukul-tech hover:bg-gurukul-tech/90 text-white font-medium text-xs px-5 py-2.5 rounded-lg shadow-sm transition-all duration-150 flex items-center gap-2"
+          className="bg-gurukul-dark hover:bg-neutral-800 text-white font-medium text-xs px-4 py-2 rounded-lg transition-colors flex items-center gap-1.5"
         >
-          <CheckCircle className="w-4 h-4" />
-          <span>Approve & Create Student Record</span>
+          <CheckCircle className="w-3.5 h-3.5" />
+          <span>Approve & Create Record</span>
         </button>
       </div>
 
       {/* Side-by-Side Review Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 divide-y lg:divide-y-0 lg:divide-x divide-gurukul-gray h-[720px]">
-        {/* Left Column: Scanned Image Preview (Bigger Image) */}
-        <div className="lg:col-span-6 p-6 bg-slate-100 flex flex-col h-full overflow-hidden">
-          <div className="flex items-center justify-between mb-3 shrink-0">
-            <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
-              <ImageIcon className="w-3.5 h-3.5 text-gurukul-tech" />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 divide-y lg:divide-y-0 lg:divide-x divide-neutral-200 h-[720px]">
+        {/* Left Column: Scanned Image Preview */}
+        <div className="lg:col-span-6 p-5 bg-neutral-50 flex flex-col h-full overflow-hidden">
+          <div className="flex items-center justify-between mb-2.5 shrink-0">
+            <span className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
+              <ImageIcon className="w-3 h-3" />
               <span>Scanned Document</span>
             </span>
-            
           </div>
 
-          <div className="flex-1 bg-white rounded-lg border border-slate-300 p-3 flex items-center justify-center shadow-xs overflow-hidden relative">
+          <div className="flex-1 bg-white rounded-lg border border-neutral-200 p-2.5 flex items-center justify-center overflow-hidden relative">
             {document.fileUrl ? (
               <img
                 src={document.fileUrl}
@@ -125,31 +123,30 @@ export function ReviewPanel({ document, onApprove, onBack }: ReviewPanelProps) {
               />
             ) : (
               <div className="text-center p-8">
-                <FileText className="w-16 h-16 text-slate-300 mx-auto mb-2" />
-                <div className="text-sm font-bold text-gurukul-dark">GURUKUL ACADEMY</div>
-                <div className="text-xs text-slate-500">Official Student Intake Record</div>
+                <FileText className="w-12 h-12 text-neutral-200 mx-auto mb-2" />
+                <div className="text-xs font-semibold text-gurukul-dark">GURUKUL ACADEMY</div>
+                <div className="text-[11px] text-neutral-400">Official Student Intake Record</div>
               </div>
             )}
           </div>
 
-          <div className="mt-3 pt-2 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-400 shrink-0">
+          <div className="mt-2.5 pt-2 border-t border-neutral-200 flex items-center justify-between text-[10px] text-neutral-400 shrink-0">
             <span>Uploaded scan</span>
-            <span className="text-gurukul-tech font-medium">Original Upload</span>
+            <span className="text-neutral-500 font-medium">Original Upload</span>
           </div>
         </div>
 
-        {/* Right Column: Interactive Extracted Fields Form (Only Fields Scrollable) */}
-        <div className="lg:col-span-6 p-6 bg-white flex flex-col h-full overflow-hidden justify-between">
+        {/* Right Column: Interactive Extracted Fields Form */}
+        <div className="lg:col-span-6 p-5 bg-white flex flex-col h-full overflow-hidden justify-between">
           <div className="flex flex-col h-full min-h-0">
-            <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100 shrink-0">
-              <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-neutral-100 shrink-0">
+              <h3 className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
                 Extracted Fields
               </h3>
-              <span className="text-xs text-slate-400">Edit any field inline</span>
+              <span className="text-[11px] text-neutral-400">Edit inline</span>
             </div>
 
-            {/* ONLY this container is scrollable */}
-            <div className="flex-1 overflow-y-auto pr-2 space-y-3">
+            <div className="flex-1 overflow-y-auto pr-1 space-y-2">
               {Object.entries(fields).map(([key, fieldData]) => {
                 const label =
                   FIELD_LABELS[key] ||
@@ -160,38 +157,38 @@ export function ReviewPanel({ document, onApprove, onBack }: ReviewPanelProps) {
                 return (
                   <div
                     key={key}
-                    className={`p-3 rounded-lg border transition-all ${
+                    className={`p-2.5 rounded-lg border transition-colors ${
                       isBlank
-                        ? "border-amber-300 bg-amber-50/40 shadow-xs"
+                        ? "border-amber-200/80 bg-amber-50"
                         : isHighConfidence
-                        ? "border-slate-200 bg-slate-50/50"
-                        : "border-slate-300 bg-slate-50"
+                        ? "border-neutral-200/80 bg-neutral-50/50"
+                        : "border-neutral-200 bg-white"
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-xs font-medium text-slate-700 flex items-center gap-1.5">
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-[11px] font-medium text-neutral-600 flex items-center gap-1.5">
                         <span>{label}</span>
                         {isBlank && (
-                          <span className="text-[10px] text-amber-700 font-bold bg-amber-100 px-1.5 py-0.2 rounded">
+                          <span className="text-[9px] text-amber-600 font-medium bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/60">
                             Needs input
                           </span>
                         )}
                       </label>
 
                       <span
-                        className={`text-[10px] px-2 py-0.5 rounded font-semibold transition-colors ${
+                        className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
                           isBlank
-                            ? "bg-amber-100 text-amber-800 font-bold"
+                            ? "bg-amber-50 text-amber-700"
                             : isHighConfidence
-                            ? "bg-gurukul-tech text-white"
-                            : "bg-gurukul-gray text-slate-700 font-bold"
+                            ? "bg-neutral-100 text-neutral-600"
+                            : "bg-neutral-50 text-neutral-500"
                         }`}
                       >
                         {isBlank
                           ? "Empty"
                           : isHighConfidence
-                          ? `${fieldData.confidence}% High Conf`
-                          : `${fieldData.confidence}% Confidence`}
+                          ? `${fieldData.confidence}%`
+                          : `${fieldData.confidence}%`}
                       </span>
                     </div>
 
@@ -200,14 +197,14 @@ export function ReviewPanel({ document, onApprove, onBack }: ReviewPanelProps) {
                         type="text"
                         value={fieldData.value}
                         onChange={(e) => handleFieldChange(key, e.target.value)}
-                        placeholder="[Not detected in image — enter manually]"
-                        className={`w-full text-xs py-1.5 px-3 rounded border font-medium transition-colors ${
+                        placeholder="[Not detected — enter manually]"
+                        className={`w-full text-xs py-1.5 px-2.5 rounded-md border transition-colors ${
                           isBlank
-                            ? "bg-white border-amber-400 text-gurukul-dark placeholder-slate-400 focus:border-gurukul-tech"
-                            : "bg-white border-slate-300 text-gurukul-dark focus:border-gurukul-tech"
+                            ? "bg-white border-amber-200/80 text-gurukul-dark placeholder-neutral-400 focus:border-neutral-400"
+                            : "bg-white border-neutral-200 text-gurukul-dark focus:border-neutral-400"
                         } focus:outline-none`}
                       />
-                      <Edit3 className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                      <Edit3 className="w-3 h-3 absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-300 pointer-events-none" />
                     </div>
                   </div>
                 );
@@ -215,15 +212,15 @@ export function ReviewPanel({ document, onApprove, onBack }: ReviewPanelProps) {
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between shrink-0">
-            <p className="text-xs text-slate-500">
-              Check the details above, edit anything that looks off, then approve.
+          <div className="mt-3 pt-2.5 border-t border-neutral-100 flex items-center justify-between shrink-0">
+            <p className="text-[11px] text-neutral-400">
+              Review details, edit if needed, then approve.
             </p>
             <button
               onClick={handleApprove}
-              className="bg-gurukul-tech hover:bg-gurukul-tech/90 text-white font-medium text-xs px-5 py-2.5 rounded-lg shadow-sm transition-all duration-150 flex items-center gap-2"
+              className="bg-gurukul-dark hover:bg-neutral-800 text-white font-medium text-xs px-4 py-2 rounded-lg transition-colors flex items-center gap-1.5"
             >
-              <CheckCircle className="w-4 h-4" />
+              <CheckCircle className="w-3.5 h-3.5" />
               <span>Approve & Create Record</span>
             </button>
           </div>

@@ -86,24 +86,24 @@ export function MasterTimetable({
   }
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-4 animate-slide-up">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div className="flex items-center gap-2">
-          <CalendarDays className="w-4 h-4 text-gurukul-tech" />
+          <CalendarDays className="w-4 h-4 text-gurukul-muted" />
           <div>
             <h2 className="text-sm font-semibold text-gurukul-dark">
               {isAdmin ? "Master Timetable Schedule" : "Approved Class Timetable"}
             </h2>
-            <p className="text-xs text-slate-500">
-              Active schedule viewing date: <span className="font-mono font-semibold text-slate-700">{date}</span>
-              {!isAdmin && <span className="ml-2 text-emerald-700 font-medium">✓ Official Approved Schedule</span>}
+            <p className="text-xs text-gurukul-ocean">
+              Active schedule viewing date: <span className="font-mono font-medium text-gurukul-dark">{date}</span>
+              {!isAdmin && <span className="ml-2 text-gurukul-dark font-medium">✓ Official Approved Schedule</span>}
             </p>
           </div>
         </div>
         <button
           onClick={fetchTimetable}
           disabled={loading || busy}
-          className="text-xs text-slate-600 hover:text-gurukul-tech px-2.5 py-1 rounded border border-slate-200 hover:border-gurukul-tech/40 bg-white flex items-center gap-1.5 self-start sm:self-auto transition-colors"
+          className="btn-ghost flex items-center gap-1.5 self-start sm:self-auto"
         >
           <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
           <span>Refresh schedule</span>
@@ -111,14 +111,14 @@ export function MasterTimetable({
       </div>
 
       {feedback && (
-        <div className="p-3 text-xs rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between">
+        <div className="p-3 text-xs rounded-lg bg-white border border-neutral-200/80 text-gurukul-dark flex items-center justify-between shadow-subtle">
           <span>{feedback}</span>
-          <button onClick={() => setFeedback(null)} className="font-bold ml-2">✕</button>
+          <button onClick={() => setFeedback(null)} className="font-medium ml-2 text-gurukul-muted hover:text-gurukul-dark transition-colors">✕</button>
         </div>
       )}
 
       {loading ? (
-        <div className="h-64 rounded-xl border border-gurukul-gray bg-white flex items-center justify-center text-sm text-slate-500 gap-2">
+        <div className="h-64 card flex items-center justify-center text-sm text-gurukul-ocean gap-2">
           <Loader2 className="w-4 h-4 animate-spin" />
           Loading timetable…
         </div>

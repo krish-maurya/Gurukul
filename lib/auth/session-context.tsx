@@ -75,10 +75,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-gurukul-dark flex items-center justify-center text-white text-xs motion-safe:animate-[fadeIn_.16s_ease-out]">
-        <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-gurukul-tech animate-ping" />
-          <span>Loading GURUKUL Session...</span>
+      <div className="min-h-screen bg-gurukul-white flex items-center justify-center text-xs animate-fade-in">
+        <div className="flex items-center gap-2 text-neutral-400">
+          <div className="w-3.5 h-3.5 border-2 border-neutral-200 border-t-neutral-600 rounded-full animate-spin" />
+          <span>Loading...</span>
         </div>
       </div>
     );

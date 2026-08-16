@@ -19,11 +19,11 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
     if (isTeacherRestrictedPage) router.replace("/students");
   }, [isTeacherRestrictedPage, router]);
 
+
   if (isPublicPage || !isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gurukul-dark text-white font-sans">
+      <div className="min-h-screen bg-white text-gurukul-dark font-sans">
         {children}
-        {/* Render LinkedIn-Style Copilot globally across public & app sections */}
         <ChatDrawer />
       </div>
     );
@@ -34,13 +34,12 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50 text-gurukul-dark antialiased">
+    <div className="flex min-h-screen bg-gurukul-white text-gurukul-dark antialiased">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <Header />
-        <main className="flex-1 p-8 overflow-y-auto">{children}</main>
+        <main className="flex-1 p-6 md:p-8 overflow-y-auto">{children}</main>
       </div>
-      {/* Render LinkedIn-Style Copilot floating at bottom right across all app pages */}
       <ChatDrawer />
     </div>
   );

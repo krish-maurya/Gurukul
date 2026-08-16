@@ -65,8 +65,8 @@ export function StructuredResults({
                     className={`copilot-profile-value ${
                       row.Field === "Status"
                         ? String(row.Value).toUpperCase() === "ADMITTED"
-                          ? "text-emerald-600"
-                          : "text-amber-600"
+                          ? "text-gurukul-dark font-semibold"
+                          : "text-gurukul-ocean"
                         : ""
                     }`}
                   >
@@ -82,7 +82,7 @@ export function StructuredResults({
       {!isProfile && rows.length > 0 && (
         <div className="copilot-table-container">
           <div className="copilot-table-header">
-            <Database className="h-3 w-3 text-gurukul-tech/70" />
+            <Database className="h-3 w-3 text-gurukul-muted" />
             <span>Verified Records</span>
           </div>
           <div className="copilot-table-scroll">
