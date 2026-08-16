@@ -29,13 +29,14 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const session = await requireSession();
-    if (!session.staffId) {
+    // Teachers submit for their classes; admins may submit for any class.
+    if (!session.staffId && session.role !== "ADMIN") {
       return NextResponse.json(
         { error: "Your account is not linked to a staff profile, so attendance cannot be recorded." },
         { status: 403 }
       );
     }
-    const staffId = session.staffId;
+    const staffId = session.staffId ?? null;
 
     const body = await req.json();
     const { grade, section = "A", date, entries } = body;

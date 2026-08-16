@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { ReviewModal } from "@/components/attendance/review-modal";
 import { SubmissionResultModal } from "@/components/attendance/submission-result-modal";
 import { useAuth } from "@/lib/auth/session-context";
@@ -10,9 +11,11 @@ import { PageLoader, SkeletonGrid } from "@/components/ui/loaders";
 interface StudentRollState { id: string; rollNumber: number; name: string; status: "PRESENT" | "ABSENT"; }
 type Result = { type: "success" | "error"; title: string; message: string };
 
-export default function AttendancePage() {
+function AttendanceContent() {
   const { currentUser } = useAuth();
-  const [grade, setGrade] = useState("Grade 10A");
+  const searchParams = useSearchParams();
+  const [grades, setGrades] = useState<string[]>([]);
+  const [grade, setGrade] = useState("");
   const [section] = useState("A");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [students, setStudents] = useState<StudentRollState[]>([]);
@@ -22,7 +25,22 @@ export default function AttendancePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
 
+  // Load MY classes (teacher: own timetable classes, admin: all) + default
   useEffect(() => {
+    fetch("/api/attendance/grades")
+      .then((r) => r.json())
+      .then((d) => {
+        const list: string[] = d.grades || [];
+        setGrades(list);
+        const fromUrl = searchParams.get("grade");
+        setGrade(fromUrl && list.includes(fromUrl) ? fromUrl : d.defaultGrade || list[0] || "");
+      })
+      .catch(() => setGrades([]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!grade) return;
     const controller = new AbortController();
     setIsLoading(true); setIsSubmitted(false); setStudents([]);
     Promise.all([
@@ -98,9 +116,10 @@ export default function AttendancePage() {
               onChange={(event) => setGrade(event.target.value)}
               className="select text-xs"
             >
-              <option value="Grade 10A">Grade 10A</option>
-              <option value="Grade 11B">Grade 11B</option>
-              <option value="Grade 12A">Grade 12A</option>
+              {grades.length === 0 && <option value="">Loading classes...</option>}
+              {grades.map((g) => (
+                <option key={g} value={g}>{g}</option>
+              ))}
             </select>
           </div>
           <div className="flex items-center gap-2">
@@ -122,7 +141,7 @@ export default function AttendancePage() {
       {isSubmitted && (
         <div className="flex items-center gap-2 card p-3 text-xs text-neutral-600">
           <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-          <span>Attendance for {grade} on {date} is saved.</span>
+          <span>Attendance for {grade} on {date} is already saved — tap <strong>Edit</strong> (top right) to make changes.</span>
         </div>
       )}
 
@@ -222,5 +241,14 @@ export default function AttendancePage() {
       )}
       {result && <SubmissionResultModal {...result} onClose={() => setResult(null)} />}
     </div>
+  );
+}
+
+
+export default function AttendancePage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-52 items-center justify-center text-xs text-neutral-400">Loading...</div>}>
+      <AttendanceContent />
+    </Suspense>
   );
 }

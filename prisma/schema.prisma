@@ -292,8 +292,8 @@ model AttendanceRecord {
   section          String            @default("A")
   date             String // YYYY-MM-DD
   period           Int               @default(1)
-  takenByTeacherId String
-  takenByTeacher   Staff             @relation(fields: [takenByTeacherId], references: [id])
+  takenByTeacherId String?
+  takenByTeacher   Staff?            @relation(fields: [takenByTeacherId], references: [id])
   status           String            @default("SUBMITTED") // SUBMITTED, DRAFT
   entries          AttendanceEntry[]
   createdAt        DateTime          @default(now())

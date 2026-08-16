@@ -28,7 +28,7 @@ export default function WelcomePage() {
       href: "/attendance",
       icon: ClipboardCheck,
       title: "Take Attendance",
-      description: "Pick your class and period, then mark today's attendance.",
+      description: "Your class and today's date are pre-selected - just mark and submit.",
     },
     {
       href: "/timetable",
