@@ -42,10 +42,10 @@ export function FileDropzone({ onFileSelect, isProcessing, ocrProgressStatus }: 
         <div>
           <h3 className="text-sm font-semibold text-gurukul-dark flex items-center gap-2">
             <FileText className="w-4 h-4 text-gurukul-tech" />
-            <span>Document Intake & Tesseract OCR Engine</span>
+            <span>Scan Admission Forms</span>
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Upload any original admission form image (PNG, JPG, WebP) to execute real Tesseract OCR extraction.
+            Upload a photo or scan of an admission form and the details are read automatically.
           </p>
         </div>
 
@@ -97,17 +97,17 @@ export function FileDropzone({ onFileSelect, isProcessing, ocrProgressStatus }: 
           Click to browse or drag & drop your original document image
         </p>
         <p className="text-xs text-slate-400 mt-1">
-          Supports PNG, JPG, JPEG, WebP, PDF files • Real Tesseract OCR Parsing
+          PNG, JPG or WebP work best
         </p>
 
         {isProcessing && (
           <div className="mt-4 p-3 bg-gurukul-tech/10 rounded-lg border border-gurukul-tech/20 flex flex-col items-center justify-center gap-1.5 text-xs text-gurukul-tech font-semibold animate-pulse">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-gurukul-tech" />
-              <span>{ocrProgressStatus || "Running Tesseract OCR & Field Extractor..."}</span>
+              <span>{ocrProgressStatus || "Reading the document..."}</span>
             </div>
             <p className="text-[10px] text-slate-500 font-normal">
-              Unmatched fields will be kept blank ("") as per strict system rules.
+              Anything the scan cannot read is left empty so you can fill it in during review.
             </p>
           </div>
         )}

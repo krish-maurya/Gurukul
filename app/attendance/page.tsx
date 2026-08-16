@@ -146,11 +146,11 @@ export default function AttendancePage() {
               Grid-Based Attendance Intake
             </h1>
             <span className="text-[10px] bg-gurukul-tech text-white font-bold px-2 py-0.5 rounded uppercase">
-              Single Transaction
+              Quick Save
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Tap roll numbers to toggle present/absent. Submitted in one atomic transaction without per-tap network chatter.
+            Tap a roll number to mark a student absent or present, then submit once when you are done.
           </p>
         </div>
 

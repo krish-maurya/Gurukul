@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 const MAX_RESULTS = 20;
 
 type SearchResult = {
@@ -30,25 +32,25 @@ export async function GET(request: NextRequest) {
     // deterministically shown before broader contains matches.
     const [startingStudents, matchingStudents, startingTeachers, matchingTeachers] = await Promise.all([
       prisma.student.findMany({
-        where: { name: { startsWith: query } },
+        where: { name: { startsWith: query, mode: "insensitive" } },
         select: { id: true, name: true, rollNumber: true, grade: true },
         orderBy: { name: "asc" },
         take: MAX_RESULTS,
       }),
       prisma.student.findMany({
-        where: { name: { contains: query } },
+        where: { name: { contains: query, mode: "insensitive" } },
         select: { id: true, name: true, rollNumber: true, grade: true },
         orderBy: { name: "asc" },
         take: MAX_RESULTS,
       }),
       includeTeachers ? prisma.staff.findMany({
-        where: { name: { startsWith: query } },
+        where: { name: { startsWith: query, mode: "insensitive" } },
         select: { id: true, name: true, email: true, department: true },
         orderBy: { name: "asc" },
         take: MAX_RESULTS,
       }) : Promise.resolve([] as TeacherSearchRecord[]),
       includeTeachers ? prisma.staff.findMany({
-        where: { name: { contains: query } },
+        where: { name: { contains: query, mode: "insensitive" } },
         select: { id: true, name: true, email: true, department: true },
         orderBy: { name: "asc" },
         take: MAX_RESULTS,

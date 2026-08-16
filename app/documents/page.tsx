@@ -281,7 +281,7 @@ export default function DocumentIntelligencePage() {
                         {doc.extractedFields.studentName.value ? (
                           `${doc.extractedFields.studentName.value} (${doc.extractedFields.grade.value || "Grade N/A"})`
                         ) : (
-                          <span className="text-amber-600 font-normal italic">[Student Name Unmatched]</span>
+                          <span className="text-amber-600 font-normal italic">[Name not detected]</span>
                         )}
                       </td>
                       <td className="px-6 py-4 text-right">

@@ -111,9 +111,9 @@ export function ReviewPanel({ document, onApprove, onBack }: ReviewPanelProps) {
           <div className="flex items-center justify-between mb-3 shrink-0">
             <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
               <ImageIcon className="w-3.5 h-3.5 text-gurukul-tech" />
-              <span>Original Image / Source Stream</span>
+              <span>Scanned Document</span>
             </span>
-            <span className="text-[11px] text-slate-400 font-mono">Tesseract Engine</span>
+            
           </div>
 
           <div className="flex-1 bg-white rounded-lg border border-slate-300 p-3 flex items-center justify-center shadow-xs overflow-hidden relative">
@@ -133,7 +133,7 @@ export function ReviewPanel({ document, onApprove, onBack }: ReviewPanelProps) {
           </div>
 
           <div className="mt-3 pt-2 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-400 shrink-0">
-            <span>Status: Scanned via Tesseract.js</span>
+            <span>Uploaded scan</span>
             <span className="text-gurukul-tech font-medium">Original Upload</span>
           </div>
         </div>
@@ -143,7 +143,7 @@ export function ReviewPanel({ document, onApprove, onBack }: ReviewPanelProps) {
           <div className="flex flex-col h-full min-h-0">
             <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100 shrink-0">
               <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                Extracted Fields (Blank if Not Found in Image)
+                Extracted Fields
               </h3>
               <span className="text-xs text-slate-400">Edit any field inline</span>
             </div>
@@ -173,7 +173,7 @@ export function ReviewPanel({ document, onApprove, onBack }: ReviewPanelProps) {
                         <span>{label}</span>
                         {isBlank && (
                           <span className="text-[10px] text-amber-700 font-bold bg-amber-100 px-1.5 py-0.2 rounded">
-                            Not Found in Image (Blank)
+                            Needs input
                           </span>
                         )}
                       </label>
@@ -188,7 +188,7 @@ export function ReviewPanel({ document, onApprove, onBack }: ReviewPanelProps) {
                         }`}
                       >
                         {isBlank
-                          ? "0% Unmatched"
+                          ? "Empty"
                           : isHighConfidence
                           ? `${fieldData.confidence}% High Conf`
                           : `${fieldData.confidence}% Confidence`}
@@ -217,7 +217,7 @@ export function ReviewPanel({ document, onApprove, onBack }: ReviewPanelProps) {
 
           <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between shrink-0">
             <p className="text-xs text-slate-500">
-              Human review verifies all extracted data before saving to student database.
+              Check the details above, edit anything that looks off, then approve.
             </p>
             <button
               onClick={handleApprove}

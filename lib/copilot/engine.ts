@@ -243,7 +243,7 @@ async function studentSearch(query: string, context: CopilotContext): Promise<As
   const students = await prisma.student.findMany({
     where: {
       ...(grade ? { grade } : {}),
-      ...(terms.length ? { AND: terms.map((term) => ({ name: { contains: term } })) } : {}),
+      ...(terms.length ? { AND: terms.map((term) => ({ name: { contains: term, mode: "insensitive" as const } })) } : {}),
     },
     select: { id: true, rollNumber: true, name: true, grade: true, status: true },
     take: 12,
@@ -372,7 +372,7 @@ async function attendance(query: string, context: CopilotContext): Promise<Assis
     const entries = await prisma.attendanceEntry.findMany({
       where: {
         attendanceRecord: { date, ...(effectiveGrade ? { grade: effectiveGrade } : {}) },
-        student: { AND: nameTermsList.map((name) => ({ name: { contains: name } })) },
+        student: { AND: nameTermsList.map((name) => ({ name: { contains: name, mode: "insensitive" as const } })) },
       },
       include: { student: { select: { name: true, grade: true, rollNumber: true } }, attendanceRecord: { select: { id: true, date: true, grade: true, status: true } } },
       take: 10,
@@ -402,7 +402,7 @@ async function attendance(query: string, context: CopilotContext): Promise<Assis
     const students = await prisma.student.findMany({
       where: {
         ...(effectiveGrade ? { grade: effectiveGrade } : {}),
-        AND: nameTermsList.map((name) => ({ name: { contains: name } })),
+        AND: nameTermsList.map((name) => ({ name: { contains: name, mode: "insensitive" as const } })),
       },
       select: { id: true, name: true, grade: true, rollNumber: true },
       take: 10,
@@ -473,7 +473,7 @@ async function fees(query: string, context: CopilotContext): Promise<AssistantRe
 async function documents(query: string, context: CopilotContext): Promise<AssistantResponse> {
   const terms = query.toLowerCase().split(/\W+/).filter((word) => word.length > 3 && !["what", "school", "policy", "about", "show"].includes(word)).slice(0, 4);
   const documents = await prisma.documentRecord.findMany({
-    where: { status: "APPROVED", ...(terms.length ? { OR: terms.flatMap((term) => [{ fileName: { contains: term } }, { rawText: { contains: term } }]) } : { documentType: "School Policy" }) },
+    where: { status: "APPROVED", ...(terms.length ? { OR: terms.flatMap((term) => [{ fileName: { contains: term, mode: "insensitive" as const } }, { rawText: { contains: term, mode: "insensitive" as const } }]) } : { documentType: "School Policy" }) },
     select: { id: true, fileName: true, rawText: true }, take: 3,
   });
   if (!documents.length) return { message: "I couldn't verify that policy from approved GURUKUL documents.", intent: "DOCUMENT_QUERY" };
@@ -538,8 +538,8 @@ async function timetable(query: string, context: CopilotContext): Promise<Assist
     ...(teacher ? { teacherId: teacher.id } : {}),
     ...(day ? { day } : {}),
     ...(period ? { period } : {}),
-    ...(room ? { room: { roomNumber: { contains: room } } } : {}),
-    ...(subjects.length ? { subject: { AND: subjects.map((term) => ({ name: { contains: term } })) } } : {}),
+    ...(room ? { room: { roomNumber: { contains: room, mode: "insensitive" as const } } } : {}),
+    ...(subjects.length ? { subject: { AND: subjects.map((term) => ({ name: { contains: term, mode: "insensitive" as const } })) } } : {}),
   };
 
   const slots = await prisma.timetableSlot.findMany({
@@ -665,8 +665,8 @@ async function staff(query: string, context: CopilotContext): Promise<AssistantR
 
   const staffMembers = await prisma.staff.findMany({
     where: {
-      ...(department ? { department: { contains: department } } : {}),
-      ...(terms.length ? { AND: terms.map((term) => ({ OR: [{ name: { contains: term } }, { department: { contains: term } }] })) } : {}),
+      ...(department ? { department: { contains: department, mode: "insensitive" as const } } : {}),
+      ...(terms.length ? { AND: terms.map((term) => ({ OR: [{ name: { contains: term, mode: "insensitive" as const } }, { department: { contains: term, mode: "insensitive" as const } }] })) } : {}),
     },
     include: { _count: { select: { timetableSlots: true } } },
     take: 15,

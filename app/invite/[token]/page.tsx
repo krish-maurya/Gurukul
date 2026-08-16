@@ -52,7 +52,7 @@ export default function AcceptInvitePage() {
       if (!res.ok) {
         setError(data.error || "Failed to activate account");
       } else {
-        window.location.href = "/"; // full reload so session context picks up the cookie
+        window.location.href = "/welcome"; // full reload so session context picks up the cookie
       }
     } catch {
       setError("Network error — please try again");

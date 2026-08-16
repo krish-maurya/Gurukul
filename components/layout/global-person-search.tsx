@@ -71,7 +71,9 @@ export function GlobalPersonSearch() {
   const selectResult = (result: SearchResult) => {
     setIsOpen(false);
     setQuery("");
-    router.push(result.type === "student" ? `/students/${result.id}` : `/staff/${result.id}`);
+    setQuery("");
+    // Open the person highlighted in their registry with the preview panel
+    router.push(result.type === "student" ? `/students?sel=${result.id}` : `/staff?sel=${result.id}`);
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {

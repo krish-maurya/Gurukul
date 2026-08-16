@@ -49,7 +49,7 @@ export function ReviewModal({
                 {isEditMode ? "Update Attendance Review" : "Attendance Final Review"}
               </h3>
               <span className="text-[10px] bg-gurukul-tech text-white font-bold px-2 py-0.5 rounded">
-                Single Transaction
+                Review & Submit
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
@@ -108,7 +108,7 @@ export function ReviewModal({
           </div>
 
           <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-[11px] text-slate-600">
-            🔒 <strong>Atomic Execution:</strong> On submission, attendance for all {students.length} students will be written in a single database transaction. No partial writes.
+            Attendance for all {students.length} students will be saved together when you submit.
           </div>
         </div>
 
