@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { requireSession, AuthError } from "@/lib/auth/server";
+import { sendMail, buildInviteEmail } from "@/lib/mail";
 
 export const dynamic = "force-dynamic";
 
@@ -9,9 +10,8 @@ const INVITE_EXPIRY_DAYS = 7;
 
 /**
  * POST /api/auth/invite  (ADMIN only)
- * Creates a Staff record + an invitation token. Returns the invite URL that
- * the admin shares with the teacher (no email service required — the link is
- * copied and sent over any channel).
+ * Creates a Staff record + an invitation token, then emails the invite link
+ * to the teacher via Brevo.
  */
 export async function POST(req: Request) {
   try {
@@ -66,10 +66,30 @@ export async function POST(req: Request) {
     });
 
     const origin = req.headers.get("origin") || `http://${req.headers.get("host") || "localhost:3000"}`;
+    const inviteUrl = `${origin}/invite/${result.invitation.token}`;
+
+    // Send the invitation email via Brevo
+    let emailSent = false;
+    try {
+      await sendMail({
+        to: { email, name },
+        subject: "You're invited to join Gurukul",
+        htmlContent: buildInviteEmail({
+          teacherName: name,
+          inviteUrl,
+          expiresInDays: INVITE_EXPIRY_DAYS,
+        }),
+      });
+      emailSent = true;
+    } catch (mailErr) {
+      // Log but don't fail the invitation — the URL is still valid
+      console.error("[api/auth/invite] email delivery failed:", mailErr);
+    }
 
     return NextResponse.json(
       {
-        inviteUrl: `${origin}/invite/${result.invitation.token}`,
+        inviteUrl,
+        emailSent,
         expiresAt: result.invitation.expiresAt,
         staffId: result.staff.id,
       },

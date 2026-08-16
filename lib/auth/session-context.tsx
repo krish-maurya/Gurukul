@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { UserSession } from "./index";
 
 interface AuthContextType {
@@ -16,6 +17,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [currentUser, setCurrentUser] = useState<UserSession | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -60,7 +62,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await fetch("/api/auth/logout", { method: "POST" });
     } finally {
       setCurrentUser(null);
-      window.location.href = "/landing";
+      // A client-side route change preserves the app shell and avoids the white
+      // flash caused by a full-document navigation during logout.
+      router.replace("/landing");
+      router.refresh();
     }
   };
 
@@ -70,7 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-gurukul-dark flex items-center justify-center text-white text-xs">
+      <div className="min-h-screen bg-gurukul-dark flex items-center justify-center text-white text-xs motion-safe:animate-[fadeIn_.16s_ease-out]">
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-gurukul-tech animate-ping" />
           <span>Loading GURUKUL Session...</span>

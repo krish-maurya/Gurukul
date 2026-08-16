@@ -30,7 +30,7 @@ function timeAgo(iso: string): string {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-/** Bell button with count badge + big slide-in panel (left side). */
+/** Bell button with count badge + a right-side slide-in panel. */
 export function NotificationsBell() {
   const router = useRouter();
   const [items, setItems] = useState<NotificationItem[]>([]);
@@ -78,9 +78,9 @@ export function NotificationsBell() {
           {/* overlay */}
           <div className="absolute inset-0 bg-gurukul-dark/40" onClick={() => setIsOpen(false)} />
 
-          {/* left slide-in panel */}
-          <aside className="absolute left-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col animate-[slideIn_.2s_ease-out]">
-            <style>{`@keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }`}</style>
+          {/* right slide-in panel */}
+          <aside className="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col animate-[notificationSlideIn_.24s_cubic-bezier(0.16,1,0.3,1)]">
+            <style>{`@keyframes notificationSlideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }`}</style>
 
             <div className="px-5 py-4 border-b border-gurukul-gray flex items-center justify-between bg-slate-50">
               <div className="flex items-center gap-2.5">

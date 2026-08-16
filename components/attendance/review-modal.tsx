@@ -13,7 +13,6 @@ interface StudentRollInfo {
 interface ReviewModalProps {
   grade: string;
   section: string;
-  period: number;
   date: string;
   students: StudentRollInfo[];
   absentRolls: number[];
@@ -26,7 +25,6 @@ interface ReviewModalProps {
 export function ReviewModal({
   grade,
   section,
-  period,
   date,
   students,
   absentRolls,
@@ -53,7 +51,7 @@ export function ReviewModal({
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              {grade} (Sec {section}) • Period {period} • {date}
+              {grade} (Sec {section}) • Daily attendance • {date}
             </p>
           </div>
           <button

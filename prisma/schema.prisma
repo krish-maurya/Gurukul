@@ -277,6 +277,8 @@ model AttendanceRecord {
   entries          AttendanceEntry[]
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
+
+  @@unique([grade, section, date])
 }
 
 model AttendanceEntry {

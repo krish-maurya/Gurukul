@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Users, Mail, BookOpen, Clock, UserPlus, Copy, CheckCircle, X, AlertCircle, Send, Search, FileText, ArrowRight, Building2 } from "lucide-react";
+import { Users, Mail, BookOpen, Clock, UserPlus, CheckCircle, X, AlertCircle, Send, Search, FileText, ArrowRight, Building2 } from "lucide-react";
 import { useAuth } from "@/lib/auth/session-context";
 
 interface StaffMember {
@@ -42,10 +42,10 @@ function StaffDirectory() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [department, setDepartment] = useState("");
-  const [inviteUrl, setInviteUrl] = useState("");
   const [inviteError, setInviteError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailFallbackUrl, setEmailFallbackUrl] = useState("");
 
   const loadStaff = () => {
     fetch("/api/staff")
@@ -99,7 +99,8 @@ function StaffDirectory() {
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     setInviteError("");
-    setInviteUrl("");
+    setEmailSent(false);
+    setEmailFallbackUrl("");
     setIsSubmitting(true);
     try {
       const res = await fetch("/api/auth/invite", {
@@ -110,7 +111,8 @@ function StaffDirectory() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) setInviteError(data.error || "Failed to create invitation");
       else {
-        setInviteUrl(data.inviteUrl);
+        setEmailSent(data.emailSent);
+        if (!data.emailSent) setEmailFallbackUrl(data.inviteUrl);
         loadStaff();
       }
     } catch {
@@ -120,18 +122,10 @@ function StaffDirectory() {
     }
   };
 
-  const copyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(inviteUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch { /* clipboard unavailable */ }
-  };
-
   const resetInviteModal = () => {
     setShowInvite(false);
     setName(""); setEmail(""); setDepartment("");
-    setInviteUrl(""); setInviteError("");
+    setEmailSent(false); setEmailFallbackUrl(""); setInviteError("");
   };
 
   return (
@@ -282,29 +276,29 @@ function StaffDirectory() {
               </button>
             </div>
 
-            {inviteUrl ? (
+            {emailSent || emailFallbackUrl ? (
               <div className="space-y-4">
-                <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2.5 text-xs font-medium">
-                  <CheckCircle className="w-4 h-4 shrink-0" />
-                  <span>Invitation created for {email}. Share this link with the teacher:</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    readOnly
-                    value={inviteUrl}
-                    onFocus={(e) => e.target.select()}
-                    className="flex-1 text-[11px] font-mono px-3 py-2.5 rounded-lg border border-slate-300 bg-slate-50 text-slate-700"
-                  />
-                  <button
-                    onClick={copyLink}
-                    className="shrink-0 bg-gurukul-tech hover:bg-gurukul-tech/90 text-white text-xs font-medium px-3 py-2.5 rounded-lg flex items-center gap-1.5"
-                  >
-                    {copied ? <CheckCircle className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copied ? "Copied" : "Copy"}</span>
-                  </button>
-                </div>
+                {emailSent ? (
+                  <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2.5 text-xs font-medium">
+                    <CheckCircle className="w-4 h-4 shrink-0" />
+                    <span>Invitation email sent to <strong>{email}</strong>. The teacher will receive a link to set up their account.</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2 text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5 text-xs font-medium">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span>Invitation created but email delivery failed. Please share this link manually:</span>
+                    </div>
+                    <input
+                      readOnly
+                      value={emailFallbackUrl}
+                      onFocus={(e) => e.target.select()}
+                      className="w-full text-[11px] font-mono px-3 py-2.5 rounded-lg border border-slate-300 bg-slate-50 text-slate-700"
+                    />
+                  </>
+                )}
                 <p className="text-[11px] text-slate-400">
-                  The link works for 7 days. The teacher opens it, sets a password, and their account is ready.
+                  The invitation link is valid for 7 days. The teacher opens it, sets a password, and their account is ready.
                 </p>
                 <button
                   onClick={resetInviteModal}
@@ -342,7 +336,7 @@ function StaffDirectory() {
                   className="w-full bg-gurukul-tech hover:bg-gurukul-tech/90 disabled:opacity-60 text-white font-semibold text-sm py-2.5 rounded-lg flex items-center justify-center gap-2"
                 >
                   <Send className="w-4 h-4" />
-                  <span>{isSubmitting ? "Creating Invitation..." : "Create Invitation Link"}</span>
+                  <span>{isSubmitting ? "Sending Invitation..." : "Send Invitation"}</span>
                 </button>
               </form>
             )}
