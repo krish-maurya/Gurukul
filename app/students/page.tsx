@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { GraduationCap, Search, Filter, CheckCircle, FileText, X, Phone, MapPin, HeartPulse, School, User, ArrowRight, ChevronLeft, ChevronRight, Pencil, IndianRupee } from "lucide-react";
 import { useAuth } from "@/lib/auth/session-context";
-import { EditStudentModal, ManageFeesModal } from "@/components/admin/manage-modals";
+import { EditStudentModal, ManageFeesModal, BatchFeesModal } from "@/components/admin/manage-modals";
 
 interface StudentRecord {
   id: string;
@@ -45,6 +45,7 @@ function StudentRegistry() {
   const { isAdmin } = useAuth();
   const [showEdit, setShowEdit] = useState(false);
   const [showFees, setShowFees] = useState(false);
+  const [showBatchFees, setShowBatchFees] = useState(false);
 
   const loadStudents = () => {
     fetch("/api/students")
@@ -141,6 +142,15 @@ function StudentRegistry() {
             </p>
           </div>
         </div>
+        {isAdmin && (
+          <button
+            onClick={() => setShowBatchFees(true)}
+            className="bg-gurukul-tech hover:bg-gurukul-tech/90 text-white font-medium text-xs px-4 py-2.5 rounded-lg shadow-sm transition-all flex items-center gap-2"
+          >
+            <IndianRupee className="w-4 h-4" />
+            <span>Set Class Fees</span>
+          </button>
+        )}
       </div>
 
       {/* Search + Filter */}
@@ -343,6 +353,13 @@ function StudentRegistry() {
       {showEdit && selected && (
         <EditStudentModal studentId={selected.id} onClose={() => setShowEdit(false)}
           onSaved={() => { setShowEdit(false); loadStudents(); }} />
+      )}
+      {showBatchFees && (
+        <BatchFeesModal
+          grades={grades.filter((g) => g !== "ALL")}
+          onClose={() => setShowBatchFees(false)}
+          onDone={loadStudents}
+        />
       )}
       {showFees && selected && (
         <ManageFeesModal studentId={selected.id} studentName={selected.name}

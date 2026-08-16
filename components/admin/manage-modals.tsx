@@ -374,3 +374,96 @@ export function EditStaffModal({ staff, onClose, onSaved }: { staff: StaffEditDa
     </div>
   );
 }
+
+/* =========================================================================
+ * Class Fees modal (ADMIN only) — same fee for a whole class in one go
+ * =======================================================================*/
+
+export function BatchFeesModal({ grades, onClose, onDone }: { grades: string[]; onClose: () => void; onDone?: () => void }) {
+  const [grade, setGrade] = useState(grades[0] || "");
+  const [amountDue, setAmountDue] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [academicYear, setAcademicYear] = useState("2026-27");
+  const [overwrite, setOverwrite] = useState(false);
+  const [error, setError] = useState("");
+  const [summary, setSummary] = useState<{ created: number; updated: number; skipped: number; totalStudents: number; grade: string; amountDue: number } | null>(null);
+  const [isBusy, setIsBusy] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(""); setSummary(null); setIsBusy(true);
+    try {
+      const res = await fetch("/api/fees/batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ grade, amountDue: Number(amountDue), dueDate, academicYear, overwrite }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) setError(data.error || "Failed to set class fees");
+      else { setSummary(data); onDone?.(); }
+    } catch { setError("Network error"); }
+    finally { setIsBusy(false); }
+  };
+
+  const input = "w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:border-gurukul-tech focus:outline-none";
+  const label = "text-xs font-semibold text-slate-600 mb-1 block";
+
+  return (
+    <div className="fixed inset-0 bg-gurukul-dark/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-bold text-gurukul-dark flex items-center gap-2">
+            <IndianRupee className="w-4 h-4 text-gurukul-tech" /><span>Set Class Fees</span>
+          </h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100"><X className="w-4 h-4" /></button>
+        </div>
+
+        <p className="text-xs text-slate-500 mb-4">
+          Apply the same fee to every admitted student of a class in one go. You can still adjust
+          any single student afterwards via <strong>Manage Fees</strong>.
+        </p>
+
+        {error && (
+          <div className="flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5 mb-4">
+            <AlertCircle className="w-4 h-4 shrink-0" /><span>{error}</span>
+          </div>
+        )}
+
+        {summary ? (
+          <div className="space-y-4">
+            <div className="text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-3 space-y-1 font-medium">
+              <div className="flex items-center gap-2 font-bold"><CheckCircle className="w-4 h-4 shrink-0" /><span>{summary.grade}: ₹{summary.amountDue.toLocaleString("en-IN")} applied</span></div>
+              <p>• {summary.created} student{summary.created === 1 ? "" : "s"} — fee account created</p>
+              {summary.updated > 0 && <p>• {summary.updated} — existing fee updated (payments kept)</p>}
+              {summary.skipped > 0 && <p>• {summary.skipped} — skipped (already had a fee; tick the overwrite box to update them too)</p>}
+            </div>
+            <button onClick={onClose} className="w-full border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-medium py-2.5 rounded-lg">Done</button>
+          </div>
+        ) : (
+          <form onSubmit={submit} className="space-y-3">
+            <div>
+              <label className={label}>Class</label>
+              <select required className={input} value={grade} onChange={(e) => setGrade(e.target.value)}>
+                {grades.map((g) => <option key={g} value={g}>{g}</option>)}
+              </select>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div><label className={label}>Amount (₹)</label><input required type="number" min="1" className={input} value={amountDue} onChange={(e) => setAmountDue(e.target.value)} placeholder="45000" /></div>
+              <div><label className={label}>Due Date</label><input required type="date" className={input} value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></div>
+              <div><label className={label}>Year</label><input required className={input} value={academicYear} onChange={(e) => setAcademicYear(e.target.value)} /></div>
+            </div>
+            <label className="flex items-start gap-2 text-xs text-slate-600 py-1 cursor-pointer">
+              <input type="checkbox" checked={overwrite} onChange={(e) => setOverwrite(e.target.checked)}
+                className="w-4 h-4 mt-0.5 rounded border-slate-300 text-gurukul-tech focus:ring-gurukul-tech" />
+              <span>Also update students who <strong>already have a fee</strong> set for this class (their payments are kept, only the amount/due date changes)</span>
+            </label>
+            <button type="submit" disabled={isBusy}
+              className="w-full bg-gurukul-tech hover:bg-gurukul-tech/90 disabled:opacity-60 text-white font-semibold text-sm py-2.5 rounded-lg flex items-center justify-center gap-2">
+              <IndianRupee className="w-4 h-4" /><span>{isBusy ? "Applying..." : "Apply to Whole Class"}</span>
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
