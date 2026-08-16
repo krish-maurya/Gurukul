@@ -5,9 +5,6 @@ import type { ExtractedDocument, ExtractedField } from "./ocr-engine";
 // documents page loads, the OLD file is still being served (stale .next
 // cache or wrong folder).
 export const REAL_OCR_VERSION = "v2.1-improved-pipeline";
-if (typeof window !== "undefined") {
-  console.info(`%c[real-ocr] ${REAL_OCR_VERSION} loaded ✔`, "color:#16a34a;font-weight:bold");
-}
 
 export interface RealOCRResult {
   overallConfidence: number;
