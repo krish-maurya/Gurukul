@@ -3,7 +3,8 @@
 import React, { useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Users, Mail, BookOpen, Clock, UserPlus, CheckCircle, X, AlertCircle, Send, Search, FileText, ArrowRight, Building2 } from "lucide-react";
+import { Pencil, Users, Mail, BookOpen, Clock, UserPlus, CheckCircle, X, AlertCircle, Send, Search, FileText, ArrowRight, Building2 } from "lucide-react";
+import { EditStaffModal } from "@/components/admin/manage-modals";
 import { useAuth } from "@/lib/auth/session-context";
 
 interface StaffMember {
@@ -37,6 +38,7 @@ function StaffDirectory() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showInvite, setShowInvite] = useState(false);
+  const [editStaff, setEditStaff] = useState<StaffMember | null>(null);
 
   // invite form state
   const [name, setName] = useState("");
@@ -250,6 +252,13 @@ function StaffDirectory() {
                   </div>
                 ))}
 
+                {isAdmin && (
+                  <button onClick={() => setEditStaff(selected)}
+                    className="mt-2 w-full border border-slate-300 hover:border-gurukul-tech text-slate-700 font-medium text-xs py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-colors">
+                    <Pencil className="w-3.5 h-3.5" /><span>Edit Teacher Details</span>
+                  </button>
+                )}
+
                 <Link
                   href={`/staff/${selected.id}`}
                   className="btn-primary mt-2 w-full font-medium text-xs py-2.5 flex items-center justify-center gap-2 transition-colors"
@@ -263,6 +272,15 @@ function StaffDirectory() {
           </div>
         )}
       </div>
+
+      {editStaff && (
+        <EditStaffModal
+          staff={{ id: editStaff.id, name: editStaff.name, email: editStaff.email, department: editStaff.department,
+            maxPeriodsPerDay: editStaff.maxPeriodsPerDay, maxPeriodsPerWeek: editStaff.maxPeriodsPerWeek, isActive: editStaff.isActive }}
+          onClose={() => setEditStaff(null)}
+          onSaved={() => { setEditStaff(null); loadStaff(); }}
+        />
+      )}
 
       {/* Invite Modal */}
       {showInvite && (

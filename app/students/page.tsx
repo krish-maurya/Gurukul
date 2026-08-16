@@ -3,7 +3,9 @@
 import React, { useEffect, useMemo, useRef, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { GraduationCap, Search, Filter, CheckCircle, FileText, X, Phone, MapPin, HeartPulse, School, User, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { GraduationCap, Search, Filter, CheckCircle, FileText, X, Phone, MapPin, HeartPulse, School, User, ArrowRight, ChevronLeft, ChevronRight, Pencil, IndianRupee } from "lucide-react";
+import { useAuth } from "@/lib/auth/session-context";
+import { EditStudentModal, ManageFeesModal } from "@/components/admin/manage-modals";
 
 interface StudentRecord {
   id: string;
@@ -40,13 +42,18 @@ function StudentRegistry() {
   const [page, setPage] = useState(1);
   const selectedRowRef = useRef<HTMLTableRowElement | null>(null);
 
-  useEffect(() => {
+  const { isAdmin } = useAuth();
+  const [showEdit, setShowEdit] = useState(false);
+  const [showFees, setShowFees] = useState(false);
+
+  const loadStudents = () => {
     fetch("/api/students")
       .then((r) => r.json())
       .then((data) => setStudents(Array.isArray(data) ? data : []))
       .catch(() => setStudents([]))
       .finally(() => setIsLoading(false));
-  }, []);
+  };
+  useEffect(loadStudents, []);
 
   const grades = useMemo(
     () => ["ALL", ...Array.from(new Set(students.map((s) => s.grade))).sort()],
@@ -306,6 +313,19 @@ function StudentRegistry() {
                   </div>
                 ))}
 
+                {isAdmin && (
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    <button onClick={() => setShowEdit(true)}
+                      className="border border-slate-300 hover:border-gurukul-tech text-slate-700 font-medium text-xs py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-colors">
+                      <Pencil className="w-3.5 h-3.5" /><span>Edit Details</span>
+                    </button>
+                    <button onClick={() => setShowFees(true)}
+                      className="border border-slate-300 hover:border-gurukul-tech text-slate-700 font-medium text-xs py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-colors">
+                      <IndianRupee className="w-3.5 h-3.5" /><span>Manage Fees</span>
+                    </button>
+                  </div>
+                )}
+
                 <Link
                   href={`/students/${selected.id}`}
                   className="btn-primary mt-2 w-full font-medium text-xs py-2.5 flex items-center justify-center gap-2 transition-colors"
@@ -319,6 +339,15 @@ function StudentRegistry() {
           </div>
         )}
       </div>
+
+      {showEdit && selected && (
+        <EditStudentModal studentId={selected.id} onClose={() => setShowEdit(false)}
+          onSaved={() => { setShowEdit(false); loadStudents(); }} />
+      )}
+      {showFees && selected && (
+        <ManageFeesModal studentId={selected.id} studentName={selected.name}
+          onClose={() => setShowFees(false)} onChanged={loadStudents} />
+      )}
     </div>
   );
 }
