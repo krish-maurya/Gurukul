@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { usePathname } from "next/navigation";
+import React, { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { AuthProvider, useAuth } from "@/lib/auth/session-context";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
@@ -9,9 +9,15 @@ import { ChatDrawer } from "@/components/copilot/chat-drawer";
 
 function AppShellContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+  const { isAuthenticated, isTeacher } = useAuth();
 
   const isPublicPage = pathname === "/login" || pathname === "/landing";
+  const isTeacherRestrictedPage = isTeacher && (pathname === "/staff" || pathname.startsWith("/staff/"));
+
+  useEffect(() => {
+    if (isTeacherRestrictedPage) router.replace("/students");
+  }, [isTeacherRestrictedPage, router]);
 
   if (isPublicPage || !isAuthenticated) {
     return (
@@ -21,6 +27,10 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
         <ChatDrawer />
       </div>
     );
+  }
+
+  if (isTeacherRestrictedPage) {
+    return null;
   }
 
   return (

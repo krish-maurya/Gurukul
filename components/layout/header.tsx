@@ -2,9 +2,9 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { Search, Bell, ShieldCheck, UserCheck, LogOut } from "lucide-react";
+import { Bell, ShieldCheck, UserCheck, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth/session-context";
-import { UserRole } from "@/lib/auth";
+import { GlobalPersonSearch } from "./global-person-search";
 
 export function Header() {
   const router = useRouter();
@@ -20,14 +20,7 @@ export function Header() {
   return (
     <header className="h-16 bg-white border-b border-gurukul-gray px-6 flex items-center justify-between sticky top-0 z-20 shadow-subtle">
       {/* Search Bar */}
-      <div className="relative w-64 sm:w-80">
-        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-        <input
-          type="text"
-          placeholder="Search students, staff, timetables..."
-          className="w-full bg-slate-50 border border-gurukul-gray rounded-lg pl-9 pr-4 py-1.5 text-xs text-gurukul-dark placeholder:text-slate-400 focus:outline-none focus:border-gurukul-tech transition-colors"
-        />
-      </div>
+      <GlobalPersonSearch />
 
       {/* Toolbar & Active Role Switcher */}
       <div className="flex items-center gap-4">

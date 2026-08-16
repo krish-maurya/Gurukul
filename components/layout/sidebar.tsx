@@ -20,6 +20,7 @@ interface NavItem {
   href: string;
   icon: React.ElementType;
   adminOnly?: boolean;
+  teacherRestricted?: boolean;
   badge?: string;
 }
 
@@ -29,7 +30,7 @@ const NAV_ITEMS: NavItem[] = [
   { name: "Document Intelligence", href: "/documents", icon: FileText, badge: "OCR AI" },
   { name: "Timetable Operations", href: "/timetable", icon: Calendar, badge: "Coverage" },
   { name: "Student Registry", href: "/students", icon: GraduationCap },
-  { name: "Faculty & Staff", href: "/staff", icon: Users },
+  { name: "Faculty & Staff", href: "/staff", icon: Users, teacherRestricted: true },
   { name: "Audit & Access (RBAC)", href: "/admin/roles", icon: ShieldAlert, adminOnly: true },
 ];
 
@@ -62,6 +63,7 @@ export function Sidebar() {
         </div>
         {NAV_ITEMS.map((item) => {
           if (item.adminOnly && !isAdmin) return null;
+          if (item.teacherRestricted && currentUser.role === "TEACHER") return null;
 
           const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
 
