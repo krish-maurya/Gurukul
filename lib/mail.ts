@@ -102,3 +102,59 @@ export function buildInviteEmail(opts: {
 </body>
 </html>`.trim();
 }
+
+/** Email carrying the parent portal magic link. */
+export function buildPortalLinkEmail(opts: { parentName: string; studentName: string; portalUrl: string }) {
+  return {
+    subject: `Your parent portal for ${opts.studentName} — Gurukul`,
+    htmlContent: `
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" /></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 20px;"><tr><td align="center">
+    <table width="480" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;">
+      <tr><td style="background:#0f172a;padding:24px 32px;">
+        <span style="color:#ffffff;font-size:18px;font-weight:700;">GURUKUL</span>
+      </td></tr>
+      <tr><td style="padding:32px;">
+        <p style="margin:0 0 8px;font-size:15px;color:#0f172a;font-weight:600;">Dear ${opts.parentName},</p>
+        <p style="margin:0 0 20px;font-size:13px;color:#475569;line-height:1.6;">
+          Here is your personal link to follow <strong>${opts.studentName}</strong>'s school life —
+          attendance, fees, timetable and messages from teachers, all in one place.
+          No app or password needed; keep this link private.
+        </p>
+        <table cellpadding="0" cellspacing="0" style="margin:0 auto 20px;"><tr><td style="background:#0ea5e9;border-radius:10px;">
+          <a href="${opts.portalUrl}" style="display:inline-block;padding:12px 28px;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;">Open ${opts.studentName}'s Portal</a>
+        </td></tr></table>
+        <p style="margin:0;font-size:11px;color:#94a3b8;line-height:1.5;">If the button doesn't work, copy this link:<br/>${opts.portalUrl}</p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`,
+  };
+}
+
+/** Short notification that a new message is waiting on the portal. */
+export function buildNewMessageEmail(opts: { parentName: string; studentName: string; title: string; portalUrl: string }) {
+  return {
+    subject: `New message about ${opts.studentName} — Gurukul`,
+    htmlContent: `
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" /></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 20px;"><tr><td align="center">
+    <table width="480" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;">
+      <tr><td style="background:#0f172a;padding:20px 32px;"><span style="color:#ffffff;font-size:16px;font-weight:700;">GURUKUL</span></td></tr>
+      <tr><td style="padding:28px 32px;">
+        <p style="margin:0 0 8px;font-size:14px;color:#0f172a;font-weight:600;">Dear ${opts.parentName},</p>
+        <p style="margin:0 0 18px;font-size:13px;color:#475569;line-height:1.6;">
+          The school has sent you a new message about <strong>${opts.studentName}</strong>:
+          <em>"${opts.title}"</em>
+        </p>
+        <table cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr><td style="background:#0ea5e9;border-radius:10px;">
+          <a href="${opts.portalUrl}" style="display:inline-block;padding:11px 24px;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;">Read on the Portal</a>
+        </td></tr></table>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`,
+  };
+}

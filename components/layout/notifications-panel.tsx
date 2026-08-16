@@ -2,11 +2,11 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, X, FileText, CalendarClock, UserPlus2, UserMinus, Inbox, RefreshCw } from "lucide-react";
+import { Bell, X, FileText, CalendarClock, UserPlus2, UserMinus, Inbox, RefreshCw, MessagesSquare } from "lucide-react";
 
 interface NotificationItem {
   id: string;
-  type: "DOCUMENT" | "PROXY" | "ADMISSION" | "LEAVE";
+  type: "DOCUMENT" | "PROXY" | "ADMISSION" | "LEAVE" | "PARENT_MSG";
   title: string;
   detail: string;
   href: string;
@@ -18,6 +18,7 @@ const TYPE_META: Record<NotificationItem["type"], { icon: React.ElementType; cls
   PROXY: { icon: CalendarClock, cls: "bg-neutral-100 text-neutral-600", label: "Coverage" },
   ADMISSION: { icon: UserPlus2, cls: "bg-neutral-100 text-neutral-600", label: "Admissions" },
   LEAVE: { icon: UserMinus, cls: "bg-neutral-100 text-neutral-600", label: "Leave" },
+  PARENT_MSG: { icon: MessagesSquare, cls: "bg-violet-100 text-violet-700", label: "Parents" },
 };
 
 function timeAgo(iso: string): string {

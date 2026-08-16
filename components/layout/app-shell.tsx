@@ -12,7 +12,7 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { isAuthenticated, isTeacher } = useAuth();
 
-  const isPublicPage = pathname === "/login" || pathname === "/landing";
+  const isPublicPage = pathname === "/login" || pathname === "/landing" || pathname.startsWith("/p/") || pathname.startsWith("/invite/");
   const isTeacherRestrictedPage = isTeacher && (pathname === "/staff" || pathname.startsWith("/staff/"));
 
   useEffect(() => {

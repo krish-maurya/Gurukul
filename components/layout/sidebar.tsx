@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  MessagesSquare,
   FileText,
   Calendar,
   Users,
@@ -34,6 +35,7 @@ const NAV_ITEMS: NavItem[] = [
   { name: "Documents", href: "/documents", icon: FileText, badge: "OCR" },
   { name: "Timetable", href: "/timetable", icon: Calendar },
   { name: "Students", href: "/students", icon: GraduationCap },
+  { name: "Parent Connect", href: "/communications", icon: MessagesSquare },
   { name: "Staff", href: "/staff", icon: Users, teacherRestricted: true },
   { name: "Access Control", href: "/admin/roles", icon: ShieldAlert, adminOnly: true },
 ];

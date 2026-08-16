@@ -5,9 +5,9 @@ const COOKIE_NAME = "gurukul_session";
 
 /** Paths reachable without a session */
 const PUBLIC_PAGES = ["/login", "/landing"];
-const PUBLIC_PAGE_PREFIXES = ["/invite/"];
+const PUBLIC_PAGE_PREFIXES = ["/invite/", "/p/"];
 const PUBLIC_API = ["/api/auth/login", "/api/auth/logout", "/api/auth/me"];
-const PUBLIC_API_PREFIXES = ["/api/auth/invite/"]; // GET/POST accept-invite (token-protected)
+const PUBLIC_API_PREFIXES = ["/api/auth/invite/", "/api/portal/"]; // token-protected public endpoints
 
 async function verifySession(req: NextRequest): Promise<boolean> {
   const token = req.cookies.get(COOKIE_NAME)?.value;

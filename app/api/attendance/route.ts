@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { draftAbsenceMessages } from "@/lib/communication/engine";
 import { AuthError, requireSession } from "@/lib/auth/server";
 
 export async function GET(req: Request) {
@@ -103,7 +104,16 @@ export async function POST(req: Request) {
       return { recordId, totalEntries: entriesToCreate.length };
     });
 
-    return NextResponse.json({ success: true, result });
+    // Draft parent messages for absentees — teachers review & send manually
+    let parentDrafts = 0;
+    try {
+      const absentees = entries.filter((e: { status: string }) => e.status === "ABSENT");
+      parentDrafts = await draftAbsenceMessages(absentees, date, grade);
+    } catch (e) {
+      console.warn("[attendance] absence draft generation failed:", e);
+    }
+
+    return NextResponse.json({ success: true, result, parentDrafts });
   } catch (error) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
