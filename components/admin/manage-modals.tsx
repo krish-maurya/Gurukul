@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { X, Save, AlertCircle, CheckCircle, IndianRupee, Receipt, Pencil, GraduationCap, ChevronDown, Search } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { X, Save, AlertCircle, CheckCircle, IndianRupee, Receipt, Pencil, GraduationCap } from "lucide-react";
 
 /* =========================================================================
  * Edit Student modal (ADMIN only) — includes the parent email field
@@ -49,17 +49,18 @@ export function EditStudentModal({ studentId, onClose, onSaved }: { studentId: s
     finally { setIsSaving(false); }
   };
 
-  const input = "w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:border-gurukul-tech focus:outline-none";
-  const label = "text-xs font-semibold text-slate-600 mb-1 block";
+  const input = "input w-full text-sm px-3 py-2 rounded-lg";
+  const label = "text-xs font-semibold mb-1 block";
+  const labelStyle = { color: "var(--muted)" } as const;
 
   return (
-    <div className="fixed inset-0 bg-gurukul-dark/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center p-4" style={{ background: "rgba(17, 19, 18, 0.5)" }}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-base font-bold text-gurukul-dark flex items-center gap-2">
-            <Pencil className="w-4 h-4 text-gurukul-tech" /><span>Edit Student</span>
+          <h2 className="text-base font-bold text-gurukul-ink flex items-center gap-2" style={{ fontFamily: "var(--font-syne)" }}>
+            <Pencil className="w-4 h-4" style={{ color: "var(--accent)" }} /><span>Edit Student</span>
           </h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100"><X className="w-4 h-4" /></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg transition-colors" style={{ color: "var(--faint)" }}><X className="w-4 h-4" /></button>
         </div>
 
         {error && (
@@ -69,17 +70,17 @@ export function EditStudentModal({ studentId, onClose, onSaved }: { studentId: s
         )}
 
         {!form ? (
-          <p className="text-sm text-slate-400 text-center py-8">Loading...</p>
+          <p className="text-sm text-center py-8" style={{ color: "var(--faint)" }}>Loading...</p>
         ) : (
           <form onSubmit={submit} className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
-              <div><label className={label}>Full Name</label><input required className={input} value={form.name} onChange={(e) => set("name", e.target.value)} /></div>
-              <div><label className={label}>Date of Birth</label><input required className={input} value={form.dob} onChange={(e) => set("dob", e.target.value)} /></div>
+              <div><label className={label} style={labelStyle}>Full Name</label><input required className={input} value={form.name} onChange={(e) => set("name", e.target.value)} /></div>
+              <div><label className={label} style={labelStyle}>Date of Birth</label><input required className={input} value={form.dob} onChange={(e) => set("dob", e.target.value)} /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><label className={label}>Grade / Class</label><input required className={input} value={form.grade} onChange={(e) => set("grade", e.target.value)} /></div>
+              <div><label className={label} style={labelStyle}>Grade / Class</label><input required className={input} value={form.grade} onChange={(e) => set("grade", e.target.value)} /></div>
               <div>
-                <label className={label}>Status</label>
+                <label className={label} style={labelStyle}>Status</label>
                 <select className={input} value={form.status} onChange={(e) => set("status", e.target.value)}>
                   <option value="ADMITTED">ADMITTED</option>
                   <option value="PENDING">PENDING</option>
@@ -88,20 +89,20 @@ export function EditStudentModal({ studentId, onClose, onSaved }: { studentId: s
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><label className={label}>Parent / Guardian</label><input required className={input} value={form.parentName} onChange={(e) => set("parentName", e.target.value)} /></div>
-              <div><label className={label}>Contact Number</label><input required className={input} value={form.contact} onChange={(e) => set("contact", e.target.value)} /></div>
+              <div><label className={label} style={labelStyle}>Parent / Guardian</label><input required className={input} value={form.parentName} onChange={(e) => set("parentName", e.target.value)} /></div>
+              <div><label className={label} style={labelStyle}>Contact Number</label><input required className={input} value={form.contact} onChange={(e) => set("contact", e.target.value)} /></div>
             </div>
             <div>
-              <label className={label}>Parent Email <span className="text-slate-400 font-normal">(for the parent portal link)</span></label>
+              <label className={label} style={labelStyle}>Parent Email <span style={{ color: "var(--faint)", fontWeight: 400 }}>(for the parent portal link)</span></label>
               <input type="email" className={input} placeholder="parent@example.com" value={form.parentEmail ?? ""} onChange={(e) => set("parentEmail", e.target.value)} />
             </div>
-            <div><label className={label}>Address</label><input className={input} value={form.address ?? ""} onChange={(e) => set("address", e.target.value)} /></div>
+            <div><label className={label} style={labelStyle}>Address</label><input className={input} value={form.address ?? ""} onChange={(e) => set("address", e.target.value)} /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><label className={label}>Medical Notes</label><input className={input} value={form.medicalNotes ?? ""} onChange={(e) => set("medicalNotes", e.target.value)} /></div>
-              <div><label className={label}>Previous School</label><input className={input} value={form.previousSchool ?? ""} onChange={(e) => set("previousSchool", e.target.value)} /></div>
+              <div><label className={label} style={labelStyle}>Medical Notes</label><input className={input} value={form.medicalNotes ?? ""} onChange={(e) => set("medicalNotes", e.target.value)} /></div>
+              <div><label className={label} style={labelStyle}>Previous School</label><input className={input} value={form.previousSchool ?? ""} onChange={(e) => set("previousSchool", e.target.value)} /></div>
             </div>
             <button type="submit" disabled={isSaving}
-              className="w-full bg-gurukul-tech hover:bg-gurukul-tech/90 disabled:opacity-60 text-white font-semibold text-sm py-2.5 rounded-lg flex items-center justify-center gap-2 mt-2">
+              className="btn-primary w-full disabled:opacity-60 font-semibold text-sm py-2.5 rounded-lg flex items-center justify-center gap-2 mt-2">
               <Save className="w-4 h-4" /><span>{isSaving ? "Saving..." : "Save Changes"}</span>
             </button>
           </form>
@@ -120,11 +121,11 @@ interface FeeAccountData {
   payments: { id: string; amount: number; paidAt: string; method: string; receiptNo: string }[];
 }
 
-const FEE_STATUS_CLS: Record<string, string> = {
-  PAID: "bg-emerald-100 text-emerald-800 border border-emerald-200",
-  PARTIAL: "bg-sky-100 text-sky-800 border border-sky-200",
-  PENDING: "bg-slate-100 text-slate-600 border border-slate-200",
-  OVERDUE: "bg-red-100 text-red-700 border border-red-200",
+const FEE_STATUS_CLS: Record<string, { bg: string; color: string; border: string }> = {
+  PAID:     { bg: "var(--green-soft)", color: "var(--green-text)", border: "rgba(11, 159, 110, 0.2)" },
+  PARTIAL:  { bg: "var(--soft)",       color: "var(--muted)",      border: "var(--line)" },
+  PENDING:  { bg: "var(--soft)",       color: "var(--muted)",      border: "var(--line)" },
+  OVERDUE:  { bg: "var(--red-soft)",   color: "var(--red-text)",   border: "rgba(185, 28, 28, 0.2)" },
 };
 
 export function ManageFeesModal({ studentId, studentName, onClose, onChanged }: { studentId: string; studentName: string; onClose: () => void; onChanged?: () => void }) {
@@ -132,7 +133,7 @@ export function ManageFeesModal({ studentId, studentName, onClose, onChanged }: 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [flash, setFlash] = useState("");
-  const [showEditFee, setShowEditFee] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
 
   // set-amount form
   const [amountDue, setAmountDue] = useState("");
@@ -152,9 +153,6 @@ export function ManageFeesModal({ studentId, studentName, onClose, onChanged }: 
           setAmountDue(String(d.account.amountDue));
           setDueDate(d.account.dueDate);
           setAcademicYear(d.account.academicYear);
-          setShowEditFee(false);
-        } else {
-          setShowEditFee(true);
         }
       })
       .catch(() => setError("Failed to load fees"))
@@ -175,12 +173,7 @@ export function ManageFeesModal({ studentId, studentName, onClose, onChanged }: 
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) setError(data.error || "Failed to save");
-      else {
-        setAccount(data.account);
-        setShowEditFee(false);
-        showFlash("Fee details saved ✓");
-        onChanged?.();
-      }
+      else { setAccount(data.account); showFlash("Fee details saved ✓"); setShowEditForm(false); onChanged?.(); }
     } finally { setIsBusy(false); }
   };
 
@@ -200,28 +193,18 @@ export function ManageFeesModal({ studentId, studentName, onClose, onChanged }: 
   };
 
   const remaining = account ? Math.max(0, account.amountDue - account.amountPaid) : 0;
-  const input = "w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:border-gurukul-tech focus:outline-none";
-  const label = "text-xs font-semibold text-slate-600 mb-1 block";
+  const input = "input w-full text-sm px-3 py-2 rounded-lg";
+  const label = "text-xs font-semibold mb-1 block";
+  const labelStyle = { color: "var(--muted)" } as const;
 
   return (
-    <div className="fixed inset-0 bg-gurukul-dark/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center p-4" style={{ background: "rgba(17, 19, 18, 0.5)" }}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-base font-bold text-gurukul-dark flex items-center gap-2 min-w-0">
-            <IndianRupee className="w-4 h-4 text-gurukul-tech shrink-0" />
-            <span className="truncate">Fees — {studentName}</span>
-            {account && (
-              <button
-                type="button"
-                onClick={() => setShowEditFee((v) => !v)}
-                title={showEditFee ? "Hide fee details" : "Update fee details"}
-                className={`p-1.5 rounded-lg shrink-0 transition-colors ${showEditFee ? "bg-gurukul-tech/10 text-gurukul-tech" : "text-slate-400 hover:text-gurukul-tech hover:bg-gurukul-tech/10"}`}
-              >
-                <Pencil className="w-3.5 h-3.5" />
-              </button>
-            )}
+          <h2 className="text-base font-bold text-gurukul-ink flex items-center gap-2" style={{ fontFamily: "var(--font-syne)" }}>
+            <IndianRupee className="w-4 h-4" style={{ color: "var(--accent)" }} /><span>Fees — {studentName}</span>
           </h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 shrink-0"><X className="w-4 h-4" /></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg transition-colors" style={{ color: "var(--faint)" }}><X className="w-4 h-4" /></button>
         </div>
 
         {error && (
@@ -236,85 +219,109 @@ export function ManageFeesModal({ studentId, studentName, onClose, onChanged }: 
         )}
 
         {isLoading ? (
-          <p className="text-sm text-slate-400 text-center py-8">Loading...</p>
+          <p className="text-sm text-center py-8" style={{ color: "var(--faint)" }}>Loading...</p>
         ) : (
           <div className="space-y-5">
-            {/* Summary */}
+            {/* Summary row with status badge on left and Edit button on RIGHT */}
+            {account && (
+              <div className="flex items-center justify-between gap-3">
+                <span
+                  className="inline-block text-[10px] px-2.5 py-1 rounded-full font-semibold"
+                  style={(() => {
+                    const cls = FEE_STATUS_CLS[account.status] || FEE_STATUS_CLS.PENDING;
+                    return { background: cls.bg, color: cls.color, border: `1px solid ${cls.border}` };
+                  })()}
+                >
+                  {account.status} · due {account.dueDate}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowEditForm((v) => !v)}
+                  className="btn-secondary text-xs px-3 py-1.5 flex items-center gap-1.5"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                  <span>{showEditForm ? "Close" : "Edit"}</span>
+                </button>
+              </div>
+            )}
+
+            {/* Summary cards */}
             {account && (
               <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="bg-slate-50 rounded-xl border border-slate-200 py-3">
-                  <p className="text-[10px] text-slate-400 font-semibold uppercase">Total</p>
-                  <p className="text-sm font-bold text-gurukul-dark">₹{account.amountDue.toLocaleString("en-IN")}</p>
+                <div className="rounded-xl border py-3" style={{ background: "var(--hover)", borderColor: "var(--line)" }}>
+                  <p className="text-[10px] font-semibold uppercase" style={{ color: "var(--faint)" }}>Total</p>
+                  <p className="text-sm font-bold text-gurukul-ink" style={{ fontFamily: "var(--font-syne)" }}>₹{account.amountDue.toLocaleString("en-IN")}</p>
                 </div>
-                <div className="bg-slate-50 rounded-xl border border-slate-200 py-3">
-                  <p className="text-[10px] text-slate-400 font-semibold uppercase">Paid</p>
-                  <p className="text-sm font-bold text-emerald-600">₹{account.amountPaid.toLocaleString("en-IN")}</p>
+                <div className="rounded-xl border py-3" style={{ background: "var(--green-soft)", borderColor: "rgba(11, 159, 110, 0.2)" }}>
+                  <p className="text-[10px] font-semibold uppercase" style={{ color: "var(--green-text)" }}>Paid</p>
+                  <p className="text-sm font-bold" style={{ color: "var(--green-text)", fontFamily: "var(--font-syne)" }}>₹{account.amountPaid.toLocaleString("en-IN")}</p>
                 </div>
-                <div className="bg-slate-50 rounded-xl border border-slate-200 py-3">
-                  <p className="text-[10px] text-slate-400 font-semibold uppercase">Remaining</p>
-                  <p className="text-sm font-bold text-gurukul-dark">₹{remaining.toLocaleString("en-IN")}</p>
+                <div className="rounded-xl border py-3" style={{ background: "var(--hover)", borderColor: "var(--line)" }}>
+                  <p className="text-[10px] font-semibold uppercase" style={{ color: "var(--faint)" }}>Remaining</p>
+                  <p className="text-sm font-bold text-gurukul-ink" style={{ fontFamily: "var(--font-syne)" }}>₹{remaining.toLocaleString("en-IN")}</p>
                 </div>
               </div>
             )}
-            {account && (
-              <span className={`inline-block text-[10px] px-2 py-0.5 rounded-full font-semibold ${FEE_STATUS_CLS[account.status] || FEE_STATUS_CLS.PENDING}`}>
-                {account.status} · due {account.dueDate}
-              </span>
+
+            {/* === EDIT FORM (collapsible, sits ABOVE the Record Payment section) === */}
+            {(showEditForm || !account) && (
+              <form onSubmit={saveAccount} className="rounded-xl p-4 space-y-3 animate-slide-down" style={{ border: "1px solid var(--line)", background: "var(--soft)" }}>
+                <p className="text-xs font-bold text-gurukul-ink flex items-center gap-1.5" style={{ fontFamily: "var(--font-syne)" }}>
+                  <Pencil className="w-3.5 h-3.5" style={{ color: "var(--accent)" }} />
+                  <span>{account ? "Update fee details" : "Set the fee for this student"}</span>
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  <div><label className={label} style={labelStyle}>Amount (₹)</label><input required type="number" min="1" className={input} value={amountDue} onChange={(e) => setAmountDue(e.target.value)} placeholder="45000" /></div>
+                  <div><label className={label} style={labelStyle}>Due Date</label><input required type="date" className={input} value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></div>
+                  <div><label className={label} style={labelStyle}>Year</label><input required className={input} value={academicYear} onChange={(e) => setAcademicYear(e.target.value)} /></div>
+                </div>
+                <div className="flex gap-2">
+                  <button type="submit" disabled={isBusy}
+                    className="btn-primary flex-1 disabled:opacity-60 font-semibold text-xs py-2 rounded-lg">
+                    {account ? "Update Fee Details" : "Create Fee Account"}
+                  </button>
+                  {account && (
+                    <button type="button" onClick={() => setShowEditForm(false)}
+                      className="btn-secondary text-xs py-2 px-4 rounded-lg">
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </form>
             )}
 
-            {/* Record payment — primary action */}
+            {/* === Record payment section (sits BELOW the edit form) === */}
             {account && remaining > 0 && (
-              <form onSubmit={recordPayment} className="rounded-xl border-2 border-gurukul-tech bg-gradient-to-br from-gurukul-tech/5 to-emerald-50/40 p-4 space-y-3 shadow-sm ring-1 ring-gurukul-tech/10">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs font-bold text-gurukul-dark">Record a payment</p>
-                  <span className="text-[10px] font-semibold uppercase tracking-wide text-gurukul-tech bg-white/80 border border-gurukul-tech/20 px-2 py-0.5 rounded-full">
-                    Primary
-                  </span>
-                </div>
+              <form onSubmit={recordPayment} className="rounded-xl p-4 space-y-3" style={{ border: "1px solid var(--line)" }}>
+                <p className="text-xs font-bold text-gurukul-ink" style={{ fontFamily: "var(--font-syne)" }}>Record a payment</p>
                 <div className="grid grid-cols-2 gap-2">
-                  <div><label className={label}>Amount (₹)</label><input required type="number" min="1" max={remaining} className={`${input} bg-white`} value={payAmount} onChange={(e) => setPayAmount(e.target.value)} placeholder={String(remaining)} /></div>
+                  <div><label className={label} style={labelStyle}>Amount (₹)</label><input required type="number" min="1" max={remaining} className={input} value={payAmount} onChange={(e) => setPayAmount(e.target.value)} placeholder={String(remaining)} /></div>
                   <div>
-                    <label className={label}>Method</label>
-                    <select className={`${input} bg-white`} value={payMethod} onChange={(e) => setPayMethod(e.target.value)}>
+                    <label className={label} style={labelStyle}>Method</label>
+                    <select className={input} value={payMethod} onChange={(e) => setPayMethod(e.target.value)}>
                       <option value="CASH">Cash</option><option value="UPI">UPI</option>
                       <option value="CARD">Card</option><option value="BANK">Bank Transfer</option>
                     </select>
                   </div>
                 </div>
                 <button type="submit" disabled={isBusy}
-                  className="w-full bg-gurukul-dark hover:bg-gurukul-dark/90 disabled:opacity-60 text-white font-semibold text-sm py-2.5 rounded-lg flex items-center justify-center gap-1.5 shadow-sm">
-                  <Receipt className="w-4 h-4" /><span>Record Payment</span>
+                  className="btn-primary w-full disabled:opacity-60 font-semibold text-xs py-2 rounded-lg flex items-center justify-center gap-1.5">
+                  <Receipt className="w-3.5 h-3.5" /><span>Record Payment</span>
                 </button>
               </form>
             )}
 
-            {/* Set / update fee amount — hidden until pencil click (or no account yet) */}
-            {showEditFee && (
-              <form onSubmit={saveAccount} className="border border-slate-200 rounded-xl p-4 space-y-3 bg-slate-50/50">
-                <p className="text-xs font-bold text-gurukul-dark">{account ? "Update fee details" : "Set the fee for this student"}</p>
-                <div className="grid grid-cols-3 gap-2">
-                  <div><label className={label}>Amount (₹)</label><input required type="number" min="1" className={`${input} bg-white`} value={amountDue} onChange={(e) => setAmountDue(e.target.value)} placeholder="45000" /></div>
-                  <div><label className={label}>Due Date</label><input required type="date" className={`${input} bg-white`} value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></div>
-                  <div><label className={label}>Year</label><input required className={`${input} bg-white`} value={academicYear} onChange={(e) => setAcademicYear(e.target.value)} /></div>
-                </div>
-                <button type="submit" disabled={isBusy}
-                  className="w-full border border-gurukul-tech text-gurukul-tech hover:bg-gurukul-tech hover:text-white disabled:opacity-60 font-semibold text-xs py-2 rounded-lg transition-colors bg-white">
-                  {account ? "Update Fee Details" : "Create Fee Account"}
-                </button>
-              </form>
-            )}
-
-            {/* Payment history */}
+            {/* === Payment history (sits at the bottom) === */}
             {account && account.payments.length > 0 && (
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Payment history</p>
-                <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden">
+                <p className="text-[10px] font-bold uppercase mb-2" style={{ color: "var(--faint)" }}>Payment history</p>
+                <div className="divide-y rounded-xl overflow-hidden" style={{ border: "1px solid var(--line)", borderColor: "var(--hover)" }}>
                   {account.payments.map((p) => (
                     <div key={p.id} className="flex items-center justify-between px-3 py-2 text-xs">
-                      <span className="font-semibold text-gurukul-dark">₹{p.amount.toLocaleString("en-IN")}</span>
-                      <span className="text-slate-400">{p.method}</span>
-                      <span className="text-slate-400">{p.paidAt}</span>
-                      <span className="font-mono text-[10px] text-slate-400">{p.receiptNo}</span>
+                      <span className="font-semibold text-gurukul-ink">₹{p.amount.toLocaleString("en-IN")}</span>
+                      <span style={{ color: "var(--faint)" }}>{p.method}</span>
+                      <span style={{ color: "var(--faint)" }}>{p.paidAt}</span>
+                      <span className="font-mono text-[10px]" style={{ color: "var(--faint)" }}>{p.receiptNo}</span>
                     </div>
                   ))}
                 </div>
@@ -360,17 +367,18 @@ export function EditStaffModal({ staff, onClose, onSaved }: { staff: StaffEditDa
     finally { setIsSaving(false); }
   };
 
-  const input = "w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:border-gurukul-tech focus:outline-none";
-  const label = "text-xs font-semibold text-slate-600 mb-1 block";
+  const input = "input w-full text-sm px-3 py-2 rounded-lg";
+  const label = "text-xs font-semibold mb-1 block";
+  const labelStyle = { color: "var(--muted)" } as const;
 
   return (
-    <div className="fixed inset-0 bg-gurukul-dark/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center p-4" style={{ background: "rgba(17, 19, 18, 0.5)" }}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-base font-bold text-gurukul-dark flex items-center gap-2">
-            <Pencil className="w-4 h-4 text-gurukul-tech" /><span>Edit Teacher</span>
+          <h2 className="text-base font-bold text-gurukul-ink flex items-center gap-2" style={{ fontFamily: "var(--font-syne)" }}>
+            <Pencil className="w-4 h-4" style={{ color: "var(--accent)" }} /><span>Edit Teacher</span>
           </h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100"><X className="w-4 h-4" /></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg transition-colors" style={{ color: "var(--faint)" }}><X className="w-4 h-4" /></button>
         </div>
 
         {error && (
@@ -380,20 +388,20 @@ export function EditStaffModal({ staff, onClose, onSaved }: { staff: StaffEditDa
         )}
 
         <form onSubmit={submit} className="space-y-3">
-          <div><label className={label}>Full Name</label><input required className={input} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-          <div><label className={label}>Email <span className="text-slate-400 font-normal">(login updates too)</span></label><input required type="email" className={input} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
-          <div><label className={label}>Department</label><input required className={input} value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} /></div>
+          <div><label className={label} style={labelStyle}>Full Name</label><input required className={input} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
+          <div><label className={label} style={labelStyle}>Email <span style={{ color: "var(--faint)", fontWeight: 400 }}>(login updates too)</span></label><input required type="email" className={input} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
+          <div><label className={label} style={labelStyle}>Department</label><input required className={input} value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} /></div>
           <div className="grid grid-cols-2 gap-3">
-            <div><label className={label}>Max periods / day</label><input required type="number" min="1" max="8" className={input} value={form.maxPeriodsPerDay} onChange={(e) => setForm({ ...form, maxPeriodsPerDay: Number(e.target.value) })} /></div>
-            <div><label className={label}>Max periods / week</label><input required type="number" min="1" max="40" className={input} value={form.maxPeriodsPerWeek} onChange={(e) => setForm({ ...form, maxPeriodsPerWeek: Number(e.target.value) })} /></div>
+            <div><label className={label} style={labelStyle}>Max periods / day</label><input required type="number" min="1" max="8" className={input} value={form.maxPeriodsPerDay} onChange={(e) => setForm({ ...form, maxPeriodsPerDay: Number(e.target.value) })} /></div>
+            <div><label className={label} style={labelStyle}>Max periods / week</label><input required type="number" min="1" max="40" className={input} value={form.maxPeriodsPerWeek} onChange={(e) => setForm({ ...form, maxPeriodsPerWeek: Number(e.target.value) })} /></div>
           </div>
-          <label className="flex items-center gap-2 text-xs font-medium text-slate-600 py-1 cursor-pointer">
+          <label className="flex items-center gap-2 text-xs font-medium py-1 cursor-pointer" style={{ color: "var(--muted)" }}>
             <input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-              className="w-4 h-4 rounded border-slate-300 text-gurukul-tech focus:ring-gurukul-tech" />
+              className="w-4 h-4 rounded" style={{ accentColor: "var(--accent)" }} />
             <span>Active (inactive teachers can&apos;t sign in or be scheduled)</span>
           </label>
           <button type="submit" disabled={isSaving}
-            className="w-full bg-gurukul-tech hover:bg-gurukul-tech/90 disabled:opacity-60 text-white font-semibold text-sm py-2.5 rounded-lg flex items-center justify-center gap-2 mt-1">
+            className="btn-primary w-full disabled:opacity-60 font-semibold text-sm py-2.5 rounded-lg flex items-center justify-center gap-2 mt-1">
             <Save className="w-4 h-4" /><span>{isSaving ? "Saving..." : "Save Changes"}</span>
           </button>
         </form>
@@ -411,102 +419,6 @@ export function EditStaffModal({ staff, onClose, onSaved }: { staff: StaffEditDa
 function splitGrade(g: string): { standard: string; division: string } {
   const m = g.match(/^(.*\d)\s*([A-Za-z])$/);
   return m ? { standard: m[1].trim(), division: m[2].toUpperCase() } : { standard: g, division: "" };
-}
-
-interface StandardOption { standard: string; divisions: string[] }
-
-function StandardPicker({ options, value, onChange }: { options: StandardOption[]; value: string; onChange: (standard: string) => void }) {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const rootRef = useRef<HTMLDivElement>(null);
-
-  const selected = options.find((o) => o.standard === value);
-  const filtered = useMemo(() => {
-    const term = query.trim().toLowerCase();
-    if (!term) return options;
-    return options.filter((o) =>
-      o.standard.toLowerCase().includes(term) ||
-      o.divisions.some((d) => d.toLowerCase().includes(term))
-    );
-  }, [options, query]);
-
-  useEffect(() => {
-    const onDocClick = (e: MouseEvent) => {
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, []);
-
-  return (
-    <div ref={rootRef} className="relative">
-      <label className="text-xs font-semibold text-slate-600 mb-1.5 block">Standard</label>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border border-slate-300 bg-white hover:border-gurukul-tech focus:border-gurukul-tech focus:outline-none focus:ring-2 focus:ring-gurukul-tech/20 transition-all text-left"
-      >
-        <div className="w-8 h-8 rounded-lg bg-gurukul-tech/10 text-gurukul-tech flex items-center justify-center shrink-0">
-          <GraduationCap className="w-4 h-4" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-gurukul-dark truncate">{selected?.standard || "Choose a standard..."}</p>
-          {selected && selected.divisions.length > 0 && (
-            <p className="text-[10px] text-slate-400 truncate">Divisions {selected.divisions.join(" · ")}</p>
-          )}
-        </div>
-        <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
-
-      {open && (
-        <div className="absolute z-20 mt-1.5 w-full rounded-xl border border-slate-200 bg-white shadow-xl overflow-hidden">
-          {options.length > 6 && (
-            <div className="p-2 border-b border-slate-100">
-              <div className="relative">
-                <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  autoFocus
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search standards..."
-                  className="w-full text-xs pl-8 pr-3 py-2 rounded-lg border border-slate-200 focus:border-gurukul-tech focus:outline-none"
-                />
-              </div>
-            </div>
-          )}
-          <ul className="max-h-56 overflow-y-auto py-1">
-            {filtered.length === 0 ? (
-              <li className="px-3 py-4 text-xs text-slate-400 text-center">No standards match your search</li>
-            ) : (
-              filtered.map(({ standard: st, divisions }) => {
-                const active = st === value;
-                return (
-                  <li key={st}>
-                    <button
-                      type="button"
-                      onClick={() => { onChange(st); setOpen(false); setQuery(""); }}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${active ? "bg-gurukul-tech/10" : "hover:bg-slate-50"}`}
-                    >
-                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${active ? "bg-gurukul-tech text-white" : "bg-slate-100 text-slate-500"}`}>
-                        <GraduationCap className="w-3.5 h-3.5" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className={`text-xs font-semibold truncate ${active ? "text-gurukul-tech" : "text-gurukul-dark"}`}>{st}</p>
-                        {divisions.length > 0 && (
-                          <p className="text-[10px] text-slate-400 truncate">Div {divisions.join(" · ")}</p>
-                        )}
-                      </div>
-                      {active && <CheckCircle className="w-4 h-4 text-gurukul-tech shrink-0 ml-auto" />}
-                    </button>
-                  </li>
-                );
-              })
-            )}
-          </ul>
-        </div>
-      )}
-    </div>
-  );
 }
 
 export function BatchFeesModal({ grades, onClose, onDone }: { grades: string[]; onClose: () => void; onDone?: () => void }) {
@@ -547,23 +459,24 @@ export function BatchFeesModal({ grades, onClose, onDone }: { grades: string[]; 
     finally { setIsBusy(false); }
   };
 
-  const input = "w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:border-gurukul-tech focus:outline-none";
-  const label = "text-xs font-semibold text-slate-600 mb-1 block";
+  const input = "input w-full text-sm px-3 py-2 rounded-lg";
+  const label = "text-xs font-semibold mb-1 block";
+  const labelStyle = { color: "var(--muted)" } as const;
 
   return (
-    <div className="fixed inset-0 bg-gurukul-dark/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center p-4" style={{ background: "rgba(17, 19, 18, 0.5)" }}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-bold text-gurukul-dark flex items-center gap-2">
-            <IndianRupee className="w-4 h-4 text-gurukul-tech" /><span>Set Class Fees</span>
+          <h2 className="text-base font-bold text-gurukul-ink flex items-center gap-2" style={{ fontFamily: "var(--font-syne)" }}>
+            <IndianRupee className="w-4 h-4" style={{ color: "var(--accent)" }} /><span>Set Class Fees</span>
           </h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100"><X className="w-4 h-4" /></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg transition-colors" style={{ color: "var(--faint)" }}><X className="w-4 h-4" /></button>
         </div>
 
-        <p className="text-xs text-slate-500 mb-4">
+        <p className="text-xs mb-4" style={{ color: "var(--muted)" }}>
           Fees are the same for every division of a standard. Pick a standard and the fee is
-          applied to <strong>all its divisions</strong> at once — you can still fine-tune any
-          single student later via <strong>Manage Fees</strong>.
+          applied to <strong style={{ color: "var(--ink)" }}>all its divisions</strong> at once — you can still fine-tune any
+          single student later via <strong style={{ color: "var(--ink)" }}>Manage Fees</strong>.
         </p>
 
         {error && (
@@ -580,27 +493,54 @@ export function BatchFeesModal({ grades, onClose, onDone }: { grades: string[]; 
               {summary.updated > 0 && <p>• {summary.updated} — existing fee updated (payments kept)</p>}
               {summary.skipped > 0 && <p>• {summary.skipped} — skipped (already had a fee; tick the overwrite box to update them too)</p>}
             </div>
-            <button onClick={onClose} className="w-full border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-medium py-2.5 rounded-lg">Done</button>
+            <button onClick={onClose} className="btn-secondary w-full text-xs font-medium py-2.5 rounded-lg">Done</button>
           </div>
         ) : (
           <form onSubmit={submit} className="space-y-4">
-            <StandardPicker
-              options={standards}
-              value={standard}
-              onChange={setStandard}
-            />
-            <div className="grid grid-cols-3 gap-2">
-              <div><label className={label}>Amount (₹)</label><input required type="number" min="1" className={input} value={amountDue} onChange={(e) => setAmountDue(e.target.value)} placeholder="45000" /></div>
-              <div><label className={label}>Due Date</label><input required type="date" className={input} value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></div>
-              <div><label className={label}>Year</label><input required className={input} value={academicYear} onChange={(e) => setAcademicYear(e.target.value)} /></div>
+            <div>
+              <label className={label} style={labelStyle}>Standard</label>
+              <div className="grid grid-cols-3 gap-2">
+                {standards.map(({ standard: st, divisions }) => {
+                  const active = st === standard;
+                  return (
+                    <button
+                      key={st}
+                      type="button"
+                      onClick={() => setStandard(st)}
+                      className="group relative rounded-xl border-2 px-2 py-3 text-center transition-all"
+                      style={active
+                        ? { borderColor: "var(--accent)", background: "var(--accent)", color: "#ffffff", boxShadow: "0 4px 12px rgba(30, 58, 138, 0.22)" }
+                        : { borderColor: "var(--line)", background: "#ffffff", color: "var(--muted)" }}
+                    >
+                      <GraduationCap className="w-4 h-4 mx-auto mb-1" style={{ color: active ? "#ffffff" : "var(--faint)" }} />
+                      <span className="block text-xs font-bold leading-tight">{st}</span>
+                      {divisions.length > 0 && (
+                        <span className="block text-[10px] mt-0.5" style={{ color: active ? "rgba(255,255,255,0.7)" : "var(--faint)" }}>
+                          Div {divisions.join(" · ")}
+                        </span>
+                      )}
+                      {active && (
+                        <span className="absolute -top-1.5 -right-1.5 bg-white rounded-full shadow">
+                          <CheckCircle className="w-4 h-4" style={{ color: "var(--accent)" }} />
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            <label className="flex items-start gap-2 text-xs text-slate-600 py-1 cursor-pointer">
+            <div className="grid grid-cols-3 gap-2">
+              <div><label className={label} style={labelStyle}>Amount (₹)</label><input required type="number" min="1" className={input} value={amountDue} onChange={(e) => setAmountDue(e.target.value)} placeholder="45000" /></div>
+              <div><label className={label} style={labelStyle}>Due Date</label><input required type="date" className={input} value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></div>
+              <div><label className={label} style={labelStyle}>Year</label><input required className={input} value={academicYear} onChange={(e) => setAcademicYear(e.target.value)} /></div>
+            </div>
+            <label className="flex items-start gap-2 text-xs py-1 cursor-pointer" style={{ color: "var(--muted)" }}>
               <input type="checkbox" checked={overwrite} onChange={(e) => setOverwrite(e.target.checked)}
-                className="w-4 h-4 mt-0.5 rounded border-slate-300 text-gurukul-tech focus:ring-gurukul-tech" />
-              <span>Also update students who <strong>already have a fee</strong> set for this standard (their payments are kept, only the amount/due date changes)</span>
+                className="w-4 h-4 mt-0.5 rounded" style={{ accentColor: "var(--accent)" }} />
+              <span>Also update students who <strong style={{ color: "var(--ink)" }}>already have a fee</strong> set for this standard (their payments are kept, only the amount/due date changes)</span>
             </label>
             <button type="submit" disabled={isBusy}
-              className="w-full bg-gurukul-tech hover:bg-gurukul-tech/90 disabled:opacity-60 text-white font-semibold text-sm py-2.5 rounded-lg flex items-center justify-center gap-2">
+              className="btn-primary w-full disabled:opacity-60 font-semibold text-sm py-2.5 rounded-lg flex items-center justify-center gap-2">
               <IndianRupee className="w-4 h-4" /><span>{isBusy ? "Applying..." : "Apply to Whole Standard"}</span>
             </button>
           </form>

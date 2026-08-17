@@ -25,10 +25,10 @@ export default function WelcomePage() {
 
   const options = [
     {
-      href: "/attendance/take",
+      href: "/attendance",
       icon: ClipboardCheck,
       title: "Take Attendance",
-      description: "Your class and today's date are pre-selected — just mark and submit.",
+      description: "Your class and today's date are pre-selected - just mark and submit.",
     },
     {
       href: "/timetable",
@@ -42,10 +42,10 @@ export default function WelcomePage() {
     <div className="min-h-[70vh] flex items-center justify-center animate-fade-in">
       <div className="w-full max-w-xl">
         <div className="text-center mb-8">
-          <h1 className="text-xl font-bold text-gurukul-dark tracking-tight">
+          <h1 className="text-xl font-bold text-gurukul-ink tracking-tight" style={{ fontFamily: "var(--font-syne)" }}>
             Good to see you, {firstName}
           </h1>
-          <p className="text-xs text-gurukul-ocean mt-1.5">What are you planning to do?</p>
+          <p className="text-xs mt-1.5" style={{ color: "var(--muted)" }}>What are you planning to do?</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -55,12 +55,12 @@ export default function WelcomePage() {
               href={href}
               className="card card-hover group p-6"
             >
-              <div className="w-11 h-11 rounded-lg bg-gurukul-highlight border border-neutral-200/60 flex items-center justify-center mb-4">
-                <Icon className="w-5 h-5 text-gurukul-dark" />
+              <div className="w-11 h-11 rounded-lg flex items-center justify-center mb-4" style={{ background: "var(--accent-soft)", border: "1px solid rgba(30, 58, 138, 0.2)" }}>
+                <Icon className="w-5 h-5" style={{ color: "var(--accent-text)" }} />
               </div>
-              <h2 className="text-sm font-semibold text-gurukul-dark mb-1">{title}</h2>
-              <p className="text-xs text-gurukul-ocean leading-relaxed mb-4">{description}</p>
-              <span className="inline-flex items-center gap-1 text-xs font-medium text-gurukul-dark">
+              <h2 className="text-sm font-semibold text-gurukul-ink mb-1" style={{ fontFamily: "var(--font-syne)" }}>{title}</h2>
+              <p className="text-xs leading-relaxed mb-4" style={{ color: "var(--muted)" }}>{description}</p>
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-gurukul-ink">
                 <span>Continue</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
               </span>
@@ -69,7 +69,13 @@ export default function WelcomePage() {
         </div>
 
         <p className="text-center mt-6">
-          <Link href="/" className="text-[11px] text-gurukul-muted hover:text-gurukul-dark transition-colors">
+          <Link
+            href="/"
+            className="text-[11px] transition-colors"
+            style={{ color: "var(--faint)" }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = "var(--ink)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--faint)"; }}
+          >
             Skip — go to dashboard
           </Link>
         </p>

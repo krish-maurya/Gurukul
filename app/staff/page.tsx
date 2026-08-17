@@ -20,11 +20,11 @@ interface StaffMember {
 }
 
 const STATUS_BADGE: Record<StaffMember["accountStatus"], { label: string; cls: string }> = {
-  ADMIN: { label: "Admin", cls: "bg-gurukul-dark text-white" },
-  ACTIVE: { label: "Active", cls: "bg-neutral-100 text-neutral-700" },
-  INVITED: { label: "Invited", cls: "bg-neutral-100 text-neutral-500" },
-  INVITE_EXPIRED: { label: "Expired", cls: "bg-neutral-100 text-neutral-400" },
-  NO_ACCOUNT: { label: "No Account", cls: "bg-neutral-100 text-neutral-500" },
+  ADMIN: { label: "Admin", cls: "" },
+  ACTIVE: { label: "Active", cls: "" },
+  INVITED: { label: "Invited", cls: "" },
+  INVITE_EXPIRED: { label: "Expired", cls: "" },
+  NO_ACCOUNT: { label: "No Account", cls: "" },
 };
 
 function StaffDirectory() {
@@ -133,20 +133,20 @@ function StaffDirectory() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col items-start justify-between gap-3 border-b border-gurukul-gray pb-5 sm:flex-row sm:items-center">
+      <div className="flex items-center justify-between border-b pb-5" style={{ borderColor: "var(--line)" }}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-neutral-100 text-gurukul-dark flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "var(--accent-soft)", color: "var(--accent-text)" }}>
             <Users className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gurukul-dark">Staff Directory</h1>
-            <p className="text-xs text-gurukul-ocean">{isLoading ? "Loading..." : `${filtered.length} of ${staff.length} staff members`}</p>
+            <h1 className="text-xl font-bold text-gurukul-ink" style={{ fontFamily: "var(--font-syne)" }}>Staff Directory</h1>
+            <p className="text-xs" style={{ color: "var(--muted)" }}>{isLoading ? "Loading..." : `${filtered.length} of ${staff.length} staff members`}</p>
           </div>
         </div>
         {isAdmin && (
           <button
             onClick={() => setShowInvite(true)}
-            className="btn-primary font-medium text-xs px-4 py-2.5 flex items-center gap-2 transition-colors"
+            className="btn-primary font-medium text-xs px-4 py-2.5 flex items-center gap-2"
           >
             <UserPlus className="w-4 h-4" />
             <span>Add Teacher</span>
@@ -156,12 +156,12 @@ function StaffDirectory() {
 
       {/* Search */}
       <div className="relative">
-        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gurukul-muted" />
+        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--faint)" }} />
         <input
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search by name, email, department or subject..."
-          className="input w-full text-sm pl-9 pr-3 py-2.5 rounded-lg text-gurukul-dark focus:ring-1 focus:ring-gurukul-dark/20 focus:border-gurukul-dark"
+          className="input w-full text-sm pl-9 pr-3 py-2.5 rounded-lg text-gurukul-ink"
         />
       </div>
 
@@ -169,7 +169,7 @@ function StaffDirectory() {
       <div className={`grid grid-cols-1 gap-5 items-start ${selected ? "lg:grid-cols-3" : ""}`}>
         <div className={selected ? "lg:col-span-2" : ""}>
           {isLoading ? (
-            <p className="text-sm text-gurukul-muted py-10 text-center">Loading staff...</p>
+            <p className="text-sm py-10 text-center" style={{ color: "var(--faint)" }}>Loading staff...</p>
           ) : (
             <div className={`grid grid-cols-1 md:grid-cols-2 gap-3 ${selected ? "" : "xl:grid-cols-3"}`}>
               {filtered.map((member) => {
@@ -179,33 +179,37 @@ function StaffDirectory() {
                   <button
                     key={member.id}
                     onClick={() => handleSelect(member.id)}
-                    className={`text-left card p-5 transition-all ${
-                      isSel
-                        ? "border-gurukul-dark/20 bg-neutral-50"
-                        : "hover:bg-neutral-50"
-                    }`}
+                    className="text-left card p-5 transition-all"
+                    style={isSel ? { borderColor: "var(--accent)", background: "var(--accent-soft)" } : { borderColor: "var(--line)" }}
+                    onMouseEnter={(e) => { if (!isSel) e.currentTarget.style.background = "var(--hover)"; }}
+                    onMouseLeave={(e) => { if (!isSel) e.currentTarget.style.background = "transparent"; }}
                   >
                     <div className="flex items-start justify-between mb-3">
-                      <div className={`w-10 h-10 rounded-full font-bold text-sm flex items-center justify-center ${
-                        isSel ? "bg-gurukul-dark text-white" : "bg-neutral-100 text-gurukul-dark"
-                      }`}>
+                      <div className="w-10 h-10 rounded-full font-bold text-sm flex items-center justify-center"
+                        style={isSel ? { background: "var(--accent)", color: "#ffffff" } : { background: "var(--soft)", color: "var(--ink)" }}>
                         {member.name.charAt(0)}
                       </div>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${badge.cls}`}>{badge.label}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={
+                        member.accountStatus === "ADMIN"
+                          ? { background: "var(--accent)", color: "#ffffff" }
+                          : member.accountStatus === "ACTIVE"
+                            ? { background: "var(--green-soft)", color: "var(--green-text)" }
+                            : { background: "var(--soft)", color: "var(--muted)" }
+                      }>{badge.label}</span>
                     </div>
-                    <h3 className="text-sm font-semibold text-gurukul-dark">{member.name}</h3>
-                    <p className="text-xs text-gurukul-ocean mb-3">{member.department}</p>
-                    <div className="space-y-1.5 text-[11px] text-gurukul-ocean">
-                      <div className="flex items-center gap-1.5"><Mail className="w-3 h-3 text-gurukul-muted" /><span className="truncate">{member.email}</span></div>
+                    <h3 className="text-sm font-semibold text-gurukul-ink" style={{ fontFamily: "var(--font-syne)" }}>{member.name}</h3>
+                    <p className="text-xs mb-3" style={{ color: "var(--muted)" }}>{member.department}</p>
+                    <div className="space-y-1.5 text-[11px]" style={{ color: "var(--muted)" }}>
+                      <div className="flex items-center gap-1.5"><Mail className="w-3 h-3" style={{ color: "var(--faint)" }} /><span className="truncate">{member.email}</span></div>
                       {member.subjects.length > 0 && (
-                        <div className="flex items-center gap-1.5"><BookOpen className="w-3 h-3 text-gurukul-muted" /><span className="truncate">{member.subjects.join(", ")}</span></div>
+                        <div className="flex items-center gap-1.5"><BookOpen className="w-3 h-3" style={{ color: "var(--faint)" }} /><span className="truncate">{member.subjects.join(", ")}</span></div>
                       )}
                     </div>
                   </button>
                 );
               })}
               {filtered.length === 0 && (
-                <p className="text-sm text-gurukul-muted col-span-full text-center py-10">No staff members match your search.</p>
+                <p className="text-sm col-span-full text-center py-10" style={{ color: "var(--faint)" }}>No staff members match your search.</p>
               )}
             </div>
           )}
@@ -216,24 +220,30 @@ function StaffDirectory() {
           <div className="lg:sticky lg:top-20 animate-slide-up">
             <div className="card overflow-hidden">
               {/* Header */}
-              <div className="px-5 py-4 border-b border-gurukul-gray flex items-center justify-between">
+              <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: "var(--line)" }}>
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-neutral-100 text-gurukul-dark font-bold text-sm flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-full font-bold text-sm flex items-center justify-center" style={{ background: "var(--accent-soft)", color: "var(--accent-text)" }}>
                     {selected.name.charAt(0)}
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-gurukul-dark leading-tight">{selected.name}</h3>
-                    <p className="text-[10px] text-gurukul-muted">{selected.department}</p>
+                    <h3 className="text-sm font-semibold text-gurukul-ink leading-tight" style={{ fontFamily: "var(--font-syne)" }}>{selected.name}</h3>
+                    <p className="text-[10px]" style={{ color: "var(--faint)" }}>{selected.department}</p>
                   </div>
                 </div>
-                <button onClick={clearSelection} className="p-1 rounded-md text-gurukul-muted hover:text-gurukul-dark hover:bg-neutral-100 transition-colors" aria-label="Close preview">
+                <button onClick={clearSelection} className="p-1 rounded-md transition-colors" style={{ color: "var(--faint)" }} aria-label="Close preview">
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               {/* Body */}
               <div className="p-5 space-y-4 text-xs">
-                <span className={`inline-block text-[10px] px-2 py-0.5 rounded-full font-medium ${STATUS_BADGE[selected.accountStatus].cls}`}>
+                <span className="inline-block text-[10px] px-2 py-0.5 rounded-full font-medium" style={
+                  selected.accountStatus === "ADMIN"
+                    ? { background: "var(--accent)", color: "#ffffff" }
+                    : selected.accountStatus === "ACTIVE"
+                      ? { background: "var(--green-soft)", color: "var(--green-text)" }
+                      : { background: "var(--soft)", color: "var(--muted)" }
+                }>
                   {STATUS_BADGE[selected.accountStatus].label}
                 </span>
 
@@ -244,24 +254,24 @@ function StaffDirectory() {
                   { icon: Clock, label: "Workload Limits", value: `${selected.maxPeriodsPerDay} periods/day · ${selected.maxPeriodsPerWeek} periods/week` },
                 ].map(({ icon: Icon, label, value }) => (
                   <div key={label} className="flex gap-2.5">
-                    <Icon className="w-3.5 h-3.5 text-gurukul-muted mt-0.5 shrink-0" />
+                    <Icon className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: "var(--faint)" }} />
                     <div className="min-w-0">
-                      <p className="text-[10px] font-medium text-gurukul-muted uppercase tracking-wide">{label}</p>
-                      <p className="text-gurukul-dark font-medium break-words">{value}</p>
+                      <p className="text-[10px] font-medium uppercase tracking-wide" style={{ color: "var(--faint)" }}>{label}</p>
+                      <p className="text-gurukul-ink font-medium break-words">{value}</p>
                     </div>
                   </div>
                 ))}
 
                 {isAdmin && (
                   <button onClick={() => setEditStaff(selected)}
-                    className="mt-2 w-full border border-slate-300 hover:border-gurukul-tech text-slate-700 font-medium text-xs py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-colors">
+                    className="btn-secondary mt-2 w-full font-medium text-xs py-2.5 flex items-center justify-center gap-1.5">
                     <Pencil className="w-3.5 h-3.5" /><span>Edit Teacher Details</span>
                   </button>
                 )}
 
                 <Link
                   href={`/staff/${selected.id}`}
-                  className="btn-primary mt-2 w-full font-medium text-xs py-2.5 flex items-center justify-center gap-2 transition-colors"
+                  className="btn-primary mt-2 w-full font-medium text-xs py-2.5 flex items-center justify-center gap-2"
                 >
                   <FileText className="w-3.5 h-3.5" />
                   <span>Open Full Profile</span>
@@ -284,14 +294,14 @@ function StaffDirectory() {
 
       {/* Invite Modal */}
       {showInvite && (
-        <div className="fixed inset-0 bg-gurukul-dark/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center p-4" style={{ background: "rgba(17, 19, 18, 0.5)" }}>
           <div className="card shadow-xl w-full max-w-md p-6 animate-slide-up">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-base font-bold text-gurukul-dark flex items-center gap-2">
-                <UserPlus className="w-4 h-4 text-gurukul-dark" />
+              <h2 className="text-base font-bold text-gurukul-ink flex items-center gap-2" style={{ fontFamily: "var(--font-syne)" }}>
+                <UserPlus className="w-4 h-4" style={{ color: "var(--accent)" }} />
                 <span>Invite a Teacher</span>
               </h2>
-              <button onClick={resetInviteModal} className="p-1.5 rounded-lg text-gurukul-muted hover:bg-neutral-100 transition-colors">
+              <button onClick={resetInviteModal} className="p-1.5 rounded-lg transition-colors" style={{ color: "var(--faint)" }}>
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -299,13 +309,13 @@ function StaffDirectory() {
             {emailSent || emailFallbackUrl ? (
               <div className="space-y-4">
                 {emailSent ? (
-                  <div className="flex items-center gap-2 text-neutral-700 bg-neutral-100 border border-neutral-200 rounded-lg px-3 py-2.5 text-xs font-medium">
+                  <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2.5 text-xs font-medium text-emerald-800">
                     <CheckCircle className="w-4 h-4 shrink-0" />
                     <span>Invitation email sent to <strong>{email}</strong>. The teacher will receive a link to set up their account.</span>
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-center gap-2 text-neutral-700 bg-neutral-100 border border-neutral-200 rounded-lg px-3 py-2.5 text-xs font-medium">
+                    <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5 text-xs font-medium text-amber-700">
                       <AlertCircle className="w-4 h-4 shrink-0" />
                       <span>Invitation created but email delivery failed. Please share this link manually:</span>
                     </div>
@@ -313,16 +323,16 @@ function StaffDirectory() {
                       readOnly
                       value={emailFallbackUrl}
                       onFocus={(e) => e.target.select()}
-                      className="w-full text-[11px] font-mono px-3 py-2.5 rounded-lg border border-gurukul-gray bg-neutral-50 text-gurukul-ocean"
+                      className="w-full text-[11px] font-mono px-3 py-2.5 rounded-lg input"
                     />
                   </>
                 )}
-                <p className="text-[11px] text-gurukul-muted">
+                <p className="text-[11px]" style={{ color: "var(--faint)" }}>
                   The invitation link is valid for 7 days. The teacher opens it, sets a password, and their account is ready.
                 </p>
                 <button
                   onClick={resetInviteModal}
-                  className="btn-secondary w-full text-gurukul-dark text-xs font-medium py-2.5"
+                  className="btn-secondary w-full text-xs font-medium py-2.5"
                 >
                   Done
                 </button>
@@ -330,30 +340,30 @@ function StaffDirectory() {
             ) : (
               <form onSubmit={handleInvite} className="space-y-4">
                 {inviteError && (
-                  <div className="flex items-center gap-2 text-xs text-neutral-700 bg-neutral-100 border border-neutral-200 rounded-lg px-3 py-2.5">
+                  <div className="flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     <span>{inviteError}</span>
                   </div>
                 )}
                 <div>
-                  <label className="text-xs font-medium text-gurukul-ocean mb-1.5 block">Full Name</label>
+                  <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--muted)" }}>Full Name</label>
                   <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Dr. Jane Smith"
-                    className="input w-full text-sm px-3 py-2.5 rounded-lg text-gurukul-dark focus:ring-1 focus:ring-gurukul-dark/20 focus:border-gurukul-dark" />
+                    className="input w-full text-sm px-3 py-2.5 rounded-lg text-gurukul-ink" />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gurukul-ocean mb-1.5 block">Email Address</label>
+                  <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--muted)" }}>Email Address</label>
                   <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jane.smith@gurukul.edu"
-                    className="input w-full text-sm px-3 py-2.5 rounded-lg text-gurukul-dark focus:ring-1 focus:ring-gurukul-dark/20 focus:border-gurukul-dark" />
+                    className="input w-full text-sm px-3 py-2.5 rounded-lg text-gurukul-ink" />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gurukul-ocean mb-1.5 block">Department</label>
+                  <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--muted)" }}>Department</label>
                   <input required value={department} onChange={(e) => setDepartment(e.target.value)} placeholder="Physics & Chemistry"
-                    className="input w-full text-sm px-3 py-2.5 rounded-lg text-gurukul-dark focus:ring-1 focus:ring-gurukul-dark/20 focus:border-gurukul-dark" />
+                    className="input w-full text-sm px-3 py-2.5 rounded-lg text-gurukul-ink" />
                 </div>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="btn-primary w-full disabled:opacity-40 font-medium text-sm py-2.5 flex items-center justify-center gap-2 transition-colors"
+                  className="btn-primary w-full disabled:opacity-40 font-medium text-sm py-2.5 flex items-center justify-center gap-2"
                 >
                   <Send className="w-4 h-4" />
                   <span>{isSubmitting ? "Sending Invitation..." : "Send Invitation"}</span>
@@ -369,7 +379,7 @@ function StaffDirectory() {
 
 export default function StaffDirectoryPage() {
   return (
-    <Suspense fallback={<p className="text-sm text-gurukul-muted py-10 text-center">Loading...</p>}>
+    <Suspense fallback={<p className="text-sm py-10 text-center" style={{ color: "var(--faint)" }}>Loading...</p>}>
       <StaffDirectory />
     </Suspense>
   );

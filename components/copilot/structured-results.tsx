@@ -17,9 +17,7 @@ export function StructuredResults({
 }) {
   const rows = response.data?.rows || [];
   const columns = rows.length ? Object.keys(rows[0]) : [];
-  const isProfile = response.data?.kind === "student_profile" || response.data?.kind === "staff_profile" || response.data?.kind === "fee_detail";
-  const isFieldProfile = isProfile && rows.length > 0 && "Field" in rows[0];
-  const paymentRows = response.data?.paymentRows || [];
+  const isProfile = response.data?.kind === "student_profile";
 
   return (
     <div className="mt-3 max-w-full space-y-2.5 overflow-hidden">
@@ -35,16 +33,8 @@ export function StructuredResults({
         </div>
       )}
 
-      {/* ── Navigation preview ── */}
-      {response.data?.preview && (
-        <div className="rounded-lg border border-sky-200 bg-sky-50/60 px-3 py-2 text-[10px]">
-          <p className="font-semibold text-sky-900">{response.data.preview.section}</p>
-          <p className="text-sky-700 mt-0.5">{response.data.preview.hint}</p>
-        </div>
-      )}
-
-      {/* ── Student / Staff / Fee Profile Card ── */}
-      {isFieldProfile && rows.length > 0 && (
+      {/* ── Student Profile Card (special layout for single student) ── */}
+      {isProfile && rows.length > 0 && (
         <div className="copilot-profile-card">
           <div className="copilot-profile-header">
             <div className="copilot-profile-avatar">
@@ -52,12 +42,11 @@ export function StructuredResults({
             </div>
             <div>
               <p className="copilot-profile-name">
-                {rows.find((r) => r.Field === "Name")?.Value || rows.find((r) => r.Field === "Student")?.Value || "Record"}
+                {rows.find((r) => r.Field === "Name")?.Value || "Student"}
               </p>
               <p className="copilot-profile-meta">
-                {response.data?.kind === "staff_profile"
-                  ? rows.find((r) => r.Field === "Department")?.Value
-                  : `${rows.find((r) => r.Field === "Class")?.Value || ""}${rows.find((r) => r.Field === "Roll Number") ? ` · Roll ${rows.find((r) => r.Field === "Roll Number")?.Value}` : ""}`}
+                {rows.find((r) => r.Field === "Class")?.Value} · Roll{" "}
+                {rows.find((r) => r.Field === "Roll Number")?.Value}
               </p>
             </div>
           </div>
@@ -67,8 +56,7 @@ export function StructuredResults({
                 (r) =>
                   r.Field !== "Name" &&
                   r.Field !== "Roll Number" &&
-                  r.Field !== "Class" &&
-                  r.Field !== "Student",
+                  r.Field !== "Class",
               )
               .map((row) => (
                 <div key={row.Field} className="copilot-profile-row">
@@ -90,38 +78,8 @@ export function StructuredResults({
         </div>
       )}
 
-      {/* ── Payment history (fee detail) ── */}
-      {paymentRows.length > 0 && (
-        <div className="copilot-table-container">
-          <div className="copilot-table-header">
-            <Database className="h-3 w-3 text-gurukul-muted" />
-            <span>Payment History</span>
-          </div>
-          <div className="copilot-table-scroll">
-            <table className="w-full text-left text-[10px]">
-              <thead>
-                <tr className="copilot-table-thead">
-                  {Object.keys(paymentRows[0]).map((col) => (
-                    <th key={col} className="copilot-table-th">{col}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {paymentRows.map((row, i) => (
-                  <tr key={i} className="copilot-table-tr">
-                    {Object.keys(paymentRows[0]).map((col) => (
-                      <td key={col} className="copilot-table-td">{row[col]}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
       {/* ── Data Table (for non-profile data) ── */}
-      {!isFieldProfile && rows.length > 0 && (
+      {!isProfile && rows.length > 0 && (
         <div className="copilot-table-container">
           <div className="copilot-table-header">
             <Database className="h-3 w-3 text-gurukul-muted" />

@@ -1,14 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { evaluateTimetable, type TimetableSlotInput } from "@/lib/timetable/optimizer";
 import {
-  denyGradeAccess,
-  enrichQueryWithHistory,
-  getDefaultTeacherGrade,
-  getTeacherGrades,
-  teacherCanAccessGrade,
-  type CopilotHistoryItem,
-} from "./access";
-import {
   formatFilterDescription,
   isConflictQuery,
   isMyScheduleQuery,
@@ -26,42 +18,13 @@ import {
 } from "./entities";
 import type { AssistantAction, AssistantIntent, AssistantResponse, CopilotContext } from "./types";
 
-const ROUTES: Record<string, { route: string; label: string; roles: CopilotContext["role"][]; section: string; hint: string }> = {
-  students: { route: "/students", label: "Open Student Registry", roles: ["ADMIN", "TEACHER"], section: "Students", hint: "Search students, open profiles, and manage records." },
-  attendance: { route: "/attendance", label: "Open Attendance", roles: ["ADMIN", "TEACHER"], section: "Attendance", hint: "Take daily attendance and review saved rolls." },
-  "attendance-take": { route: "/attendance/take", label: "Take Attendance (Focus)", roles: ["ADMIN", "TEACHER"], section: "Attendance → Focus mode", hint: "Distraction-free attendance for teachers." },
-  documents: { route: "/documents", label: "Open Document Intelligence", roles: ["ADMIN", "TEACHER"], section: "Documents", hint: "Review OCR documents and school policies." },
-  timetable: { route: "/timetable", label: "Open Timetable Optimizer", roles: ["ADMIN", "TEACHER"], section: "Timetable", hint: "View schedules, rooms, and conflict flags." },
-  communications: { route: "/communications", label: "Open Parent Connect", roles: ["ADMIN", "TEACHER"], section: "Parent Connect", hint: "Absence alerts and messages to parents." },
-  staff: { route: "/staff", label: "Open Faculty & Staff", roles: ["ADMIN"], section: "Staff", hint: "Faculty directory and workload." },
-  roles: { route: "/admin/roles", label: "Open Audit & Access", roles: ["ADMIN"], section: "Master Control", hint: "Security audit and role management." },
-};
-
-const NAV_HELP: Record<string, { section: string; steps: string[]; routeKey: string }> = {
-  clash: {
-    section: "Timetable",
-    routeKey: "timetable",
-    steps: [
-      "Open **Timetable** from the sidebar.",
-      "Conflicts are flagged automatically in the master schedule view.",
-      "Ask me “timetable conflicts” anytime for a verified conflict list.",
-    ],
-  },
-  attendance: {
-    section: "Attendance",
-    routeKey: "attendance",
-    steps: ["Open **Attendance** from the sidebar.", "Pick your class and date.", "Tap roll numbers to mark absent, then **Review & Submit**."],
-  },
-  fees: {
-    section: "Students → Manage Fees",
-    routeKey: "students",
-    steps: ["Open **Students** from the sidebar.", "Select a student.", "Click **Manage Fees** to set amounts or record payments."],
-  },
-  parent: {
-    section: "Parent Connect",
-    routeKey: "communications",
-    steps: ["Open **Parent Connect** from the sidebar.", "Use **Absence Alerts** for auto-sent attendance messages.", "Use **Messages** for custom parent notes."],
-  },
+const ROUTES: Record<string, { route: string; label: string; roles: CopilotContext["role"][] }> = {
+  students: { route: "/students", label: "Open Student Registry", roles: ["ADMIN", "TEACHER"] },
+  attendance: { route: "/attendance", label: "Open Attendance", roles: ["ADMIN", "TEACHER"] },
+  documents: { route: "/documents", label: "Open Document Intelligence", roles: ["ADMIN", "TEACHER"] },
+  timetable: { route: "/timetable", label: "Open Timetable Optimizer", roles: ["ADMIN", "TEACHER"] },
+  staff: { route: "/staff", label: "Open Faculty & Staff", roles: ["ADMIN"] },
+  roles: { route: "/admin/roles", label: "Open Audit & Access", roles: ["ADMIN"] },
 };
 
 function authorizedRoute(key: string, context: CopilotContext): AssistantAction[] {
@@ -72,26 +35,28 @@ function authorizedRoute(key: string, context: CopilotContext): AssistantAction[
 function classify(query: string): AssistantIntent {
   const q = query.toLowerCase();
   if (/ignore (previous|instructions)|system prompt|api key|password|credential|environment variable|all database/.test(q)) return "OUT_OF_SCOPE";
-  if (/how\s+(?:do\s+i|to|can\s+i)|where\s+(?:can\s+i|do\s+i|is)|show\s+me\s+how|navigate|go\s+to|open|take\s+me/.test(q)) return "NAVIGATION_REQUEST";
+  if (/open|take me|navigate|go to/.test(q)) return "NAVIGATION_REQUEST";
   if (/mark .* (absent|present)|record attendance/.test(q)) return "ACTION_REQUEST";
-  if (/fee|fees|payment|outstanding|pending balance|receipt/.test(q)) return "FEE_QUERY";
-  if (/parent|guardian|mother|father/.test(q) && /contact|email|phone|details|info|who/.test(q)) return "STUDENT_QUERY";
+  if (/fee|fees|payment|outstanding|pending balance/.test(q)) return "FEE_QUERY";
   if (/how many|count|total students|student count|enrollment/.test(q)) return "STATS_QUERY";
   if (/timetable|schedule|period|clash|conflict|double[- ]book/.test(q)) return "TIMETABLE_QUERY";
+  // Room queries: "is room 101 occupied", "who is in room 101", "room101 free?"
   if (/\broom\s*#?\s*\d+|\blab\s+[a-z]\b/i.test(q) && /occupied|free|available|booked|taken|who|used|using|empty/i.test(q)) return "TIMETABLE_QUERY";
   if (/\broom\s*#?\s*\d+/i.test(q) && /\b(monday|tuesday|wednesday|thursday|friday|mon|tue|wed|thu|fri)\b/i.test(q)) return "TIMETABLE_QUERY";
   if (/\bteach(es|ing)?\b/.test(q) && /who|which|what subject/.test(q)) return "TIMETABLE_QUERY";
+  // "Is X present on <date>?" or "was X absent on <date>?" → attendance even without the word 'attendance'
   if (/\b(is|was|were)\b.*\b(present|absent)\b/i.test(q)) return "ATTENDANCE_QUERY";
   if (/attendance|absent|present|late/.test(q)) return "ATTENDANCE_QUERY";
   if (/staff|faculty|teacher|professor|department|instructor/.test(q)) return "STAFF_QUERY";
   if (/policy|policies|document|handbook|rule|leave/.test(q)) return "DOCUMENT_QUERY";
+  // "Who is roll no 30" or "tell me about roll 7" → student query
   if (/\broll\s*(?:no\.?|number|#)?\s*\d+/i.test(q)) return "STUDENT_QUERY";
+  // Explicit student/profile/class keywords
   if (/student|class|roll|guardian|profile/.test(q)) return "STUDENT_QUERY";
-  if (/\b(who\s+is|tell\s+me\s+about|details?\s+(?:of|for|about)|info\s+(?:of|on|about)|find|search|lookup|look\s+up|know\s+about)\b/i.test(q)) {
-    if (/teacher|faculty|professor|staff|instructor/.test(q)) return "STAFF_QUERY";
-    return "STUDENT_QUERY";
-  }
+  // Conversational name lookups: "who is Mason", "tell me about Sophia", "details of Liam", "find Noah"
+  if (/\b(who\s+is|tell\s+me\s+about|details?\s+(?:of|for|about)|info\s+(?:of|on|about)|find|search|lookup|look\s+up|know\s+about)\b/i.test(q)) return "STUDENT_QUERY";
   if (/what can you do|help|capabilit|supported task/.test(q)) return "AMBIGUOUS_QUERY";
+  // Fallback: if the query looks like just a name (1-3 capitalized words, no other keywords), treat as student lookup
   if (/^[A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2}[?.!]?$/.test(query.trim())) return "STUDENT_QUERY";
   return "OUT_OF_SCOPE";
 }
@@ -142,18 +107,8 @@ function attendanceNameTerms(query: string): string[] {
   ]);
 }
 
-async function teacherScope(context: CopilotContext) {
-  const allowedGrades = context.role === "TEACHER" ? await getTeacherGrades(context.staffId) : [];
-  const defaultGrade = context.role === "TEACHER" ? await getDefaultTeacherGrade(context.staffId) : undefined;
-  return { allowedGrades, defaultGrade };
-}
-
-function enforceGradeAccess(context: CopilotContext, grade: string | undefined, allowedGrades: string[]): AssistantResponse | null {
-  if (!grade || context.role === "ADMIN") return null;
-  if (!teacherCanAccessGrade(context, grade, allowedGrades)) {
-    return { message: denyGradeAccess(context, grade, allowedGrades), intent: "OUT_OF_SCOPE" };
-  }
-  return null;
+function scopedGrade(context: CopilotContext) {
+  return context.role === "TEACHER" ? "Grade 10A" : undefined;
 }
 
 function studentTerms(query: string) {
@@ -196,16 +151,10 @@ async function buildStudentProfile(studentId: string, context: CopilotContext): 
     where: { id: studentId },
     include: {
       attendanceEntries: { select: { status: true } },
-      feeAccount: {
-        include: { payments: { orderBy: { paidAt: "desc" }, take: 5 } },
-      },
+      feeAccount: { select: { amountDue: true, amountPaid: true, status: true } },
     },
   });
   if (!student) return { message: "I couldn't find that student record.", intent: "STUDENT_QUERY" };
-
-  const { allowedGrades } = await teacherScope(context);
-  const denied = enforceGradeAccess(context, student.grade, allowedGrades);
-  if (denied) return denied;
 
   const totalEntries = student.attendanceEntries.length;
   const presentCount = student.attendanceEntries.filter((e) => e.status === "PRESENT").length;
@@ -221,15 +170,12 @@ async function buildStudentProfile(studentId: string, context: CopilotContext): 
     { Field: "Class", Value: student.grade },
     { Field: "Date of Birth", Value: student.dob },
     { Field: "Parent/Guardian", Value: student.parentName },
-    { Field: "Parent Email", Value: student.parentEmail || "Not recorded" },
     { Field: "Contact", Value: student.contact },
     { Field: "Address", Value: student.address || "Not recorded" },
     { Field: "Medical Notes", Value: student.medicalNotes || "None" },
     { Field: "Status", Value: student.status },
     { Field: "Attendance", Value: totalEntries > 0 ? `${attendancePct}% (${presentCount}P / ${absentCount}A out of ${totalEntries} records)` : "No attendance records" },
-    { Field: "Fee Status", Value: student.feeAccount ? `${feeStatus} — Total ₹${student.feeAccount.amountDue.toLocaleString("en-IN")}, Paid ₹${student.feeAccount.amountPaid.toLocaleString("en-IN")}, Due ₹${feeOutstanding.toLocaleString("en-IN")}` : "No fee account" },
-    { Field: "Fee Due Date", Value: student.feeAccount?.dueDate || "—" },
-    { Field: "Academic Year", Value: student.feeAccount?.academicYear || "—" },
+    { Field: "Fee Status", Value: student.feeAccount ? `${feeStatus} — Outstanding: ₹${feeOutstanding.toLocaleString("en-IN")}` : "No fee account" },
   ];
 
   const stats = [
@@ -239,78 +185,19 @@ async function buildStudentProfile(studentId: string, context: CopilotContext): 
     { label: "Fee Status", value: feeStatus },
   ];
 
-  const paymentRows = student.feeAccount?.payments.map((p) => ({
-    Date: p.paidAt,
-    Amount: `₹${p.amount.toLocaleString("en-IN")}`,
-    Method: p.method,
-    Receipt: p.receiptNo,
-  })) ?? [];
-
   return {
-    message: `Here is the complete profile for ${student.name} (Roll ${student.rollNumber}, ${student.grade}). Parent: ${student.parentName}${student.parentEmail ? ` (${student.parentEmail})` : ""}.`,
+    message: `Here is the complete profile for ${student.name} (Roll ${student.rollNumber}, ${student.grade}).`,
     intent: "STUDENT_QUERY",
     sources: [{ type: "database", label: `Student profile: ${student.name}`, id: student.id }],
-    actions: [
-      ...authorizedRoute("students", context),
-      { id: `student-profile-${student.id}`, label: "Open full profile", type: "navigate", route: `/students/${student.id}` },
-    ],
-    data: {
-      kind: "student_profile",
-      rows: profileRows,
-      stats,
-      ...(paymentRows.length ? { preview: { section: "Recent payments", hint: `${paymentRows.length} payment(s) on file` } } : {}),
-    },
+    actions: authorizedRoute("students", context),
+    data: { kind: "student_profile", rows: profileRows, stats },
   };
 }
 
 async function studentSearch(query: string, context: CopilotContext): Promise<AssistantResponse> {
   const q = query.toLowerCase();
-  const { allowedGrades, defaultGrade } = await teacherScope(context);
-  const mentionedGrade = requestedGrade(query);
-  const grade = mentionedGrade || defaultGrade;
-  const denied = enforceGradeAccess(context, mentionedGrade, allowedGrades);
-  if (denied) return denied;
+  const grade = requestedGrade(query) || scopedGrade(context);
   const rollNo = requestedRollNumber(query);
-
-  // Parent lookup: "parent of Aarav" / "parent contact for roll 7"
-  if (/parent|guardian/.test(q)) {
-    const terms = studentTerms(query);
-    const parentStudents = await prisma.student.findMany({
-      where: {
-        ...(grade ? { grade } : context.role === "TEACHER" && allowedGrades.length ? { grade: { in: allowedGrades } } : {}),
-        ...(terms.length ? { OR: [{ parentName: { contains: terms.join(" "), mode: "insensitive" } }, { AND: terms.map((t) => ({ name: { contains: t, mode: "insensitive" as const } })) }] } : {}),
-        ...(rollNo !== undefined ? { rollNumber: rollNo } : {}),
-      },
-      select: { id: true, name: true, grade: true, rollNumber: true, parentName: true, parentEmail: true, contact: true },
-      take: 10,
-    });
-    if (!parentStudents.length) return { message: "I couldn't find a student or parent matching that request.", intent: "STUDENT_QUERY" };
-    if (parentStudents.length === 1) {
-      const s = parentStudents[0];
-      return {
-        message: `Parent details for ${s.name} (Roll ${s.rollNumber}, ${s.grade}): **${s.parentName}** — ${s.contact}${s.parentEmail ? `, email: ${s.parentEmail}` : ""}.`,
-        intent: "STUDENT_QUERY",
-        sources: [{ type: "database", label: `Parent: ${s.parentName}`, id: s.id }],
-        actions: [{ id: `student-${s.id}`, label: "Open student profile", type: "navigate", route: `/students/${s.id}` }],
-        data: {
-          kind: "student_profile",
-          rows: [
-            { Field: "Student", Value: s.name },
-            { Field: "Class", Value: s.grade },
-            { Field: "Roll", Value: s.rollNumber },
-            { Field: "Parent/Guardian", Value: s.parentName },
-            { Field: "Contact", Value: s.contact },
-            { Field: "Parent Email", Value: s.parentEmail || "Not recorded" },
-          ],
-        },
-      };
-    }
-    return {
-      message: `I found ${parentStudents.length} matches. Which student did you mean?`,
-      intent: "STUDENT_QUERY",
-      data: { kind: "students", rows: parentStudents.map((s) => ({ Student: s.name, Roll: s.rollNumber, Class: s.grade, Parent: s.parentName, Contact: s.contact })) },
-    };
-  }
 
   // Count query: "how many students in 10A?"
   if (/how many|count|total/.test(q) && grade) {
@@ -355,7 +242,7 @@ async function studentSearch(query: string, context: CopilotContext): Promise<As
   const terms = studentTerms(query);
   const students = await prisma.student.findMany({
     where: {
-      ...(grade ? { grade } : context.role === "TEACHER" && allowedGrades.length ? { grade: { in: allowedGrades } } : {}),
+      ...(grade ? { grade } : {}),
       ...(terms.length ? { AND: terms.map((term) => ({ name: { contains: term, mode: "insensitive" as const } })) } : {}),
     },
     select: { id: true, rollNumber: true, name: true, grade: true, status: true },
@@ -386,11 +273,7 @@ async function studentSearch(query: string, context: CopilotContext): Promise<As
 }
 
 async function stats(query: string, context: CopilotContext): Promise<AssistantResponse> {
-  const { allowedGrades, defaultGrade } = await teacherScope(context);
-  const mentionedGrade = requestedGrade(query);
-  const grade = mentionedGrade || defaultGrade;
-  const denied = enforceGradeAccess(context, mentionedGrade, allowedGrades);
-  if (denied) return denied;
+  const grade = requestedGrade(query) || scopedGrade(context);
   if (grade) {
     const [studentCount, slotCount] = await Promise.all([
       prisma.student.count({ where: { grade } }),
@@ -429,35 +312,11 @@ async function stats(query: string, context: CopilotContext): Promise<AssistantR
 
 async function attendance(query: string, context: CopilotContext): Promise<AssistantResponse> {
   const q = query.toLowerCase();
-  const { allowedGrades, defaultGrade } = await teacherScope(context);
+  const teacherScopedGrade = scopedGrade(context);
   const mentionedGrade = requestedGrade(query);
-  const effectiveGrade = mentionedGrade || defaultGrade;
-  const denied = enforceGradeAccess(context, mentionedGrade, allowedGrades);
-  if (denied) return denied;
+  // Prefer explicitly mentioned grade, fall back to teacher scope
+  const effectiveGrade = mentionedGrade || teacherScopedGrade;
   const rollNo = requestedRollNumber(query);
-
-  // "How many absent in Grade 10A on date?"
-  if (/how many/.test(q) && /absent/.test(q)) {
-    const lookupDate = requestedDate(query) || new Date().toISOString().slice(0, 10);
-    const records = await prisma.attendanceRecord.findMany({
-      where: {
-        date: lookupDate,
-        ...(effectiveGrade ? { grade: effectiveGrade } : context.role === "TEACHER" && allowedGrades.length ? { grade: { in: allowedGrades } } : {}),
-      },
-      include: { entries: { where: { status: "ABSENT" }, include: { student: { select: { name: true, grade: true } } } } },
-    });
-    const absentCount = records.reduce((sum, r) => sum + r.entries.length, 0);
-    const rows = records.flatMap((r) => r.entries.map((e) => ({ Student: e.student.name, Roll: e.rollNumber, Class: e.student.grade, Date: r.date })));
-    return {
-      message: absentCount
-        ? `${absentCount} student${absentCount === 1 ? " was" : "s were"} absent on ${lookupDate}${effectiveGrade ? ` in ${effectiveGrade}` : ""}.`
-        : `No absences recorded on ${lookupDate}${effectiveGrade ? ` in ${effectiveGrade}` : ""}.`,
-      intent: "ATTENDANCE_QUERY",
-      sources: records.map((r) => ({ type: "database", label: `Attendance: ${r.grade} · ${r.date}`, id: r.id })),
-      actions: authorizedRoute("attendance", context),
-      data: { kind: "attendance", rows, stats: [{ label: "Absent", value: String(absentCount) }, { label: "Date", value: lookupDate }, ...(effectiveGrade ? [{ label: "Class", value: effectiveGrade }] : [])] },
-    };
-  }
 
   // At-risk query: "students below 75%"
   if (/below\s*75|under\s*75|at risk|risk/.test(q)) {
@@ -578,10 +437,7 @@ async function attendance(query: string, context: CopilotContext): Promise<Assis
   // Default: absences for a date
   const lookupDate = date || new Date().toISOString().slice(0, 10);
   const records = await prisma.attendanceRecord.findMany({
-    where: {
-      date: lookupDate,
-      ...(effectiveGrade ? { grade: effectiveGrade } : context.role === "TEACHER" && allowedGrades.length ? { grade: { in: allowedGrades } } : {}),
-    },
+    where: { date: lookupDate, ...(effectiveGrade ? { grade: effectiveGrade } : {}) },
     include: { entries: { where: { status: "ABSENT" }, include: { student: { select: { name: true, grade: true } } } } },
     take: 10,
   });
@@ -595,118 +451,8 @@ async function attendance(query: string, context: CopilotContext): Promise<Assis
   };
 }
 
-async function buildStaffProfile(staffId: string, context: CopilotContext): Promise<AssistantResponse> {
-  const member = await prisma.staff.findUnique({
-    where: { id: staffId },
-    include: {
-      timetableSlots: { include: { subject: true, room: true }, orderBy: [{ day: "asc" }, { period: "asc" }], take: 20 },
-      _count: { select: { timetableSlots: true } },
-    },
-  });
-  if (!member) return { message: "I couldn't find that faculty record.", intent: "STAFF_QUERY" };
-
-  const profileRows = [
-    { Field: "Name", Value: member.name },
-    { Field: "Department", Value: member.department },
-    { Field: "Email", Value: member.email },
-    { Field: "Max periods/day", Value: member.maxPeriodsPerDay },
-    { Field: "Max periods/week", Value: member.maxPeriodsPerWeek },
-    { Field: "Status", Value: member.isActive ? "Active" : "Inactive" },
-    { Field: "Scheduled periods", Value: member._count.timetableSlots },
-  ];
-
-  const scheduleRows = member.timetableSlots.map((s) => ({
-    Day: s.day,
-    Period: s.period,
-    Class: s.grade,
-    Subject: s.subject.name,
-    Room: s.room.roomNumber,
-  }));
-
-  return {
-    message: `Faculty profile for **${member.name}** (${member.department}) — ${member._count.timetableSlots} scheduled period${member._count.timetableSlots === 1 ? "" : "s"}.`,
-    intent: "STAFF_QUERY",
-    sources: [{ type: "database", label: `Faculty: ${member.name}`, id: member.id }],
-    actions: authorizedRoute("staff", context),
-    data: {
-      kind: "staff_profile",
-      rows: profileRows,
-      stats: [
-        { label: "Department", value: member.department },
-        { label: "Periods", value: String(member._count.timetableSlots) },
-        { label: "Email", value: member.email },
-      ],
-      preview: scheduleRows.length ? { section: "Upcoming schedule sample", hint: `${scheduleRows.length} slot(s) shown` } : undefined,
-    },
-  };
-}
-
 async function fees(query: string, context: CopilotContext): Promise<AssistantResponse> {
-  const q = query.toLowerCase();
-  const { allowedGrades, defaultGrade } = await teacherScope(context);
-  const mentionedGrade = requestedGrade(query);
-  const grade = mentionedGrade || defaultGrade;
-  const rollNo = requestedRollNumber(query);
-  const terms = studentTerms(query);
-
-  // Per-student fee lookup
-  if (rollNo !== undefined || terms.length || /fee/.test(q) && /student|roll|for/.test(q)) {
-    const student = await prisma.student.findFirst({
-      where: {
-        ...(rollNo !== undefined ? { rollNumber: rollNo } : {}),
-        ...(grade ? { grade } : context.role === "TEACHER" && allowedGrades.length ? { grade: { in: allowedGrades } } : {}),
-        ...(terms.length ? { AND: terms.map((t) => ({ name: { contains: t, mode: "insensitive" as const } })) } : {}),
-      },
-      include: { feeAccount: { include: { payments: { orderBy: { paidAt: "desc" } } } } },
-    });
-    if (!student) return { message: "I couldn't find a student with a fee account matching that request.", intent: "FEE_QUERY" };
-    if (context.role === "TEACHER" && !teacherCanAccessGrade(context, student.grade, allowedGrades)) {
-      return { message: denyGradeAccess(context, student.grade, allowedGrades), intent: "FEE_QUERY" };
-    }
-    if (!student.feeAccount) return { message: `${student.name} does not have a fee account set up yet.`, intent: "FEE_QUERY" };
-
-    const acc = student.feeAccount;
-    const remaining = Math.max(0, acc.amountDue - acc.amountPaid);
-    const summaryRows = [
-      { Field: "Student", Value: `${student.name} (${student.grade})` },
-      { Field: "Total fee", Value: `₹${acc.amountDue.toLocaleString("en-IN")}` },
-      { Field: "Paid", Value: `₹${acc.amountPaid.toLocaleString("en-IN")}` },
-      { Field: "Remaining", Value: `₹${remaining.toLocaleString("en-IN")}` },
-      { Field: "Status", Value: acc.status },
-      { Field: "Due date", Value: acc.dueDate },
-      { Field: "Academic year", Value: acc.academicYear },
-    ];
-    const paymentRows = acc.payments.map((p) => ({ Date: p.paidAt, Amount: `₹${p.amount.toLocaleString("en-IN")}`, Method: p.method, Receipt: p.receiptNo }));
-
-    return {
-      message: `Fee details for ${student.name}: **${acc.status}** — ₹${acc.amountPaid.toLocaleString("en-IN")} paid of ₹${acc.amountDue.toLocaleString("en-IN")} (₹${remaining.toLocaleString("en-IN")} remaining, due ${acc.dueDate}).`,
-      intent: "FEE_QUERY",
-      sources: [{ type: "database", label: `Fee account: ${student.name}`, id: acc.id }],
-      actions: [
-        ...authorizedRoute("students", context),
-        { id: `fee-student-${student.id}`, label: "Open student profile", type: "navigate", route: `/students/${student.id}` },
-      ],
-      data: {
-        kind: "fee_detail",
-        rows: summaryRows,
-        paymentRows,
-        stats: [
-          { label: "Paid", value: `₹${acc.amountPaid.toLocaleString("en-IN")}` },
-          { label: "Remaining", value: `₹${remaining.toLocaleString("en-IN")}` },
-          { label: "Status", value: acc.status },
-        ],
-        preview: paymentRows.length ? { section: "Payment history", hint: `${paymentRows.length} payment(s)` } : undefined,
-      },
-    };
-  }
-
-  if (context.role !== "ADMIN") {
-    return {
-      message: `As a teacher, you can ask about fees for a specific student in your class — e.g. "fees for roll 7 in ${defaultGrade || "Grade 10A"}" or "fee details for Aarav Sharma". School-wide fee reports are admin-only.`,
-      intent: "FEE_QUERY",
-    };
-  }
-
+  if (context.role !== "ADMIN") return { message: "Fee records are restricted to administrators in the current GURUKUL access model.", intent: "FEE_QUERY" };
   const minimum = query.match(/(?:above|over|more than)\s*₹?\s*([\d,]+)/i)?.[1];
   const accounts = await prisma.feeAccount.findMany({
     where: { amountDue: { gt: 0 }, ...(minimum ? { NOT: { amountDue: { lte: Number(minimum.replace(/,/g, "")) } } } : {}) },
@@ -936,9 +682,8 @@ async function staff(query: string, context: CopilotContext): Promise<AssistantR
     };
   }
 
-  if (staffMembers.length === 1) {
-    if (/\bteach(es|ing)?\b/i.test(query)) return timetable(`timetable ${staffMembers[0].name}`, context);
-    return buildStaffProfile(staffMembers[0].id, context);
+  if (staffMembers.length === 1 && /\bteach(es|ing)?\b/i.test(query)) {
+    return timetable(`timetable ${staffMembers[0].name}`, context);
   }
 
   return {
@@ -958,72 +703,24 @@ async function staff(query: string, context: CopilotContext): Promise<AssistantR
 
 function navigation(query: string, context: CopilotContext): AssistantResponse {
   const q = query.toLowerCase();
-
-  if (/clash|conflict|double/.test(q)) {
-    const guide = NAV_HELP.clash;
-    return {
-      message: `To see timetable clashes:\n• ${guide.steps.join("\n• ")}`,
-      intent: "NAVIGATION_REQUEST",
-      actions: authorizedRoute(guide.routeKey, context),
-      data: { kind: "navigation", rows: guide.steps.map((step, i) => ({ Step: i + 1, Instruction: step })), preview: { section: guide.section, hint: "Sidebar → Timetable" } },
-    };
-  }
-  if (/attendance|absent|present/.test(q) && /how|where|see|take/.test(q)) {
-    const guide = NAV_HELP.attendance;
-    return {
-      message: `To take or view attendance:\n• ${guide.steps.join("\n• ")}`,
-      intent: "NAVIGATION_REQUEST",
-      actions: [...authorizedRoute(guide.routeKey, context), ...authorizedRoute("attendance-take", context)],
-      data: { kind: "navigation", rows: guide.steps.map((step, i) => ({ Step: i + 1, Instruction: step })), preview: { section: guide.section, hint: "Sidebar → Attendance" } },
-    };
-  }
-  if (/fee|payment/.test(q) && /how|where|see|manage/.test(q)) {
-    const guide = NAV_HELP.fees;
-    return {
-      message: `To manage student fees:\n• ${guide.steps.join("\n• ")}`,
-      intent: "NAVIGATION_REQUEST",
-      actions: authorizedRoute(guide.routeKey, context),
-      data: { kind: "navigation", rows: guide.steps.map((step, i) => ({ Step: i + 1, Instruction: step })), preview: { section: guide.section, hint: "Students → Manage Fees" } },
-    };
-  }
-  if (/parent|message|communicat/.test(q) && /how|where|see|send/.test(q)) {
-    const guide = NAV_HELP.parent;
-    return {
-      message: `To contact parents:\n• ${guide.steps.join("\n• ")}`,
-      intent: "NAVIGATION_REQUEST",
-      actions: authorizedRoute(guide.routeKey, context),
-      data: { kind: "navigation", rows: guide.steps.map((step, i) => ({ Step: i + 1, Instruction: step })), preview: { section: guide.section, hint: "Sidebar → Parent Connect" } },
-    };
-  }
-
-  const key = q.includes("attendance") ? "attendance" : q.includes("student") ? "students" : q.includes("document") ? "documents" : q.includes("timetable") || q.includes("schedule") ? "timetable" : q.includes("parent") || q.includes("communicat") ? "communications" : q.includes("staff") ? "staff" : q.includes("role") || q.includes("audit") ? "roles" : "";
-  const route = key ? ROUTES[key] : undefined;
+  const key = q.includes("attendance") ? "attendance" : q.includes("student") ? "students" : q.includes("document") ? "documents" : q.includes("timetable") || q.includes("schedule") ? "timetable" : q.includes("staff") ? "staff" : q.includes("role") || q.includes("audit") ? "roles" : "";
   const actions = key ? authorizedRoute(key, context) : [];
-  if (actions.length && route) {
-    return {
-      message: `Open **${route.section}** from the sidebar — ${route.hint}`,
-      intent: "NAVIGATION_REQUEST",
-      actions,
-      data: { kind: "navigation", rows: [{ Section: route.section, Path: route.route, Description: route.hint }] },
-    };
-  }
-  return { message: "I couldn't find an authorized GURUKUL destination for that request. Try: attendance, students, timetable, documents, or parent connect.", intent: "NAVIGATION_REQUEST" };
+  return actions.length ? { message: "Here is the authorized GURUKUL workspace for that task.", intent: "NAVIGATION_REQUEST", actions } : { message: "I couldn't find an authorized GURUKUL destination for that request.", intent: "NAVIGATION_REQUEST" };
 }
 
 function capabilities(context: CopilotContext): AssistantResponse {
   const tasks = [
-    "Find a student profile, parent contact, or count students in a class",
-    "Who is absent today / on a date — and how many absent in a class",
-    "Fee details and payment history for a student",
-    "Class timetable, teacher schedule, room availability, or conflicts",
-    "Faculty profiles (admin) or your own profile (teacher)",
+    "Find a student or count students in a class",
+    "Verify a named student's submitted attendance for a date",
+    "List absences and attendance below 75%",
+    "Show a class timetable, teacher schedule, or timetable conflicts",
+    "Look up faculty and departments",
     "Search approved school policies and documents",
-    "How to navigate — e.g. “how to see timetable clash?”",
-    ...(context.role === "ADMIN" ? ["School-wide fee reports and statistics"] : ["Fees for students in your assigned classes"]),
+    ...(context.role === "ADMIN" ? ["Review pending fees and outstanding totals", "View school-wide statistics"] : ["View your teaching schedule"]),
     "Open an authorized GURUKUL workspace",
   ];
   return {
-    message: `I can help with these verified GURUKUL tasks:\n• ${tasks.join("\n• ")}\n\nTry: “Who is Prof. Alan Turing?”, “How many absent in Grade 10A today?”, or “Is Room 101 free on Monday period 2?”`,
+    message: `I can help with these verified GURUKUL tasks:\n• ${tasks.join("\n• ")}\n\nFor example: “Show Prof. Alan Turing’s timetable” or “Grade 10A schedule on Monday”.`,
     intent: "AMBIGUOUS_QUERY",
   };
 }
@@ -1045,10 +742,9 @@ function friendlyOutOfScope(): AssistantResponse {
 export async function answerCopilot(
   query: string,
   context: CopilotContext,
-  history: CopilotHistoryItem[] = [],
+  _history: Array<{ role: string; content: string; intent?: string }> = [],
 ): Promise<AssistantResponse> {
-  const enriched = enrichQueryWithHistory(query.trim().slice(0, 800), history);
-  const normalized = enriched.trim().slice(0, 800);
+  const normalized = query.trim().slice(0, 800);
   if (!normalized) return capabilities(context);
   if (/^(?:h+[iey]+|hello+|hey+|good\s+(?:morning|afternoon|evening)|thanks?|thank\s+you|how\s+are\s+you)[!,.?\s]*$/i.test(normalized)) return friendlyGreeting(context);
   const intent = classify(normalized);

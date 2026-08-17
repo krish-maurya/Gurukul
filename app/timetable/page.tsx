@@ -22,17 +22,17 @@ export default function TimetablePage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="border-b border-gurukul-gray pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="border-b pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" style={{ borderColor: "var(--line)" }}>
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-lg font-semibold text-gurukul-dark tracking-tight">
+            <h1 className="text-lg font-semibold text-gurukul-ink tracking-tight" style={{ fontFamily: "var(--font-syne)" }}>
               {isAdmin ? "Timetable Operations & Dispatch" : "School Timetable"}
             </h1>
             <span className="badge-default">
               {isAdmin ? "Admin Console" : "Teacher View"}
             </span>
           </div>
-          <p className="text-xs text-gurukul-ocean mt-1.5">
+          <p className="text-xs mt-1.5" style={{ color: "var(--muted)" }}>
             {isAdmin
               ? "Absence coverage and room clashes are date-isolated. Absences marked for one day do not affect other dates."
               : "Teachers can view the official approved schedule. Coverage and room modifications are managed by school administrators."}
@@ -48,9 +48,9 @@ export default function TimetablePage() {
             <CalendarPlus className="w-3.5 h-3.5" />
             <span>{isAdmin ? "Add Slot" : "Add My Lecture"}</span>
           </button>
-          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-neutral-200/80 shadow-subtle">
-            <Calendar className="w-3.5 h-3.5 text-gurukul-muted" />
-            <span className="text-xs font-medium text-gurukul-ocean">Schedule Date:</span>
+          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl shadow-subtle" style={{ border: "1px solid var(--line)" }}>
+            <Calendar className="w-3.5 h-3.5" style={{ color: "var(--faint)" }} />
+            <span className="text-xs font-medium" style={{ color: "var(--muted)" }}>Schedule Date:</span>
             <input
               type="date"
               aria-label="Select Date"

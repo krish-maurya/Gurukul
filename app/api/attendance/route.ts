@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendAbsenceMessages } from "@/lib/communication/engine";
+import { draftAbsenceMessages } from "@/lib/communication/engine";
 import { AuthError, requireSession } from "@/lib/auth/server";
 
 export async function GET(req: Request) {
@@ -105,17 +105,16 @@ export async function POST(req: Request) {
       return { recordId, totalEntries: entriesToCreate.length };
     });
 
-    // Auto-send parent messages for absentees — no manual Send needed
-    let parentNotified = 0;
+    // Draft parent messages for absentees — teachers review & send manually
+    let parentDrafts = 0;
     try {
       const absentees = entries.filter((e: { status: string }) => e.status === "ABSENT");
-      const origin = req.headers.get("origin") || `http://${req.headers.get("host") || "localhost:3000"}`;
-      parentNotified = await sendAbsenceMessages(absentees, date, grade, staffId, session.name, origin);
+      parentDrafts = await draftAbsenceMessages(absentees, date, grade);
     } catch (e) {
-      console.warn("[attendance] absence notification failed:", e);
+      console.warn("[attendance] absence draft generation failed:", e);
     }
 
-    return NextResponse.json({ success: true, result, parentNotified });
+    return NextResponse.json({ success: true, result, parentDrafts });
   } catch (error) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: error.status });

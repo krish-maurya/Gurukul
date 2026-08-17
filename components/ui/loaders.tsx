@@ -58,13 +58,13 @@ export function SkeletonDashboard() {
 export function SkeletonTable({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
   return (
     <div className="card overflow-hidden">
-      <div className="flex items-center gap-4 py-2.5 px-4 bg-neutral-50 border-b border-neutral-200">
+      <div className="flex items-center gap-4 py-2.5 px-4 border-b" style={{ background: "var(--soft)", borderColor: "var(--line)" }}>
         {Array.from({ length: cols }).map((_, i) => (
           <div key={i} className="skeleton skeleton-text w-16" />
         ))}
       </div>
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="border-b border-neutral-100 last:border-0">
+        <div key={i} className="border-b last:border-0" style={{ borderColor: "var(--hover)" }}>
           <SkeletonRow cols={cols} />
         </div>
       ))}

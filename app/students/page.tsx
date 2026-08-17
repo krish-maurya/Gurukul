@@ -22,9 +22,9 @@ interface StudentRecord {
 }
 
 const STATUS_STYLES: Record<StudentRecord["status"], string> = {
-  ADMITTED: "bg-neutral-100 text-neutral-700",
-  PENDING: "bg-neutral-100 text-neutral-500",
-  REJECTED: "bg-neutral-100 text-neutral-400",
+  ADMITTED: "bg-emerald-100 text-emerald-700",
+  PENDING: "bg-amber-100 text-amber-700",
+  REJECTED: "bg-red-100 text-red-700",
 };
 
 const PAGE_SIZE = 10;
@@ -130,14 +130,14 @@ function StudentRegistry() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gurukul-gray pb-5">
+      <div className="flex items-center justify-between border-b pb-5" style={{ borderColor: "var(--line)" }}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-neutral-100 text-gurukul-dark flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "var(--accent-soft)", color: "var(--accent-text)" }}>
             <GraduationCap className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gurukul-dark">Student Registry</h1>
-            <p className="text-xs text-gurukul-ocean">
+            <h1 className="text-xl font-bold text-gurukul-ink" style={{ fontFamily: "var(--font-syne)" }}>Student Registry</h1>
+            <p className="text-xs" style={{ color: "var(--muted)" }}>
               {isLoading ? "Loading..." : `${filtered.length} of ${students.length} students`}
             </p>
           </div>
@@ -145,7 +145,7 @@ function StudentRegistry() {
         {isAdmin && (
           <button
             onClick={() => setShowBatchFees(true)}
-            className="bg-gurukul-tech hover:bg-gurukul-tech/90 text-white font-medium text-xs px-4 py-2.5 rounded-lg shadow-sm transition-all flex items-center gap-2"
+            className="btn-primary font-medium text-xs px-4 py-2.5 flex items-center gap-2"
           >
             <IndianRupee className="w-4 h-4" />
             <span>Set Class Fees</span>
@@ -156,20 +156,20 @@ function StudentRegistry() {
       {/* Search + Filter */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gurukul-muted" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--faint)" }} />
           <input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by name, parent, contact or roll number..."
-            className="input w-full text-sm pl-9 pr-3 py-2.5 rounded-lg text-gurukul-dark focus:ring-1 focus:ring-gurukul-dark/20 focus:border-gurukul-dark"
+            className="input w-full text-sm pl-9 pr-3 py-2.5 rounded-lg text-gurukul-ink"
           />
         </div>
         <div className="relative">
-          <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gurukul-muted" />
+          <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--faint)" }} />
           <select
             value={selectedGrade}
             onChange={(e) => handleGradeChange(e.target.value)}
-            className="select text-sm pl-9 pr-8 py-2.5 rounded-lg text-gurukul-dark focus:ring-1 focus:ring-gurukul-dark/20 focus:border-gurukul-dark appearance-none"
+            className="select text-sm pl-9 pr-8 py-2.5 rounded-lg text-gurukul-ink appearance-none"
           >
             {grades.map((g) => (
               <option key={g} value={g}>{g === "ALL" ? "All Grades" : g}</option>
@@ -181,10 +181,10 @@ function StudentRegistry() {
       {/* List + Preview Panel */}
       <div className={`grid grid-cols-1 gap-5 items-start ${selected ? "lg:grid-cols-3" : ""}`}>
         {/* Student list */}
-        <div className={`card overflow-x-auto ${selected ? "lg:col-span-2" : ""}`}>
-          <table className="min-w-[480px] w-full text-left md:min-w-0">
+        <div className={`card overflow-hidden ${selected ? "lg:col-span-2" : ""}`}>
+          <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-gurukul-gray text-[10px] uppercase tracking-wider text-gurukul-muted">
+              <tr className="border-b text-[10px] uppercase tracking-wider" style={{ borderColor: "var(--line)", color: "var(--faint)" }}>
                 <th className="px-4 py-3 font-medium">Roll</th>
                 <th className="px-4 py-3 font-medium">Student</th>
                 <th className="px-4 py-3 font-medium hidden md:table-cell">Grade</th>
@@ -192,27 +192,26 @@ function StudentRegistry() {
                 <th className="px-4 py-3 font-medium">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-100">
+            <tbody className="divide-y" style={{ borderColor: "var(--hover)" }}>
               {isLoading ? (
-                <tr><td colSpan={5} className="px-4 py-10 text-center text-sm text-gurukul-muted">Loading students...</td></tr>
+                <tr><td colSpan={5} className="px-4 py-10 text-center text-sm" style={{ color: "var(--faint)" }}>Loading students...</td></tr>
               ) : pageItems.length === 0 ? (
-                <tr><td colSpan={5} className="px-4 py-10 text-center text-sm text-gurukul-muted">No students match your search.</td></tr>
+                <tr><td colSpan={5} className="px-4 py-10 text-center text-sm" style={{ color: "var(--faint)" }}>No students match your search.</td></tr>
               ) : (
                 pageItems.map((s) => (
                   <tr
                     key={s.id}
                     ref={selectedId === s.id ? selectedRowRef : null}
                     onClick={() => handleSelect(s.id)}
-                    className={`cursor-pointer transition-colors text-xs ${
-                      selectedId === s.id
-                        ? "bg-neutral-50 border-l-2 border-l-gurukul-dark"
-                        : "hover:bg-neutral-50"
-                    }`}
+                    className="cursor-pointer transition-colors text-xs"
+                    style={selectedId === s.id ? { background: "var(--accent-soft)", borderLeft: "2px solid var(--accent)" } : { background: "transparent" }}
+                    onMouseEnter={(e) => { if (selectedId !== s.id) e.currentTarget.style.background = "var(--hover)"; }}
+                    onMouseLeave={(e) => { if (selectedId !== s.id) e.currentTarget.style.background = "transparent"; }}
                   >
-                    <td className="px-4 py-3 font-mono text-gurukul-ocean">{s.rollNumber}</td>
-                    <td className={`px-4 py-3 font-semibold ${selectedId === s.id ? "text-gurukul-dark" : "text-gurukul-dark"}`}>{s.name}</td>
-                    <td className="px-4 py-3 text-gurukul-ocean hidden md:table-cell">{s.grade}</td>
-                    <td className="px-4 py-3 text-gurukul-ocean hidden md:table-cell">{s.parentName}</td>
+                    <td className="px-4 py-3 font-mono" style={{ color: "var(--muted)" }}>{s.rollNumber}</td>
+                    <td className="px-4 py-3 font-semibold text-gurukul-ink">{s.name}</td>
+                    <td className="px-4 py-3 hidden md:table-cell" style={{ color: "var(--muted)" }}>{s.grade}</td>
+                    <td className="px-4 py-3 hidden md:table-cell" style={{ color: "var(--muted)" }}>{s.parentName}</td>
                     <td className="px-4 py-3">
                       <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${STATUS_STYLES[s.status]}`}>
                         {s.status}
@@ -226,15 +225,16 @@ function StudentRegistry() {
 
           {/* Pagination */}
           {filtered.length > PAGE_SIZE && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gurukul-gray">
-              <span className="text-[11px] text-gurukul-muted">
+            <div className="flex items-center justify-between px-4 py-3 border-t" style={{ borderColor: "var(--line)" }}>
+              <span className="text-[11px]" style={{ color: "var(--faint)" }}>
                 Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} of {filtered.length}
               </span>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="p-1.5 rounded-lg border border-gurukul-gray bg-white text-gurukul-ocean disabled:opacity-30 hover:border-gurukul-dark/30 transition-colors"
+                  className="p-1.5 rounded-lg border bg-white disabled:opacity-30 transition-colors"
+                  style={{ borderColor: "var(--line)", color: "var(--muted)" }}
                   aria-label="Previous page"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
@@ -248,16 +248,15 @@ function StudentRegistry() {
                   }, [])
                   .map((p, i) =>
                     p === "..." ? (
-                      <span key={`gap-${i}`} className="text-[11px] text-gurukul-muted px-1">…</span>
+                      <span key={`gap-${i}`} className="text-[11px] px-1" style={{ color: "var(--faint)" }}>…</span>
                     ) : (
                       <button
                         key={p}
                         onClick={() => setPage(p as number)}
-                        className={`min-w-[28px] text-[11px] font-medium py-1.5 rounded-lg border transition-colors ${
-                          p === currentPage
-                            ? "bg-gurukul-dark text-white border-gurukul-dark"
-                            : "bg-white text-gurukul-ocean border-gurukul-gray hover:border-gurukul-dark/30"
-                        }`}
+                        className="min-w-[28px] text-[11px] font-medium py-1.5 rounded-lg border transition-colors"
+                        style={p === currentPage
+                          ? { background: "var(--accent)", color: "#ffffff", borderColor: "var(--accent)" }
+                          : { background: "#ffffff", color: "var(--muted)", borderColor: "var(--line)" }}
                       >
                         {p}
                       </button>
@@ -266,7 +265,8 @@ function StudentRegistry() {
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                  className="p-1.5 rounded-lg border border-gurukul-gray bg-white text-gurukul-ocean disabled:opacity-30 hover:border-gurukul-dark/30 transition-colors"
+                  className="p-1.5 rounded-lg border bg-white disabled:opacity-30 transition-colors"
+                  style={{ borderColor: "var(--line)", color: "var(--muted)" }}
                   aria-label="Next page"
                 >
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -281,17 +281,17 @@ function StudentRegistry() {
           <div className="lg:sticky lg:top-20 animate-slide-up">
             <div className="card overflow-hidden">
               {/* Header */}
-              <div className="px-5 py-4 border-b border-gurukul-gray flex items-center justify-between">
+              <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: "var(--line)" }}>
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-neutral-100 text-gurukul-dark font-bold text-sm flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-full font-bold text-sm flex items-center justify-center" style={{ background: "var(--accent-soft)", color: "var(--accent-text)" }}>
                     {selected.name.charAt(0)}
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-gurukul-dark leading-tight">{selected.name}</h3>
-                    <p className="text-[10px] text-gurukul-muted">Roll {selected.rollNumber} · {selected.grade}</p>
+                    <h3 className="text-sm font-semibold text-gurukul-ink leading-tight" style={{ fontFamily: "var(--font-syne)" }}>{selected.name}</h3>
+                    <p className="text-[10px]" style={{ color: "var(--faint)" }}>Roll {selected.rollNumber} · {selected.grade}</p>
                   </div>
                 </div>
-                <button onClick={clearSelection} className="p-1 rounded-md text-gurukul-muted hover:text-gurukul-dark hover:bg-neutral-100 transition-colors" aria-label="Close preview">
+                <button onClick={clearSelection} className="p-1 rounded-md transition-colors" style={{ color: "var(--faint)" }} aria-label="Close preview">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -304,7 +304,7 @@ function StudentRegistry() {
                       <span className="inline-flex items-center gap-1"><CheckCircle className="w-3 h-3" />ADMITTED</span>
                     ) : selected.status}
                   </span>
-                  <span className="text-gurukul-muted">DOB: {selected.dob}</span>
+                  <span style={{ color: "var(--faint)" }}>DOB: {selected.dob}</span>
                 </div>
 
                 {[
@@ -315,10 +315,10 @@ function StudentRegistry() {
                   { icon: School, label: "Previous School", value: selected.previousSchool || "—" },
                 ].map(({ icon: Icon, label, value }) => (
                   <div key={label} className="flex gap-2.5">
-                    <Icon className="w-3.5 h-3.5 text-gurukul-muted mt-0.5 shrink-0" />
+                    <Icon className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: "var(--faint)" }} />
                     <div className="min-w-0">
-                      <p className="text-[10px] font-medium text-gurukul-muted uppercase tracking-wide">{label}</p>
-                      <p className="text-gurukul-dark font-medium break-words">{value}</p>
+                      <p className="text-[10px] font-medium uppercase tracking-wide" style={{ color: "var(--faint)" }}>{label}</p>
+                      <p className="text-gurukul-ink font-medium break-words">{value}</p>
                     </div>
                   </div>
                 ))}
@@ -326,11 +326,11 @@ function StudentRegistry() {
                 {isAdmin && (
                   <div className="grid grid-cols-2 gap-2 mt-2">
                     <button onClick={() => setShowEdit(true)}
-                      className="border border-slate-300 hover:border-gurukul-tech text-slate-700 font-medium text-xs py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-colors">
+                      className="btn-secondary font-medium text-xs py-2.5 flex items-center justify-center gap-1.5">
                       <Pencil className="w-3.5 h-3.5" /><span>Edit Details</span>
                     </button>
                     <button onClick={() => setShowFees(true)}
-                      className="border border-slate-300 hover:border-gurukul-tech text-slate-700 font-medium text-xs py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-colors">
+                      className="btn-secondary font-medium text-xs py-2.5 flex items-center justify-center gap-1.5">
                       <IndianRupee className="w-3.5 h-3.5" /><span>Manage Fees</span>
                     </button>
                   </div>
@@ -338,7 +338,7 @@ function StudentRegistry() {
 
                 <Link
                   href={`/students/${selected.id}`}
-                  className="btn-primary mt-2 w-full font-medium text-xs py-2.5 flex items-center justify-center gap-2 transition-colors"
+                  className="btn-primary mt-2 w-full font-medium text-xs py-2.5 flex items-center justify-center gap-2"
                 >
                   <FileText className="w-3.5 h-3.5" />
                   <span>Open Full Profile</span>
@@ -371,7 +371,7 @@ function StudentRegistry() {
 
 export default function StudentRegistryPage() {
   return (
-    <Suspense fallback={<p className="text-sm text-gurukul-muted py-10 text-center">Loading...</p>}>
+    <Suspense fallback={<p className="text-sm py-10 text-center" style={{ color: "var(--faint)" }}>Loading...</p>}>
       <StudentRegistry />
     </Suspense>
   );

@@ -18,27 +18,18 @@ export function Header() {
   };
 
   return (
-    <header className="h-14 shrink-0 bg-white border-b border-neutral-200 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-20">
+    <header className="h-14 bg-white border-b px-6 flex items-center justify-between sticky top-0 z-20" style={{ borderColor: "var(--line)" }}>
       {/* Search Bar */}
-      <div className="hidden flex-1 sm:block">
-        <GlobalPersonSearch />
-      </div>
+      <GlobalPersonSearch />
 
       {/* Toolbar */}
-      <div className="ml-auto flex items-center gap-2 sm:gap-3">
+      <div className="flex items-center gap-3">
         {/* Role badge */}
         <div
-          className={`text-[10px] px-2 py-0.5 rounded-md font-medium flex items-center gap-1 ${
-            isAdmin
-              ? "bg-gurukul-dark text-white"
-              : "bg-neutral-100 text-neutral-600"
-          } hidden sm:flex`}
+          className="text-[10px] px-2 py-0.5 rounded-md font-medium flex items-center gap-1"
+          style={isAdmin ? { background: "var(--accent)", color: "#ffffff" } : { background: "var(--soft)", color: "var(--muted)" }}
         >
-          {isAdmin ? (
-            <ShieldCheck className="w-3 h-3" />
-          ) : (
-            <UserCheck className="w-3 h-3" />
-          )}
+          {isAdmin ? <ShieldCheck className="w-3 h-3" /> : <UserCheck className="w-3 h-3" />}
           <span>{isAdmin ? "Admin" : "Teacher"}</span>
         </div>
 
@@ -46,18 +37,21 @@ export function Header() {
         <NotificationsBell />
 
         {/* Current User Profile & Logout */}
-        <div className="flex items-center gap-2 sm:gap-2.5 sm:pl-2.5 sm:border-l sm:border-neutral-200">
+        <div className="flex items-center gap-2.5 pl-2.5 border-l" style={{ borderColor: "var(--line)" }}>
           <div className="text-right hidden md:block">
-            <p className="text-[11px] font-medium text-gurukul-dark leading-tight">{currentUser.name}</p>
-            <p className="text-[10px] text-neutral-400">{currentUser.department}</p>
+            <p className="text-[11px] font-medium text-gurukul-ink leading-tight">{currentUser.name}</p>
+            <p className="text-[10px]" style={{ color: "var(--faint)" }}>{currentUser.department}</p>
           </div>
-          <div className="w-7 h-7 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center font-bold text-[10px] text-gurukul-dark">
+          <div className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-[10px] text-gurukul-ink" style={{ background: "var(--soft)", border: "1px solid var(--line)" }}>
             {currentUser.name.charAt(0)}
           </div>
           <button
             onClick={handleLogout}
             title="Log Out"
-            className="p-1.5 rounded-md text-neutral-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+            className="p-1.5 rounded-md transition-colors"
+            style={{ color: "var(--faint)" }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "var(--red-soft)"; e.currentTarget.style.color = "var(--red)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--faint)"; }}
           >
             <LogOut className="w-3.5 h-3.5" />
           </button>

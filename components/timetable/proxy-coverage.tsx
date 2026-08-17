@@ -165,8 +165,8 @@ export function ProxyCoverage({
     <div className="space-y-6 animate-fade-in">
       <section className="card p-5">
         <div className="flex items-center gap-2 mb-4">
-          <UserPlus className="w-4 h-4 text-gurukul-muted" />
-          <h2 className="text-sm font-semibold text-gurukul-dark">Teacher Absence & Coverage Dispatch</h2>
+          <UserPlus className="w-4 h-4" style={{ color: "var(--faint)" }} />
+          <h2 className="text-sm font-semibold text-gurukul-ink" style={{ fontFamily: "var(--font-syne)" }}>Teacher Absence & Coverage Dispatch</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <select
@@ -204,7 +204,7 @@ export function ProxyCoverage({
             <span>Mark absent & find coverage</span>
           </button>
         </div>
-        {message && <p className="mt-3 text-xs text-gurukul-ocean font-medium">{message}</p>}
+        {message && <p className="mt-3 text-xs font-medium" style={{ color: "var(--muted)" }}>{message}</p>}
       </section>
 
       {lectures.map((lecture) => {
@@ -214,41 +214,37 @@ export function ProxyCoverage({
 
         return (
           <section key={lecture.proxyAssignmentId} className="card p-5 space-y-4 animate-slide-up">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 border-b border-gurukul-gray pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 border-b pb-4" style={{ borderColor: "var(--line)" }}>
               <div>
-                <h3 className="text-sm font-semibold text-gurukul-dark">
+                <h3 className="text-sm font-semibold text-gurukul-ink" style={{ fontFamily: "var(--font-syne)" }}>
                   {lecture.grade} · {lecture.subject.name}
                 </h3>
-                <p className="text-xs text-gurukul-ocean mt-1">
-                  {lecture.day}, Period {lecture.period} · {lecture.room.roomNumber} · Originally assigned to: <span className="font-medium text-gurukul-dark">{lecture.absentTeacher.name}</span>
+                <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
+                  {lecture.day}, Period {lecture.period} · {lecture.room.roomNumber} · Originally assigned to: <span className="font-medium text-gurukul-ink">{lecture.absentTeacher.name}</span>
                 </p>
               </div>
               <span
-                className={
-                  isAssigned
-                    ? "badge-success self-start"
-                    : "badge-warning self-start"
-                }
+                className={isAssigned ? "badge-success self-start" : "badge-warning self-start"}
               >
                 {isAssigned ? "Coverage Assigned" : "Awaiting Selection"}
               </span>
             </div>
 
             {!showRecommendations ? (
-              /* Clean Assigned State Card - Other suggested teachers are hidden once selected */
-              <div className="p-4 bg-neutral-50 border border-gurukul-gray rounded-lg flex items-center justify-between">
+              /* Clean Assigned State Card */
+              <div className="p-4 rounded-lg flex items-center justify-between" style={{ background: "var(--soft)", border: "1px solid var(--line)" }}>
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-white border border-neutral-200/80 text-gurukul-dark flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-full text-gurukul-ink flex items-center justify-center shrink-0" style={{ background: "#ffffff", border: "1px solid var(--line)" }}>
                     <Check className="w-5 h-5" />
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-medium text-gurukul-muted tracking-wider block">
+                    <span className="text-[10px] uppercase font-medium tracking-wider block" style={{ color: "var(--faint)" }}>
                       Covering Proxy Teacher Assigned
                     </span>
-                    <h4 className="text-sm font-semibold text-gurukul-dark">
+                    <h4 className="text-sm font-semibold text-gurukul-ink" style={{ fontFamily: "var(--font-syne)" }}>
                       {lecture.assignedProxyTeacher?.name || "Selected Proxy Teacher"}
                     </h4>
-                    <p className="text-[11px] text-gurukul-ocean">
+                    <p className="text-[11px]" style={{ color: "var(--muted)" }}>
                       {lecture.assignedProxyTeacher?.department ? `${lecture.assignedProxyTeacher.department} · ` : ""}Covering for {lecture.absentTeacher.name} on {date} (Period {lecture.period})
                     </p>
                   </div>
@@ -266,14 +262,15 @@ export function ProxyCoverage({
               lecture.recommendations.length > 0 ? (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-xs text-gurukul-ocean font-medium">
-                      <Sparkles className="w-3.5 h-3.5 text-gurukul-muted" />
+                    <div className="flex items-center gap-1.5 text-xs font-medium" style={{ color: "var(--muted)" }}>
+                      <Sparkles className="w-3.5 h-3.5" style={{ color: "var(--faint)" }} />
                       <span>Top Proxy Candidates:</span>
                     </div>
                     {isAssigned && (
                       <button
                         onClick={() => setReOpening((prev) => ({ ...prev, [lecture.proxyAssignmentId]: false }))}
-                        className="text-xs text-gurukul-ocean hover:text-gurukul-dark transition-colors"
+                        className="text-xs transition-colors"
+                        style={{ color: "var(--muted)" }}
                       >
                         Cancel Reassignment
                       </button>
@@ -281,24 +278,24 @@ export function ProxyCoverage({
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {lecture.recommendations.map((candidate, index) => (
-                      <article key={candidate.teacherId} className="rounded-lg border border-neutral-200/80 p-4 bg-white flex flex-col justify-between hover:border-neutral-300 transition-colors">
+                      <article key={candidate.teacherId} className="rounded-lg p-4 bg-white flex flex-col justify-between transition-colors" style={{ border: "1px solid var(--line)" }}>
                         <div>
                           <div className="flex justify-between items-start gap-2">
-                            <h4 className="font-medium text-sm text-gurukul-dark">{candidate.teacherName}</h4>
+                            <h4 className="font-medium text-sm text-gurukul-ink" style={{ fontFamily: "var(--font-syne)" }}>{candidate.teacherName}</h4>
                             <span className="badge-default">
                               {candidate.score}/100
                             </span>
                           </div>
-                          <p className="text-[11px] text-gurukul-ocean mt-1">
+                          <p className="text-[11px] mt-1" style={{ color: "var(--muted)" }}>
                             Rank #{index + 1} · {candidate.department ?? "Department unavailable"}
                           </p>
-                          <p className="text-[11px] text-gurukul-ocean">
+                          <p className="text-[11px]" style={{ color: "var(--muted)" }}>
                             {candidate.currentLectures} lecture{candidate.currentLectures === 1 ? "" : "s"} today · {candidate.currentProxies} proxy assignment{candidate.currentProxies === 1 ? "" : "s"}
                           </p>
-                          <ul className="mt-3 space-y-1 text-xs text-gurukul-ocean">
+                          <ul className="mt-3 space-y-1 text-xs" style={{ color: "var(--muted)" }}>
                             {candidate.reasons.map((item) => (
                               <li key={item} className="flex items-center gap-1.5">
-                                <span className="text-gurukul-dark font-medium">✓</span>
+                                <span className="font-medium" style={{ color: "var(--accent)" }}>✓</span>
                                 <span>{item}</span>
                               </li>
                             ))}
@@ -316,7 +313,7 @@ export function ProxyCoverage({
                   </div>
                 </div>
               ) : (
-                <p className="pt-2 text-sm text-gurukul-ocean">
+                <p className="pt-2 text-sm" style={{ color: "var(--muted)" }}>
                   No eligible teacher meets the configured workload and availability constraints.
                 </p>
               )
@@ -326,16 +323,16 @@ export function ProxyCoverage({
       })}
 
       {conflicts.length > 0 && (
-        <section className="card p-5 border-red-200">
+        <section className="card p-5" style={{ borderColor: "rgba(185, 28, 28, 0.3)" }}>
           <div className="flex gap-2">
-            <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
+            <AlertTriangle className="w-5 h-5 shrink-0" style={{ color: "var(--red)" }} />
             <div>
-              <h2 className="text-sm font-semibold text-gurukul-dark">Room conflicts flagged on schedule</h2>
+              <h2 className="text-sm font-semibold text-gurukul-ink" style={{ fontFamily: "var(--font-syne)" }}>Room conflicts flagged on schedule</h2>
               {conflicts.map((conflict) => (
-                <div key={`${conflict.timetableSlotId}-${conflict.type}`} className="mt-3 text-sm text-gurukul-ocean">
-                  <p className="font-medium text-gurukul-dark">{conflict.description}</p>
+                <div key={`${conflict.timetableSlotId}-${conflict.type}`} className="mt-3 text-sm" style={{ color: "var(--muted)" }}>
+                  <p className="font-medium text-gurukul-ink">{conflict.description}</p>
                   {conflict.alternativeRooms.length > 0 && (
-                    <p className="text-xs mt-1 text-gurukul-muted">
+                    <p className="text-xs mt-1" style={{ color: "var(--faint)" }}>
                       Alternative rooms: {conflict.alternativeRooms.map((room) => room.roomNumber).join(", ")}
                     </p>
                   )}
@@ -347,7 +344,7 @@ export function ProxyCoverage({
       )}
 
       {lectures.length > 0 && conflicts.length === 0 && (
-        <div className="text-xs text-gurukul-dark flex items-center gap-2">
+        <div className="text-xs flex items-center gap-2 text-gurukul-ink">
           <CheckCircle2 className="w-4 h-4" />
           <span>No room conflicts detected for the selected day.</span>
         </div>

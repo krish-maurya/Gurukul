@@ -82,11 +82,11 @@ export function AddSlotModal({ onClose, onCreated }: { onClose: () => void; onCr
   };
 
   return (
-    <div className="fixed inset-0 bg-gurukul-dark/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl border border-neutral-200/80 shadow-subtle w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto animate-slide-up">
+    <div className="fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center p-4" style={{ background: "rgba(17, 19, 18, 0.4)" }}>
+      <div className="bg-white rounded-xl shadow-modal w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto animate-slide-up" style={{ border: "1px solid var(--line)" }}>
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-sm font-semibold text-gurukul-dark flex items-center gap-2">
-            <CalendarPlus className="w-4 h-4 text-gurukul-muted" />
+          <h2 className="text-sm font-semibold text-gurukul-ink flex items-center gap-2" style={{ fontFamily: "var(--font-syne)" }}>
+            <CalendarPlus className="w-4 h-4" style={{ color: "var(--faint)" }} />
             <span>{isAdmin ? "Add Timetable Slot" : "Add to My Timetable"}</span>
           </h2>
           <button onClick={onClose} className="btn-ghost !p-1.5">
@@ -95,11 +95,11 @@ export function AddSlotModal({ onClose, onCreated }: { onClose: () => void; onCr
         </div>
 
         {!meta ? (
-          <p className="text-sm text-gurukul-ocean py-8 text-center">{error || "Loading..."}</p>
+          <p className="text-sm py-8 text-center" style={{ color: "var(--muted)" }}>{error || "Loading..."}</p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5">
+              <div className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5">
                 <div className="flex items-center gap-2 font-medium"><AlertCircle className="w-4 h-4 shrink-0" /><span>{error}</span></div>
                 {details.length > 0 && (
                   <ul className="mt-1.5 ml-6 list-disc space-y-0.5">{details.map((d) => <li key={d}>{d}</li>)}</ul>
@@ -107,20 +107,20 @@ export function AddSlotModal({ onClose, onCreated }: { onClose: () => void; onCr
               </div>
             )}
             {success && (
-              <div className="flex items-center gap-2 text-xs text-gurukul-dark bg-neutral-50 border border-neutral-200/80 rounded-lg px-3 py-2.5 font-medium">
+              <div className="flex items-center gap-2 text-xs bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2.5 font-medium text-emerald-800">
                 <CheckCircle className="w-4 h-4 shrink-0" /><span>{success}</span>
               </div>
             )}
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium text-gurukul-ocean mb-1.5 block">Day</label>
+                <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--muted)" }}>Day</label>
                 <select value={day} onChange={(e) => setDay(e.target.value)} className="select">
                   {DAYS.map((d) => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-xs font-medium text-gurukul-ocean mb-1.5 block">Period</label>
+                <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--muted)" }}>Period</label>
                 <select value={period} onChange={(e) => setPeriod(Number(e.target.value))} className="select">
                   {PERIODS.map((p) => <option key={p} value={p}>Period {p}</option>)}
                 </select>
@@ -128,7 +128,7 @@ export function AddSlotModal({ onClose, onCreated }: { onClose: () => void; onCr
             </div>
 
             <div>
-              <label className="text-xs font-medium text-gurukul-ocean mb-1.5 block">Grade / Class</label>
+              <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--muted)" }}>Grade / Class</label>
               <select value={grade} onChange={(e) => setGrade(e.target.value)} className="select">
                 {meta.grades.map((g) => <option key={g} value={g}>{g}</option>)}
                 <option value="__custom__">+ New grade…</option>
@@ -145,7 +145,7 @@ export function AddSlotModal({ onClose, onCreated }: { onClose: () => void; onCr
             </div>
 
             <div>
-              <label className="text-xs font-medium text-gurukul-ocean mb-1.5 block">Subject</label>
+              <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--muted)" }}>Subject</label>
               <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)} className="select">
                 {meta.subjects.map((s) => (
                   <option key={s.id} value={s.id}>{s.name} ({s.code}){s.requiresLab ? " — needs lab" : ""}</option>
@@ -155,7 +155,7 @@ export function AddSlotModal({ onClose, onCreated }: { onClose: () => void; onCr
 
             {isAdmin ? (
               <div>
-                <label className="text-xs font-medium text-gurukul-ocean mb-1.5 block">Teacher</label>
+                <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--muted)" }}>Teacher</label>
                 <select value={teacherId} onChange={(e) => setTeacherId(e.target.value)} className="select">
                   {meta.teachers.map((t) => (
                     <option key={t.id} value={t.id}>{t.name} — {t.department}</option>
@@ -163,13 +163,13 @@ export function AddSlotModal({ onClose, onCreated }: { onClose: () => void; onCr
                 </select>
               </div>
             ) : (
-              <div className="text-[11px] text-gurukul-ocean bg-neutral-50 border border-neutral-200/80 rounded-lg px-3 py-2.5">
-                This lecture will be added to <strong className="text-gurukul-dark">your own</strong> timetable ({currentUser?.name}).
+              <div className="text-[11px] rounded-lg px-3 py-2.5" style={{ background: "var(--soft)", border: "1px solid var(--line)", color: "var(--muted)" }}>
+                This lecture will be added to <strong className="text-gurukul-ink">your own</strong> timetable ({currentUser?.name}).
               </div>
             )}
 
             <div>
-              <label className="text-xs font-medium text-gurukul-ocean mb-1.5 block">Room</label>
+              <label className="text-xs font-medium mb-1.5 block" style={{ color: "var(--muted)" }}>Room</label>
               <select value={roomId} onChange={(e) => setRoomId(e.target.value)} className="select">
                 {meta.rooms.map((r) => (
                   <option key={r.id} value={r.id}>{r.roomNumber} · {r.building} · {r.type} (cap {r.capacity})</option>

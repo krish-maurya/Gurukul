@@ -15,17 +15,14 @@ export async function ensurePortalToken(studentId: string): Promise<string> {
 }
 
 /**
- * Creates ABSENCE messages and marks them as SENT immediately when a teacher
- * submits attendance. Best-effort emails parents that a notification is waiting.
- * Skips students who already have an absence message for that date.
+ * Creates ABSENCE message drafts for students marked absent on a date.
+ * Skips students who already have an absence draft/message for that date.
+ * Nothing is sent automatically — a teacher reviews and clicks Send.
  */
-export async function sendAbsenceMessages(
+export async function draftAbsenceMessages(
   absentees: { studentId: string }[],
   date: string,
-  grade: string,
-  staffId: string | null,
-  staffName: string,
-  origin: string
+  grade: string
 ): Promise<number> {
   if (absentees.length === 0) return 0;
   const ids = absentees.map((a) => a.studentId);
@@ -33,18 +30,17 @@ export async function sendAbsenceMessages(
   const [students, existing] = await Promise.all([
     prisma.student.findMany({
       where: { id: { in: ids } },
-      select: { id: true, name: true, parentName: true, parentEmail: true },
+      select: { id: true, name: true, parentName: true },
     }),
     prisma.parentMessage.findMany({
       where: { studentId: { in: ids }, type: "ABSENCE", title: { contains: date } },
       select: { studentId: true },
     }),
   ]);
-  const alreadySent = new Set(existing.map((e) => e.studentId));
+  const alreadyDrafted = new Set(existing.map((e) => e.studentId));
 
-  const now = new Date();
   const toCreate = students
-    .filter((s) => !alreadySent.has(s.id))
+    .filter((s) => !alreadyDrafted.has(s.id))
     .map((s) => ({
       studentId: s.id,
       type: "ABSENCE",
@@ -54,36 +50,10 @@ export async function sendAbsenceMessages(
         `${s.name} was marked absent in ${grade} today (${date}). ` +
         `If this was expected, no action is needed. Otherwise, please contact the class teacher.\n\n` +
         `Regular attendance makes a big difference — thank you for your support.\n\nGurukul School Office`,
-      status: "SENT",
-      sentAt: now,
-      sentByName: staffName,
-      sentByStaffId: staffId,
     }));
 
   if (toCreate.length === 0) return 0;
   await prisma.parentMessage.createMany({ data: toCreate });
-
-  // Best-effort email each parent (fire-and-forget, don't block)
-  const studentsToNotify = students.filter(
-    (s) => !alreadySent.has(s.id) && s.parentEmail
-  );
-  for (const s of studentsToNotify) {
-    try {
-      const token = await ensurePortalToken(s.id);
-      const portalUrl = `${origin}/p/${token}`;
-      const { sendMail, buildNewMessageEmail } = await import("@/lib/mail");
-      const mail = buildNewMessageEmail({
-        parentName: s.parentName,
-        studentName: s.name,
-        title: `Absence on ${date}`,
-        portalUrl,
-      });
-      await sendMail({ to: { email: s.parentEmail!, name: s.parentName }, ...mail });
-    } catch (e) {
-      console.warn(`[absence-notify] email to parent of ${s.name} failed:`, e);
-    }
-  }
-
   return toCreate.length;
 }
 

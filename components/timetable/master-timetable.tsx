@@ -89,14 +89,14 @@ export function MasterTimetable({
     <section className="space-y-4 animate-slide-up">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div className="flex items-center gap-2">
-          <CalendarDays className="w-4 h-4 text-gurukul-muted" />
+          <CalendarDays className="w-4 h-4" style={{ color: "var(--faint)" }} />
           <div>
-            <h2 className="text-sm font-semibold text-gurukul-dark">
+            <h2 className="text-sm font-semibold text-gurukul-ink" style={{ fontFamily: "var(--font-syne)" }}>
               {isAdmin ? "Master Timetable Schedule" : "Approved Class Timetable"}
             </h2>
-            <p className="text-xs text-gurukul-ocean">
-              Active schedule viewing date: <span className="font-mono font-medium text-gurukul-dark">{date}</span>
-              {!isAdmin && <span className="ml-2 text-gurukul-dark font-medium">✓ Official Approved Schedule</span>}
+            <p className="text-xs" style={{ color: "var(--muted)" }}>
+              Active schedule viewing date: <span className="font-mono font-medium text-gurukul-ink">{date}</span>
+              {!isAdmin && <span className="ml-2 text-gurukul-ink font-medium">✓ Official Approved Schedule</span>}
             </p>
           </div>
         </div>
@@ -111,14 +111,14 @@ export function MasterTimetable({
       </div>
 
       {feedback && (
-        <div className="p-3 text-xs rounded-lg bg-white border border-neutral-200/80 text-gurukul-dark flex items-center justify-between shadow-subtle">
+        <div className="p-3 text-xs rounded-lg bg-white text-gurukul-ink flex items-center justify-between shadow-subtle" style={{ border: "1px solid var(--line)" }}>
           <span>{feedback}</span>
-          <button onClick={() => setFeedback(null)} className="font-medium ml-2 text-gurukul-muted hover:text-gurukul-dark transition-colors">✕</button>
+          <button onClick={() => setFeedback(null)} className="font-medium ml-2 transition-colors" style={{ color: "var(--faint)" }}>✕</button>
         </div>
       )}
 
       {loading ? (
-        <div className="h-64 card flex items-center justify-center text-sm text-gurukul-ocean gap-2">
+        <div className="h-64 card flex items-center justify-center text-sm gap-2" style={{ color: "var(--muted)" }}>
           <Loader2 className="w-4 h-4 animate-spin" />
           Loading timetable…
         </div>

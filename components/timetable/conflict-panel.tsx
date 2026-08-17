@@ -34,17 +34,13 @@ export function ConflictPanel({
     <div className="card p-6 flex flex-col justify-between h-full animate-fade-in">
       <div>
         {/* Panel Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-gurukul-gray mb-5">
+        <div className="flex items-center justify-between pb-4 border-b mb-5" style={{ borderColor: "var(--line)" }}>
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-gurukul-muted" />
-            <h3 className="text-sm font-semibold text-gurukul-dark">Conflict Inspector</h3>
+            <Sparkles className="w-4 h-4" style={{ color: "var(--faint)" }} />
+            <h3 className="text-sm font-semibold text-gurukul-ink" style={{ fontFamily: "var(--font-syne)" }}>Conflict Inspector</h3>
           </div>
           <span
-            className={
-              conflicts.length > 0
-                ? "badge-error"
-                : "badge-success"
-            }
+            className={conflicts.length > 0 ? "badge-error" : "badge-success"}
           >
             {conflicts.length > 0 ? `${conflicts.length} Clash${conflicts.length !== 1 ? "es" : ""}` : "Schedule Optimal"}
           </span>
@@ -54,7 +50,7 @@ export function ConflictPanel({
           <div className="space-y-5">
             {/* Conflict List Selector */}
             <div>
-              <label className="text-[11px] font-medium text-gurukul-muted uppercase tracking-wider block mb-2">
+              <label className="text-[11px] font-medium uppercase tracking-wider block mb-2" style={{ color: "var(--faint)" }}>
                 Active Schedule Clashes
               </label>
               <div className="space-y-2">
@@ -64,19 +60,20 @@ export function ConflictPanel({
                     <button
                       key={c.id}
                       onClick={() => onSelectConflict(c)}
-                      className={`w-full text-left p-3 rounded-lg border text-xs transition-all ${
+                      className="w-full text-left p-3 rounded-lg border text-xs transition-all"
+                      style={
                         isSelected
-                          ? "border-gurukul-dark bg-neutral-50 font-medium text-gurukul-dark"
-                          : "border-neutral-200/80 bg-white hover:bg-neutral-50 text-gurukul-ocean"
-                      }`}
+                          ? { borderColor: "var(--accent)", background: "var(--accent-soft)", color: "var(--accent-text)", fontWeight: 500 }
+                          : { borderColor: "var(--line)", background: "#ffffff", color: "var(--muted)" }
+                      }
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-gurukul-dark">Clash #{i + 1}: {c.type.replace("_", " ")}</span>
-                        <span className="text-[10px] text-gurukul-muted font-mono">
+                        <span className="font-medium text-gurukul-ink">Clash #{i + 1}: {c.type.replace("_", " ")}</span>
+                        <span className="text-[10px] font-mono" style={{ color: "var(--faint)" }}>
                           {c.day} P{c.period}
                         </span>
                       </div>
-                      <p className="text-[11px] text-gurukul-ocean truncate mt-1">{c.description}</p>
+                      <p className="text-[11px] truncate mt-1" style={{ color: "var(--muted)" }}>{c.description}</p>
                     </button>
                   );
                 })}
@@ -85,39 +82,40 @@ export function ConflictPanel({
 
             {/* AI Diagnosis & Suggested Alternatives */}
             {activeConflict && (
-              <div className="bg-neutral-50 rounded-xl border border-gurukul-gray p-4 space-y-3">
-                <div className="flex items-center justify-between border-b border-gurukul-gray pb-2">
-                  <span className="text-[11px] font-semibold text-gurukul-dark flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-gurukul-muted" />
+              <div className="rounded-xl p-4 space-y-3" style={{ background: "var(--soft)", border: "1px solid var(--line)" }}>
+                <div className="flex items-center justify-between border-b pb-2" style={{ borderColor: "var(--line)" }}>
+                  <span className="text-[11px] font-semibold text-gurukul-ink flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" style={{ color: "var(--faint)" }} />
                     Conflict Diagnosis & Resolution
                   </span>
-                  <span className="text-[10px] font-mono text-gurukul-ocean bg-white px-2 py-0.5 rounded border border-neutral-200/80">
+                  <span className="text-[10px] font-mono bg-white px-2 py-0.5 rounded" style={{ color: "var(--muted)", border: "1px solid var(--line)" }}>
                     {activeConflict.day} Period {activeConflict.period}
                   </span>
                 </div>
 
                 <div>
-                  <h4 className="text-xs font-semibold text-red-600 mb-1">{activeConflict.type.replace("_", " ")}</h4>
-                  <p className="text-xs text-gurukul-ocean leading-relaxed">{activeConflict.description}</p>
+                  <h4 className="text-xs font-semibold mb-1" style={{ color: "var(--red)" }}>{activeConflict.type.replace("_", " ")}</h4>
+                  <p className="text-xs leading-relaxed" style={{ color: "var(--muted)" }}>{activeConflict.description}</p>
                 </div>
 
                 {/* Available Alternatives List */}
                 {activeConflict.alternativeRooms && activeConflict.alternativeRooms.length > 0 ? (
-                  <div className="space-y-2 pt-2 border-t border-gurukul-gray">
-                    <span className="text-[10px] font-medium text-gurukul-muted uppercase tracking-wider block">
+                  <div className="space-y-2 pt-2 border-t" style={{ borderColor: "var(--line)" }}>
+                    <span className="text-[10px] font-medium uppercase tracking-wider block" style={{ color: "var(--faint)" }}>
                       Recommended Alternative Rooms
                     </span>
                     <div className="space-y-1.5">
                       {activeConflict.alternativeRooms.map((alt) => (
                         <div
                           key={alt.roomId}
-                          className="flex items-center justify-between p-2.5 bg-white rounded-lg border border-neutral-200/80 text-xs"
+                          className="flex items-center justify-between p-2.5 bg-white rounded-lg border text-xs"
+                          style={{ borderColor: "var(--line)" }}
                         >
                           <div className="flex items-center gap-2 truncate mr-2">
-                            <MapPin className="w-3.5 h-3.5 text-gurukul-muted shrink-0" />
+                            <MapPin className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--faint)" }} />
                             <div className="truncate">
-                              <span className="font-medium text-gurukul-dark block">{alt.roomNumber}</span>
-                              <span className="text-[10px] text-gurukul-ocean block truncate">{alt.reason}</span>
+                              <span className="font-medium text-gurukul-ink block">{alt.roomNumber}</span>
+                              <span className="text-[10px] block truncate" style={{ color: "var(--muted)" }}>{alt.reason}</span>
                             </div>
                           </div>
                           <button
@@ -134,11 +132,11 @@ export function ConflictPanel({
                   </div>
                 ) : (
                   aiExplanation && (
-                    <div className="p-3 bg-white rounded-lg border border-neutral-200/80 space-y-2">
-                      <span className="text-[10px] font-medium text-gurukul-muted uppercase tracking-wider block">
+                    <div className="p-3 bg-white rounded-lg border space-y-2" style={{ borderColor: "var(--line)" }}>
+                      <span className="text-[10px] font-medium uppercase tracking-wider block" style={{ color: "var(--faint)" }}>
                         Optimization Recommendation
                       </span>
-                      <p className="text-xs text-gurukul-dark font-medium leading-relaxed">
+                      <p className="text-xs text-gurukul-ink font-medium leading-relaxed">
                         {aiExplanation.recommendation}
                       </p>
                       <button
@@ -158,11 +156,11 @@ export function ConflictPanel({
         ) : (
           /* Zero Conflicts State */
           <div className="py-12 text-center space-y-3">
-            <div className="w-12 h-12 rounded-full bg-neutral-100 text-gurukul-dark flex items-center justify-center mx-auto">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto" style={{ background: "var(--soft)", color: "var(--accent)" }}>
               <CheckCircle2 className="w-6 h-6" />
             </div>
-            <h4 className="text-sm font-semibold text-gurukul-dark">Schedule Conflict-Free</h4>
-            <p className="text-xs text-gurukul-ocean max-w-xs mx-auto">
+            <h4 className="text-sm font-semibold text-gurukul-ink" style={{ fontFamily: "var(--font-syne)" }}>Schedule Conflict-Free</h4>
+            <p className="text-xs max-w-xs mx-auto" style={{ color: "var(--muted)" }}>
               All constraint rules (teacher workload, room double-booking, lab requirements, and capacity) are fully satisfied.
             </p>
           </div>
@@ -170,7 +168,7 @@ export function ConflictPanel({
       </div>
 
       {/* Approve Action */}
-      <div className="pt-5 border-t border-gurukul-gray mt-6">
+      <div className="pt-5 border-t mt-6" style={{ borderColor: "var(--line)" }}>
         <button
           onClick={onApproveTimetable}
           disabled={conflicts.length > 0}
@@ -180,7 +178,7 @@ export function ConflictPanel({
           <span>Approve & Publish Master Timetable</span>
         </button>
         {conflicts.length > 0 && (
-          <p className="text-[10px] text-gurukul-muted text-center mt-2">
+          <p className="text-[10px] text-center mt-2" style={{ color: "var(--faint)" }}>
             Resolve all critical clashes before publishing schedule.
           </p>
         )}

@@ -5,39 +5,21 @@ import { draftFeeReminders } from "@/lib/communication/engine";
 
 export const dynamic = "force-dynamic";
 
-/** GET /api/communications?status=DRAFT|SENT|ACKNOWLEDGED&type=ABSENCE|CUSTOM&q= — list messages */
+/** GET /api/communications?status=DRAFT|SENT|ACKNOWLEDGED&q= — list messages */
 export async function GET(req: Request) {
   try {
-    const session = await requireSession();
+    await requireSession();
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status");
-    const type = searchParams.get("type"); // "ABSENCE" or "CUSTOM" (or null = all)
     const q = searchParams.get("q")?.trim();
 
-    // Build where clause
-    const where: Record<string, unknown> = {};
-    if (status) where.status = status;
-    if (q) where.student = { name: { contains: q, mode: "insensitive" } };
-
-    if (type === "ABSENCE") {
-      where.type = "ABSENCE";
-      // Teachers only see their own absence notifications
-      if (session.role === "TEACHER" && session.staffId) {
-        where.sentByStaffId = session.staffId;
-      }
-    } else if (type === "CUSTOM") {
-      where.type = { in: ["CUSTOM", "FEE", "ANNOUNCEMENT"] };
-    }
-    // type=null → show all (admin sees all; teacher sees own ABSENCE + all CUSTOM)
-    if (!type && session.role === "TEACHER" && session.staffId) {
-      where.OR = [
-        { type: "ABSENCE", sentByStaffId: session.staffId },
-        { type: { not: "ABSENCE" } },
-      ];
-    }
-
     const messages = await prisma.parentMessage.findMany({
-      where,
+      where: {
+        ...(status ? { status } : {}),
+        ...(q
+          ? { student: { name: { contains: q, mode: "insensitive" } } }
+          : {}),
+      },
       include: {
         student: { select: { id: true, name: true, grade: true, rollNumber: true, parentName: true, parentEmail: true, portalToken: true } },
       },
@@ -45,22 +27,7 @@ export async function GET(req: Request) {
       take: 200,
     });
 
-    // Stats scoped to the same teacher filter
-    const statsWhere: Record<string, unknown> = {};
-    if (type === "ABSENCE") {
-      statsWhere.type = "ABSENCE";
-      if (session.role === "TEACHER" && session.staffId) {
-        statsWhere.sentByStaffId = session.staffId;
-      }
-    } else if (type === "CUSTOM") {
-      statsWhere.type = { in: ["CUSTOM", "FEE", "ANNOUNCEMENT"] };
-    } else if (session.role === "TEACHER" && session.staffId) {
-      statsWhere.OR = [
-        { type: "ABSENCE", sentByStaffId: session.staffId },
-        { type: { not: "ABSENCE" } },
-      ];
-    }
-    const counts = await prisma.parentMessage.groupBy({ by: ["status"], where: statsWhere, _count: { _all: true } });
+    const counts = await prisma.parentMessage.groupBy({ by: ["status"], _count: { _all: true } });
     const stats = Object.fromEntries(counts.map((c) => [c.status, c._count._all]));
 
     return NextResponse.json({ messages, stats });

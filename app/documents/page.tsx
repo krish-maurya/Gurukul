@@ -140,10 +140,10 @@ export default function DocumentIntelligencePage() {
   return (
     <div className="space-y-5">
       {/* Page Header */}
-      <div className="flex items-center justify-between border-b border-neutral-200 pb-4">
+      <div className="flex items-center justify-between border-b pb-4" style={{ borderColor: "var(--line)" }}>
         <div>
-          <h1 className="text-base font-semibold text-gurukul-dark tracking-tight">Document Intelligence</h1>
-          <p className="text-[11px] text-gurukul-ocean mt-0.5">
+          <h1 className="text-base font-semibold text-gurukul-ink tracking-tight" style={{ fontFamily: "var(--font-syne)" }}>Document Intelligence</h1>
+          <p className="text-[11px] mt-0.5" style={{ color: "var(--faint)" }}>
             Automated ingestion, OCR parsing, and human verification.
           </p>
         </div>
@@ -165,40 +165,35 @@ export default function DocumentIntelligencePage() {
           />
 
           {/* Processing Queue & Records Table */}
-          <div className="bg-white rounded-xl border border-neutral-200/80 overflow-hidden">
-            <div className="flex flex-col items-start gap-3 border-b border-neutral-200 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+          <div className="bg-white rounded-xl overflow-hidden" style={{ border: "1px solid var(--line)", boxShadow: "0 0 0 0.5px rgba(15, 23, 42, 0.04)" }}>
+            <div className="px-5 py-3.5 border-b flex items-center justify-between" style={{ borderColor: "var(--line)" }}>
               <div>
-                <h3 className="text-sm font-semibold text-gurukul-dark">Processing Queue</h3>
-                <p className="text-[11px] text-gurukul-ocean mt-0.5">
+                <h3 className="text-sm font-semibold text-gurukul-ink" style={{ fontFamily: "var(--font-syne)" }}>Processing Queue</h3>
+                <p className="text-[11px] mt-0.5" style={{ color: "var(--faint)" }}>
                   Click any document to open the verification view.
                 </p>
               </div>
 
               {/* Status Filter Tabs */}
-              <div className="flex w-full items-center gap-0.5 rounded-lg border border-neutral-200/80 bg-neutral-50 p-0.5 text-[11px] font-medium sm:w-auto">
+              <div className="flex items-center gap-0.5 p-0.5 rounded-lg text-[11px] font-medium" style={{ background: "var(--hover)", border: "1px solid var(--line)" }}>
                 <button
                   onClick={() => setFilterStatus("ALL")}
-                  className={`px-3 py-1 rounded-md transition-colors ${
-                    filterStatus === "ALL" ? "bg-gurukul-dark text-white" : "text-gurukul-ocean hover:text-gurukul-dark"
-                  }`}
+                  className="px-3 py-1 rounded-md transition-colors"
+                  style={filterStatus === "ALL" ? { background: "var(--accent)", color: "#ffffff" } : { color: "var(--muted)" }}
                 >
                   All ({queue.length})
                 </button>
                 <button
                   onClick={() => setFilterStatus("NEEDS_REVIEW")}
-                  className={`px-3 py-1 rounded-md transition-colors ${
-                    filterStatus === "NEEDS_REVIEW"
-                      ? "bg-gurukul-dark text-white"
-                      : "text-gurukul-ocean hover:text-gurukul-dark"
-                  }`}
+                  className="px-3 py-1 rounded-md transition-colors"
+                  style={filterStatus === "NEEDS_REVIEW" ? { background: "var(--accent)", color: "#ffffff" } : { color: "var(--muted)" }}
                 >
                   Review ({queue.filter((q) => q.status === "NEEDS_REVIEW").length})
                 </button>
                 <button
                   onClick={() => setFilterStatus("APPROVED")}
-                  className={`px-3 py-1 rounded-md transition-colors ${
-                    filterStatus === "APPROVED" ? "bg-gurukul-dark text-white" : "text-gurukul-ocean hover:text-gurukul-dark"
-                  }`}
+                  className="px-3 py-1 rounded-md transition-colors"
+                  style={filterStatus === "APPROVED" ? { background: "var(--accent)", color: "#ffffff" } : { color: "var(--muted)" }}
                 >
                   Approved ({queue.filter((q) => q.status === "APPROVED").length})
                 </button>
@@ -208,57 +203,62 @@ export default function DocumentIntelligencePage() {
             {/* Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="border-b border-neutral-200 text-neutral-500 font-medium uppercase tracking-wider text-[10px]">
+                <thead className="border-b text-[10px] uppercase tracking-wider" style={{ borderColor: "var(--line)" }}>
                   <tr>
-                    <th className="px-5 py-2.5">Document</th>
-                    <th className="px-5 py-2.5">Type</th>
-                    <th className="px-5 py-2.5">Score</th>
-                    <th className="px-5 py-2.5">Status</th>
-                    <th className="px-5 py-2.5">Student</th>
-                    <th className="px-5 py-2.5 text-right">Action</th>
+                    <th className="px-5 py-2.5" style={{ color: "var(--faint)" }}>Document</th>
+                    <th className="px-5 py-2.5" style={{ color: "var(--faint)" }}>Type</th>
+                    <th className="px-5 py-2.5" style={{ color: "var(--faint)" }}>Score</th>
+                    <th className="px-5 py-2.5" style={{ color: "var(--faint)" }}>Status</th>
+                    <th className="px-5 py-2.5" style={{ color: "var(--faint)" }}>Student</th>
+                    <th className="px-5 py-2.5 text-right" style={{ color: "var(--faint)" }}>Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-100">
+                <tbody className="divide-y" style={{ borderColor: "var(--hover)" }}>
                   {filteredQueue.map((doc) => (
                     <tr
                       key={doc.id}
-                      className="hover:bg-neutral-50 transition-colors group cursor-pointer"
+                      className="transition-colors group cursor-pointer"
+                      style={{ background: "transparent" }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = "var(--hover)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                       onClick={() => setActiveDocId(doc.id)}
                     >
-                      <td className="px-5 py-3 font-medium text-gurukul-dark flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-md bg-neutral-100 text-neutral-400 flex items-center justify-center">
+                      <td className="px-5 py-3 font-medium text-gurukul-ink flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-md flex items-center justify-center" style={{ background: "var(--soft)", color: "var(--faint)" }}>
                           <FileText className="w-3.5 h-3.5" />
                         </div>
                         <div>
-                          <p className="font-medium text-gurukul-dark text-xs">
+                          <p className="font-medium text-gurukul-ink text-xs">
                             {doc.fileName}
                           </p>
-                          <p className="text-[10px] text-neutral-400">{doc.createdAt}</p>
+                          <p className="text-[10px]" style={{ color: "var(--faint)" }}>{doc.createdAt}</p>
                         </div>
                       </td>
-                      <td className="px-5 py-3 text-gurukul-ocean text-xs">{doc.documentType}</td>
+                      <td className="px-5 py-3 text-xs" style={{ color: "var(--muted)" }}>{doc.documentType}</td>
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-2">
-                          <div className="w-12 bg-neutral-100 rounded-full h-1 overflow-hidden">
+                          <div className="w-12 rounded-full h-1 overflow-hidden" style={{ background: "var(--soft)" }}>
                             <div
-                              className={`h-1 rounded-full ${
-                                doc.confidenceScore >= 85 ? "bg-gurukul-dark" : "bg-neutral-400"
-                              }`}
-                              style={{ width: `${doc.confidenceScore}%` }}
+                              className="h-1 rounded-full"
+                              style={{
+                                width: `${doc.confidenceScore}%`,
+                                background: doc.confidenceScore >= 85 ? "var(--accent)" : "var(--faint)"
+                              }}
                             />
                           </div>
-                          <span className="font-mono text-neutral-600 text-[11px]">
+                          <span className="font-mono text-[11px]" style={{ color: "var(--muted)" }}>
                             {doc.confidenceScore.toFixed(1)}%
                           </span>
                         </div>
                       </td>
                       <td className="px-5 py-3">
                         <span
-                          className={`text-[10px] px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1 ${
+                          className="text-[10px] px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1"
+                          style={
                             doc.status === "APPROVED"
-                              ? "bg-neutral-100 text-neutral-600"
-                              : "bg-amber-50 text-amber-700"
-                          }`}
+                              ? { background: "var(--soft)", color: "var(--muted)" }
+                              : { background: "var(--amber-soft)", color: "var(--amber-text)" }
+                          }
                         >
                           {doc.status === "APPROVED" ? (
                             <>
@@ -273,11 +273,11 @@ export default function DocumentIntelligencePage() {
                           )}
                         </span>
                       </td>
-                      <td className="px-5 py-3 text-xs text-neutral-600">
+                      <td className="px-5 py-3 text-xs" style={{ color: "var(--muted)" }}>
                         {doc.extractedFields.studentName.value ? (
                           `${doc.extractedFields.studentName.value} (${doc.extractedFields.grade.value || "—"})`
                         ) : (
-                          <span className="text-neutral-400 italic">[Not detected]</span>
+                          <span className="italic" style={{ color: "var(--faint)" }}>[Not detected]</span>
                         )}
                       </td>
                       <td className="px-5 py-3 text-right">
@@ -287,9 +287,7 @@ export default function DocumentIntelligencePage() {
                             setActiveDocId(doc.id);
                           }}
                           className={`text-[11px] px-3 py-1.5 rounded-md font-medium transition-colors ${
-                            doc.status === "APPROVED"
-                              ? "bg-white text-gurukul-dark border border-neutral-200 hover:bg-neutral-50"
-                              : "bg-gurukul-dark text-white hover:bg-neutral-800"
+                            doc.status === "APPROVED" ? "btn-secondary" : "btn-primary"
                           }`}
                         >
                           {doc.status === "APPROVED" ? "View" : "Review"}

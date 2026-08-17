@@ -62,14 +62,14 @@ export default function AcceptInvitePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gurukul-white flex items-center justify-center p-6 animate-fade-in">
+    <div className="min-h-screen flex items-center justify-center p-6 animate-fade-in" style={{ background: "var(--canvas)" }}>
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-gurukul-dark text-white flex items-center justify-center mx-auto mb-4">
+          <div className="w-14 h-14 rounded-2xl text-white flex items-center justify-center mx-auto mb-4" style={{ background: "var(--accent)" }}>
             <GraduationCap className="w-7 h-7" />
           </div>
-          <h1 className="text-2xl font-bold text-gurukul-dark tracking-tight">Join GURUKUL</h1>
-          <p className="text-xs text-gurukul-ocean mt-1">Activate your staff account</p>
+          <h1 className="text-2xl font-bold text-gurukul-ink tracking-tight" style={{ fontFamily: "var(--font-syne)" }}>Join GURUKUL</h1>
+          <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Activate your staff account</p>
         </div>
 
         <div className="card p-6">
@@ -79,34 +79,34 @@ export default function AcceptInvitePage() {
             </div>
           ) : loadError ? (
             <div className="text-center py-6">
-              <div className="w-10 h-10 rounded-full bg-gurukul-highlight border border-neutral-200 flex items-center justify-center mx-auto mb-3">
-                <AlertCircle className="w-5 h-5 text-gurukul-ocean" />
+              <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: "var(--soft)", border: "1px solid var(--line)" }}>
+                <AlertCircle className="w-5 h-5" style={{ color: "var(--muted)" }} />
               </div>
-              <p className="text-sm font-semibold text-gurukul-dark">{loadError}</p>
-              <p className="text-xs text-gurukul-ocean mt-2">Ask your administrator for a new invitation link.</p>
+              <p className="text-sm font-semibold text-gurukul-ink">{loadError}</p>
+              <p className="text-xs mt-2" style={{ color: "var(--muted)" }}>Ask your administrator for a new invitation link.</p>
             </div>
           ) : invite ? (
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="bg-gurukul-highlight border border-neutral-200/80 rounded-lg p-3 text-xs space-y-1">
-                <div className="flex items-center gap-2 text-gurukul-dark font-semibold">
+              <div className="rounded-lg p-3 text-xs space-y-1" style={{ background: "var(--soft)", border: "1px solid var(--line)" }}>
+                <div className="flex items-center gap-2 text-gurukul-ink font-semibold">
                   <ShieldCheck className="w-4 h-4" />
                   <span>Invitation verified</span>
                 </div>
-                <p className="text-gurukul-ocean"><strong className="text-gurukul-dark">{invite.name}</strong> · {invite.email}</p>
-                <p className="text-gurukul-muted">{invite.department || invite.role}</p>
+                <p style={{ color: "var(--muted)" }}><strong className="text-gurukul-ink">{invite.name}</strong> · {invite.email}</p>
+                <p style={{ color: "var(--faint)" }}>{invite.department || invite.role}</p>
               </div>
 
               {error && (
-                <div className="flex items-center gap-2 text-xs text-gurukul-dark bg-gurukul-highlight border border-neutral-200 rounded-lg px-3 py-2.5">
+                <div className="flex items-center gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
 
               <div>
-                <label className="text-xs font-medium text-gurukul-dark mb-1.5 block">Create Password</label>
+                <label className="text-xs font-medium text-gurukul-ink mb-1.5 block">Create Password</label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gurukul-muted" />
+                  <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--faint)" }} />
                   <input
                     type="password"
                     required
@@ -121,9 +121,9 @@ export default function AcceptInvitePage() {
               </div>
 
               <div>
-                <label className="text-xs font-medium text-gurukul-dark mb-1.5 block">Confirm Password</label>
+                <label className="text-xs font-medium text-gurukul-ink mb-1.5 block">Confirm Password</label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gurukul-muted" />
+                  <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--faint)" }} />
                   <input
                     type="password"
                     required

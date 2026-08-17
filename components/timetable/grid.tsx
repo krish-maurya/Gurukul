@@ -70,14 +70,14 @@ export function TimetableGrid({
   return (
     <div className="card overflow-hidden animate-fade-in">
       {/* Grid Header & View Mode Switcher */}
-      <div className="p-4 border-b border-gurukul-gray bg-neutral-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="p-4 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3" style={{ borderColor: "var(--line)", background: "var(--soft)" }}>
         <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-gurukul-muted" />
+          <Calendar className="w-4 h-4" style={{ color: "var(--faint)" }} />
           <div>
-            <h3 className="text-sm font-semibold text-gurukul-dark">
+            <h3 className="text-sm font-semibold text-gurukul-ink" style={{ fontFamily: "var(--font-syne)" }}>
               {viewMode === "day" ? `Daily Schedule · ${formattedTitle}` : "Full Weekly Schedule Matrix"}
             </h3>
-            <p className="text-[11px] text-gurukul-ocean">
+            <p className="text-[11px]" style={{ color: "var(--muted)" }}>
               {viewMode === "day"
                 ? `Showing periods for ${activeDay} (${activeDate})`
                 : "Showing all 5 days of the instructional week"}
@@ -87,25 +87,19 @@ export function TimetableGrid({
 
         {/* View Mode Toggle */}
         <div className="flex items-center gap-3 self-start sm:self-auto">
-          <div className="bg-neutral-100 p-0.5 rounded-lg flex items-center gap-1">
+          <div className="p-0.5 rounded-lg flex items-center gap-1" style={{ background: "var(--hover)", border: "1px solid var(--line)" }}>
             <button
               onClick={() => setViewMode("day")}
-              className={`text-xs font-medium px-2.5 py-1 rounded-md transition-all flex items-center gap-1.5 ${
-                viewMode === "day"
-                  ? "bg-white text-gurukul-dark shadow-subtle"
-                  : "text-gurukul-ocean hover:text-gurukul-dark"
-              }`}
+              className="text-xs font-medium px-2.5 py-1 rounded-md transition-all flex items-center gap-1.5"
+              style={viewMode === "day" ? { background: "#ffffff", color: "var(--ink)", boxShadow: "0 1px 3px rgba(15, 23, 42, 0.06)" } : { color: "var(--muted)" }}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
               <span>Day View</span>
             </button>
             <button
               onClick={() => setViewMode("week")}
-              className={`text-xs font-medium px-2.5 py-1 rounded-md transition-all flex items-center gap-1.5 ${
-                viewMode === "week"
-                  ? "bg-white text-gurukul-dark shadow-subtle"
-                  : "text-gurukul-ocean hover:text-gurukul-dark"
-              }`}
+              className="text-xs font-medium px-2.5 py-1 rounded-md transition-all flex items-center gap-1.5"
+              style={viewMode === "week" ? { background: "#ffffff", color: "var(--ink)", boxShadow: "0 1px 3px rgba(15, 23, 42, 0.06)" } : { color: "var(--muted)" }}
             >
               <CalendarRange className="w-3.5 h-3.5" />
               <span>Week View</span>
@@ -115,18 +109,18 @@ export function TimetableGrid({
       </div>
 
       {/* Legend Bar */}
-      <div className="px-4 py-2 bg-neutral-50/50 border-b border-gurukul-gray flex flex-wrap items-center gap-4 text-[11px]">
+      <div className="px-4 py-2 border-b flex flex-wrap items-center gap-4 text-[11px]" style={{ borderColor: "var(--line)", background: "var(--hover)" }}>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-sm bg-white border border-neutral-200/80" />
-          <span className="text-gurukul-ocean">Standard Lecture</span>
+          <span className="w-2.5 h-2.5 rounded-sm" style={{ background: "#ffffff", border: "1px solid var(--line)" }} />
+          <span style={{ color: "var(--muted)" }}>Standard Lecture</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-sm bg-amber-50 border border-amber-200" />
-          <span className="text-gurukul-ocean">Proxy Covered</span>
+          <span className="w-2.5 h-2.5 rounded-sm" style={{ background: "var(--amber-soft)", border: "1px solid rgba(183, 121, 31, 0.25)" }} />
+          <span style={{ color: "var(--muted)" }}>Proxy Covered</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-sm bg-red-50 border border-red-200" />
-          <span className="text-gurukul-ocean">Clash Detected</span>
+          <span className="w-2.5 h-2.5 rounded-sm" style={{ background: "var(--red-soft)", border: "1px solid rgba(185, 28, 28, 0.22)" }} />
+          <span style={{ color: "var(--muted)" }}>Clash Detected</span>
         </div>
       </div>
 
@@ -138,31 +132,32 @@ export function TimetableGrid({
           /* ========================================================= */
           <table className="w-full text-left border-collapse min-w-[650px]">
             <thead>
-              <tr className="bg-neutral-50 border-b border-gurukul-gray">
-                <th className="p-3.5 w-36 text-[11px] font-medium text-gurukul-muted uppercase tracking-wider border-r border-gurukul-gray">
+              <tr style={{ background: "var(--soft)", borderColor: "var(--line)" }} className="border-b">
+                <th className="p-3.5 w-36 text-[11px] font-medium uppercase tracking-wider border-r" style={{ borderColor: "var(--line)", color: "var(--faint)" }}>
                   Period / Time
                 </th>
                 {grades.map((grade) => (
                   <th
                     key={grade}
-                    className="p-3.5 text-xs font-semibold text-gurukul-dark uppercase tracking-wider border-r border-gurukul-gray last:border-r-0"
+                    className="p-3.5 text-xs font-semibold text-gurukul-ink uppercase tracking-wider border-r last:border-r-0"
+                    style={{ borderColor: "var(--line)", fontFamily: "var(--font-syne)" }}
                   >
                     {grade}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gurukul-gray">
+            <tbody className="divide-y" style={{ borderColor: "var(--line)" }}>
               {PERIODS.map((p) => {
                 const conflictForPeriod = dayConflicts.find((c) => c.period === p.id);
                 const isConflictSelected = selectedConflict?.id === conflictForPeriod?.id;
 
                 return (
-                  <tr key={p.id} className="hover:bg-neutral-50/50 transition-colors">
+                  <tr key={p.id} className="transition-colors">
                     {/* Period Label */}
-                    <td className="p-3.5 border-r border-gurukul-gray bg-neutral-50 align-top">
-                      <p className="text-xs font-semibold text-gurukul-dark">Period {p.id}</p>
-                      <p className="text-[10px] text-gurukul-muted font-mono mt-0.5">{p.time}</p>
+                    <td className="p-3.5 border-r align-top" style={{ borderColor: "var(--line)", background: "var(--soft)" }}>
+                      <p className="text-xs font-semibold text-gurukul-ink">Period {p.id}</p>
+                      <p className="text-[10px] font-mono mt-0.5" style={{ color: "var(--faint)" }}>{p.time}</p>
                     </td>
 
                     {/* Class Slots for this Period */}
@@ -173,35 +168,36 @@ export function TimetableGrid({
                       return (
                         <td
                           key={`${grade}-${p.id}`}
-                          className={`p-3 border-r border-gurukul-gray last:border-r-0 align-top transition-all ${
-                            isAffectedByConflict
-                              ? isConflictSelected
-                                ? "bg-red-50 ring-1 ring-red-200"
-                                : "bg-red-50/50"
-                              : "hover:bg-neutral-50/30"
-                          }`}
+                          className="p-3 border-r last:border-r-0 align-top transition-all"
+                          style={{
+                            borderColor: "var(--line)",
+                            background: isAffectedByConflict
+                              ? (isConflictSelected ? "var(--red-soft)" : "rgba(254, 242, 242, 0.5)")
+                              : "transparent"
+                          }}
                         >
                           {slot ? (
                             <div
                               onClick={() => conflictForPeriod && onSelectConflict(conflictForPeriod)}
-                              className={`p-3 rounded-lg border text-xs transition-all ${
+                              className="p-3 rounded-lg border text-xs transition-all"
+                              style={
                                 isAffectedByConflict
-                                  ? "bg-white border-red-200 shadow-subtle cursor-pointer hover:border-red-300"
+                                  ? { background: "#ffffff", borderColor: "rgba(185, 28, 28, 0.3)", boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)", cursor: "pointer" }
                                   : slot.isProxy
-                                    ? "bg-amber-50 border-amber-200"
-                                    : "bg-white border-neutral-200/80 hover:border-neutral-300"
-                              }`}
+                                    ? { background: "var(--amber-soft)", borderColor: "rgba(183, 121, 31, 0.3)" }
+                                    : { background: "#ffffff", borderColor: "var(--line)" }
+                              }
                             >
                               <div className="flex items-center justify-between mb-1.5">
-                                <span className="font-semibold text-sm text-gurukul-dark">{slot.subjectName}</span>
+                                <span className="font-semibold text-sm text-gurukul-ink" style={{ fontFamily: "var(--font-syne)" }}>{slot.subjectName}</span>
                                 {slot.requiresLab && (
                                   <span className="badge-default">Lab</span>
                                 )}
                               </div>
 
-                              <div className="space-y-1 text-[11px] text-gurukul-ocean">
+                              <div className="space-y-1 text-[11px]" style={{ color: "var(--muted)" }}>
                                 <p className="flex items-center gap-1.5 font-medium truncate">
-                                  <User className={`w-3.5 h-3.5 flex-shrink-0 ${slot.isProxy ? "text-amber-600" : "text-gurukul-muted"}`} />
+                                  <User className="w-3.5 h-3.5 flex-shrink-0" style={{ color: slot.isProxy ? "var(--amber)" : "var(--faint)" }} />
                                   <span className="truncate">{slot.teacherName}</span>
                                   {slot.isProxy && (
                                     <span className="badge-warning ml-auto shrink-0">Proxy</span>
@@ -210,10 +206,10 @@ export function TimetableGrid({
                                     <span className="badge-error ml-auto shrink-0">Absent</span>
                                   )}
                                 </p>
-                                <p className="flex items-center gap-1.5 text-gurukul-muted truncate">
-                                  <MapPin className="w-3.5 h-3.5 text-gurukul-muted flex-shrink-0" />
+                                <p className="flex items-center gap-1.5 truncate" style={{ color: "var(--faint)" }}>
+                                  <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
                                   <span className="truncate font-mono">{slot.roomName}</span>
-                                  <span className="text-[10px] text-gurukul-muted">({slot.roomType})</span>
+                                  <span className="text-[10px]" style={{ color: "var(--faint)" }}>({slot.roomType})</span>
                                 </p>
                               </div>
 
@@ -223,15 +219,16 @@ export function TimetableGrid({
                                     e.stopPropagation();
                                     onSelectConflict(conflictForPeriod);
                                   }}
-                                  className="mt-2 w-full text-[10px] font-medium text-red-600 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-md flex items-center justify-center gap-1 border border-red-200 transition-colors"
+                                  className="mt-2 w-full text-[10px] font-medium px-2 py-1 rounded-md flex items-center justify-center gap-1 border transition-colors"
+                                  style={{ color: "var(--red)", background: "var(--red-soft)", borderColor: "rgba(185, 28, 28, 0.3)" }}
                                 >
-                                  <AlertTriangle className="w-3 h-3 text-red-500 shrink-0" />
+                                  <AlertTriangle className="w-3 h-3 shrink-0" />
                                   <span>Resolve {conflictForPeriod.type.replace("_", " ")}</span>
                                 </button>
                               )}
                             </div>
                           ) : (
-                            <div className="h-16 flex items-center justify-center text-xs text-gurukul-muted font-mono bg-neutral-50 rounded-lg">
+                            <div className="h-16 flex items-center justify-center text-xs font-mono rounded-lg" style={{ background: "var(--hover)", color: "var(--faint)" }}>
                               Free Slot
                             </div>
                           )}
@@ -249,29 +246,32 @@ export function TimetableGrid({
           /* ========================================================= */
           <table className="w-full text-left border-collapse min-w-[750px]">
             <thead>
-              <tr className="bg-neutral-50 border-b border-gurukul-gray">
-                <th className="p-3 w-32 text-[11px] font-medium text-gurukul-muted uppercase tracking-wider border-r border-gurukul-gray">
+              <tr style={{ background: "var(--soft)", borderColor: "var(--line)" }} className="border-b">
+                <th className="p-3 w-32 text-[11px] font-medium uppercase tracking-wider border-r" style={{ borderColor: "var(--line)", color: "var(--faint)" }}>
                   Period / Time
                 </th>
                 {DAYS.map((day) => (
                   <th
                     key={day}
-                    className={`p-3 text-[11px] font-medium uppercase tracking-wider border-r border-gurukul-gray last:border-r-0 text-center ${
-                      day === activeDay ? "bg-gurukul-dark text-white font-semibold" : "text-gurukul-dark"
-                    }`}
+                    className="p-3 text-[11px] font-medium uppercase tracking-wider border-r last:border-r-0 text-center"
+                    style={
+                      day === activeDay
+                        ? { background: "var(--accent)", color: "#ffffff", borderColor: "var(--accent)", fontWeight: 600 }
+                        : { color: "var(--ink)", borderColor: "var(--line)" }
+                    }
                   >
                     {day} {day === activeDay && "·"}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gurukul-gray">
+            <tbody className="divide-y" style={{ borderColor: "var(--line)" }}>
               {PERIODS.map((p) => (
-                <tr key={p.id} className="hover:bg-neutral-50/50 transition-colors">
+                <tr key={p.id} className="transition-colors">
                   {/* Time Label */}
-                  <td className="p-3 border-r border-gurukul-gray bg-neutral-50">
-                    <p className="text-xs font-semibold text-gurukul-dark">Period {p.id}</p>
-                    <p className="text-[10px] text-gurukul-muted font-mono mt-0.5">{p.time}</p>
+                  <td className="p-3 border-r" style={{ borderColor: "var(--line)", background: "var(--soft)" }}>
+                    <p className="text-xs font-semibold text-gurukul-ink">Period {p.id}</p>
+                    <p className="text-[10px] font-mono mt-0.5" style={{ color: "var(--faint)" }}>{p.time}</p>
                   </td>
 
                   {/* Day Columns */}
@@ -284,15 +284,13 @@ export function TimetableGrid({
                     return (
                       <td
                         key={`${day}-${p.id}`}
-                        className={`p-2 border-r border-gurukul-gray last:border-r-0 align-top transition-all ${
-                          conflict
-                            ? isConflictSelected
-                              ? "bg-red-50 ring-1 ring-red-200"
-                              : "bg-red-50/50 hover:bg-red-50"
-                            : isCurrentActiveDay
-                              ? "bg-neutral-50/80 hover:bg-neutral-100/50"
-                              : "hover:bg-neutral-50/30"
-                        }`}
+                        className="p-2 border-r last:border-r-0 align-top transition-all"
+                        style={{
+                          borderColor: "var(--line)",
+                          background: conflict
+                            ? (isConflictSelected ? "var(--red-soft)" : "rgba(254, 242, 242, 0.5)")
+                            : isCurrentActiveDay ? "var(--hover)" : "transparent"
+                        }}
                       >
                         {matchingSlots.length > 0 ? (
                           <div className="space-y-1.5">
@@ -300,24 +298,25 @@ export function TimetableGrid({
                               <div
                                 key={slot.id}
                                 onClick={() => conflict && onSelectConflict(conflict)}
-                                className={`p-2 rounded-lg border text-xs transition-all ${
+                                className="p-2 rounded-lg border text-xs transition-all"
+                                style={
                                   conflict
-                                    ? "bg-white border-red-200 cursor-pointer hover:border-red-300"
+                                    ? { background: "#ffffff", borderColor: "rgba(185, 28, 28, 0.3)", cursor: "pointer" }
                                     : slot.isProxy
-                                      ? "bg-amber-50 border-amber-200 hover:border-amber-300"
-                                      : "bg-white border-neutral-200/80 hover:border-neutral-300"
-                                }`}
+                                      ? { background: "var(--amber-soft)", borderColor: "rgba(183, 121, 31, 0.3)" }
+                                      : { background: "#ffffff", borderColor: "var(--line)" }
+                                }
                               >
                                 <div className="flex items-center justify-between mb-1">
-                                  <span className="font-semibold text-gurukul-dark">{slot.grade}</span>
+                                  <span className="font-semibold text-gurukul-ink">{slot.grade}</span>
                                   <span className="badge-default">
                                     {slot.subjectName.split(" ")[0]}
                                   </span>
                                 </div>
 
-                                <div className="space-y-0.5 text-[10px] text-gurukul-ocean">
+                                <div className="space-y-0.5 text-[10px]" style={{ color: "var(--muted)" }}>
                                   <p className="flex items-center gap-1 font-medium truncate">
-                                    <User className={`w-3 h-3 flex-shrink-0 ${slot.isProxy ? "text-amber-600" : "text-gurukul-muted"}`} />
+                                    <User className="w-3 h-3 flex-shrink-0" style={{ color: slot.isProxy ? "var(--amber)" : "var(--faint)" }} />
                                     <span className="truncate">{slot.teacherName}</span>
                                     {slot.isProxy && (
                                       <span className="badge-warning ml-auto shrink-0 !text-[8px] !px-1 !py-0">Proxy</span>
@@ -326,8 +325,8 @@ export function TimetableGrid({
                                       <span className="badge-error ml-auto shrink-0 !text-[8px] !px-1 !py-0">Absent</span>
                                     )}
                                   </p>
-                                  <p className="flex items-center gap-1 text-gurukul-muted truncate">
-                                    <MapPin className="w-3 h-3 text-gurukul-muted flex-shrink-0" />
+                                  <p className="flex items-center gap-1 truncate" style={{ color: "var(--faint)" }}>
+                                    <MapPin className="w-3 h-3 flex-shrink-0" />
                                     <span className="truncate">{slot.roomName}</span>
                                   </p>
                                 </div>
@@ -337,15 +336,16 @@ export function TimetableGrid({
                             {conflict && (
                               <button
                                 onClick={() => onSelectConflict(conflict)}
-                                className="w-full text-[10px] font-medium text-red-600 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-md flex items-center justify-center gap-1 border border-red-200 transition-colors"
+                                className="w-full text-[10px] font-medium px-2 py-1 rounded-md flex items-center justify-center gap-1 border transition-colors"
+                                style={{ color: "var(--red)", background: "var(--red-soft)", borderColor: "rgba(185, 28, 28, 0.3)" }}
                               >
-                                <AlertTriangle className="w-3 h-3 text-red-500 shrink-0" />
+                                <AlertTriangle className="w-3 h-3 shrink-0" />
                                 <span className="truncate">{conflict.type.replace("_", " ")}</span>
                               </button>
                             )}
                           </div>
                         ) : (
-                          <div className="h-16 flex items-center justify-center text-[10px] text-gurukul-muted font-mono bg-neutral-50 rounded-lg">
+                          <div className="h-16 flex items-center justify-center text-[10px] font-mono rounded-lg" style={{ background: "var(--hover)", color: "var(--faint)" }}>
                             Free Slot
                           </div>
                         )}
