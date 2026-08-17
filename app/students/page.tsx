@@ -181,8 +181,8 @@ function StudentRegistry() {
       {/* List + Preview Panel */}
       <div className={`grid grid-cols-1 gap-5 items-start ${selected ? "lg:grid-cols-3" : ""}`}>
         {/* Student list */}
-        <div className={`card overflow-hidden ${selected ? "lg:col-span-2" : ""}`}>
-          <table className="w-full text-left">
+        <div className={`card overflow-x-auto ${selected ? "lg:col-span-2" : ""}`}>
+          <table className="min-w-[480px] w-full text-left md:min-w-0">
             <thead>
               <tr className="border-b border-gurukul-gray text-[10px] uppercase tracking-wider text-gurukul-muted">
                 <th className="px-4 py-3 font-medium">Roll</th>

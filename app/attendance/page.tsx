@@ -85,7 +85,7 @@ function AttendanceContent() {
   const presentCount = students.length - absentRollNumbers.length;
 
   return (
-    <div className="space-y-5 pb-28 animate-fade-in">
+    <div className="space-y-4 pb-24 sm:space-y-5 sm:pb-28 animate-fade-in">
       {/* Page Header */}
       <div className="flex flex-col gap-3 border-b border-neutral-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -107,14 +107,14 @@ function AttendanceContent() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center justify-between gap-3 card p-3">
-        <div className="flex flex-wrap items-center gap-3 text-xs">
+      <div className="card flex flex-col gap-3 p-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2 text-xs sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
           <div className="flex items-center gap-2">
             <Filter className="h-3.5 w-3.5 text-neutral-400" />
             <select
               value={grade}
               onChange={(event) => setGrade(event.target.value)}
-              className="select text-xs"
+              className="select min-w-0 flex-1 text-xs sm:w-auto"
             >
               {grades.length === 0 && <option value="">Loading classes...</option>}
               {grades.map((g) => (
@@ -128,11 +128,11 @@ function AttendanceContent() {
               type="date"
               value={date}
               onChange={(event) => setDate(event.target.value)}
-              className="input text-xs py-1.5 w-auto"
+              className="input min-w-0 flex-1 py-1.5 text-xs sm:w-auto"
             />
           </div>
         </div>
-        <div className="text-[11px] text-neutral-400">
+        <div className="hidden text-[11px] text-neutral-400 sm:block">
           <strong className="text-gurukul-dark">{currentUser?.name || "Faculty"}</strong>
         </div>
       </div>
@@ -146,8 +146,8 @@ function AttendanceContent() {
       )}
 
       {/* Roll Grid */}
-      <div className="card p-5">
-        <div className="mb-3 flex items-center justify-between border-b border-neutral-100 pb-2.5">
+      <div className="card p-3 sm:p-5">
+        <div className="mb-3 flex flex-col gap-2 border-b border-neutral-100 pb-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="text-[10px] font-medium uppercase tracking-wider text-neutral-500">{grade} Roll Grid</h3>
           </div>
@@ -156,8 +156,8 @@ function AttendanceContent() {
               <span className="h-2.5 w-2.5 rounded-sm bg-neutral-100" />
               Present
             </span>
-            <span className="flex items-center gap-1 text-neutral-500">
-              <span className="h-2.5 w-2.5 rounded-sm bg-gurukul-dark" />
+            <span className="flex items-center gap-1 text-red-700">
+              <span className="h-2.5 w-2.5 rounded-sm bg-red-500" />
               Absent
             </span>
           </div>
@@ -172,7 +172,7 @@ function AttendanceContent() {
             No students enrolled in {grade}.
           </div>
         ) : (
-          <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
+          <div className="grid max-w-6xl grid-cols-3 gap-2 min-[420px]:grid-cols-4 sm:grid-cols-5 sm:gap-3 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
             {students.map((student) => {
               const isAbsent = student.status === "ABSENT";
               return (
@@ -180,19 +180,21 @@ function AttendanceContent() {
                   key={student.id}
                   onClick={() => handleToggleRoll(student.rollNumber)}
                   disabled={isSubmitted}
-                  className={`flex h-[72px] flex-col items-center justify-center rounded-lg border transition-all duration-150 ${
+                  aria-pressed={isAbsent}
+                  aria-label={`Roll ${student.rollNumber}: ${student.status.toLowerCase()}. Tap to mark ${isAbsent ? "present" : "absent"}.`}
+                  className={`flex h-[84px] flex-col items-center justify-center rounded-xl border transition-all duration-150 sm:h-[88px] ${
                     isAbsent
-                      ? "bg-gurukul-dark border-gurukul-dark text-white"
+                      ? "border-red-600 bg-red-600 text-white shadow-sm hover:border-red-700 hover:bg-red-700"
                       : "bg-neutral-50 border-neutral-200 text-neutral-700 hover:border-neutral-300 hover:bg-neutral-100"
                   } ${isSubmitted ? "cursor-not-allowed opacity-80" : "active:scale-95"}`}
                 >
-                  <span className={`text-[9px] font-medium ${isAbsent ? "text-neutral-400" : "text-neutral-400"}`}>
+                  <span className={`text-[9px] font-medium ${isAbsent ? "text-red-100" : "text-neutral-400"}`}>
                     ROLL
                   </span>
                   <span className={`font-mono text-lg font-bold leading-tight ${isAbsent ? "text-white" : "text-gurukul-dark"}`}>
                     #{student.rollNumber}
                   </span>
-                  <span className={`mt-0.5 text-[8px] font-medium tracking-wider ${isAbsent ? "text-neutral-300" : "text-neutral-400"}`}>
+                  <span className={`mt-0.5 text-[8px] font-medium tracking-wider ${isAbsent ? "text-red-100" : "text-neutral-400"}`}>
                     {student.status}
                   </span>
                 </button>
@@ -203,7 +205,7 @@ function AttendanceContent() {
       </div>
 
       {/* Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 flex items-center justify-between gap-4 border-t border-neutral-200 bg-white p-4 shadow-subtle md:left-60 md:px-8">
+      <div className="fixed bottom-0 left-0 right-0 z-30 flex items-center justify-between gap-3 border-t border-neutral-200 bg-white px-3 py-3 shadow-subtle sm:gap-4 sm:p-4 md:left-60 md:px-8">
         <div className="flex min-w-0 items-center gap-4 sm:gap-6">
           <div>
             <p className="text-[9px] font-medium uppercase tracking-wider text-neutral-400">Summary</p>
@@ -213,13 +215,13 @@ function AttendanceContent() {
           <div className="hidden gap-4 text-[11px] sm:flex">
             <span className="text-neutral-400">Roll: <strong className="text-gurukul-dark">{students.length}</strong></span>
             <span className="text-neutral-500">Present: <strong className="text-gurukul-dark">{presentCount}</strong></span>
-            <span className="text-neutral-400">Absent: <strong className="text-gurukul-dark">{absentRollNumbers.length}</strong></span>
+            <span className="rounded-md bg-red-50 px-2 py-1 text-red-700">Absent: <strong className="text-red-800">{absentRollNumbers.length}</strong></span>
           </div>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
           disabled={isSubmitted || isLoading || students.length === 0}
-          className="btn-primary btn-sm"
+          className="btn-primary btn-sm shrink-0"
         >
           <Send className="h-3.5 w-3.5" />
           <span>{isSubmitted ? "Submitted" : "Review & Submit"}</span>

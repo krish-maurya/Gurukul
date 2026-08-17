@@ -166,7 +166,7 @@ export default function DocumentIntelligencePage() {
 
           {/* Processing Queue & Records Table */}
           <div className="bg-white rounded-xl border border-neutral-200/80 overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-neutral-200 flex items-center justify-between">
+            <div className="flex flex-col items-start gap-3 border-b border-neutral-200 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
               <div>
                 <h3 className="text-sm font-semibold text-gurukul-dark">Processing Queue</h3>
                 <p className="text-[11px] text-gurukul-ocean mt-0.5">
@@ -175,7 +175,7 @@ export default function DocumentIntelligencePage() {
               </div>
 
               {/* Status Filter Tabs */}
-              <div className="flex items-center gap-0.5 bg-neutral-50 p-0.5 rounded-lg border border-neutral-200/80 text-[11px] font-medium">
+              <div className="flex w-full items-center gap-0.5 rounded-lg border border-neutral-200/80 bg-neutral-50 p-0.5 text-[11px] font-medium sm:w-auto">
                 <button
                   onClick={() => setFilterStatus("ALL")}
                   className={`px-3 py-1 rounded-md transition-colors ${

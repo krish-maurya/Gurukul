@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AuthProvider, useAuth } from "@/lib/auth/session-context";
-import { Sidebar } from "./sidebar";
+import { MobileNavigation, Sidebar } from "./sidebar";
 import { Header } from "./header";
 import { ChatDrawer } from "@/components/copilot/chat-drawer";
 
@@ -36,9 +36,10 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen bg-gurukul-white text-gurukul-dark antialiased">
       <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex min-w-0 flex-col">
         <Header />
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto">{children}</main>
+        <MobileNavigation />
+        <main className="flex-1 overflow-x-hidden p-4 sm:p-6 md:p-8">{children}</main>
       </div>
       <ChatDrawer />
     </div>

@@ -52,7 +52,7 @@ export function Sidebar() {
     <aside
       className={`${
         collapsed ? "w-16" : "w-60"
-      } bg-white border-r border-neutral-200 text-gurukul-dark flex flex-col h-screen sticky top-0 select-none z-30 transition-all duration-200`}
+      } hidden bg-white border-r border-neutral-200 text-gurukul-dark md:flex flex-col h-screen sticky top-0 select-none z-30 transition-all duration-200`}
     >
       {/* Brand Header */}
       <div className="h-14 px-4 border-b border-neutral-200 flex items-center justify-between">
@@ -178,5 +178,39 @@ export function Sidebar() {
         )}
       </div>
     </aside>
+  );
+}
+
+export function MobileNavigation() {
+  const pathname = usePathname();
+  const { currentUser, isAdmin } = useAuth();
+
+  if (!currentUser) return null;
+
+  return (
+    <nav aria-label="Main navigation" className="sticky top-14 z-10 border-b border-neutral-200 bg-white/95 backdrop-blur md:hidden">
+      <div className="custom-scrollbar flex gap-1 overflow-x-auto px-3 py-2">
+        {NAV_ITEMS.map((item) => {
+          if (item.adminOnly && !isAdmin) return null;
+          if (item.teacherRestricted && currentUser.role === "TEACHER") return null;
+
+          const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
+                isActive
+                  ? "bg-gurukul-dark text-white"
+                  : "bg-neutral-50 text-neutral-500 hover:bg-neutral-100 hover:text-gurukul-dark"
+              }`}
+            >
+              <item.icon className="h-3.5 w-3.5" />
+              <span>{item.name}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
   );
 }

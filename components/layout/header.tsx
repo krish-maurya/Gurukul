@@ -18,19 +18,21 @@ export function Header() {
   };
 
   return (
-    <header className="h-14 bg-white border-b border-neutral-200 px-6 flex items-center justify-between sticky top-0 z-20">
+    <header className="h-14 shrink-0 bg-white border-b border-neutral-200 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-20">
       {/* Search Bar */}
-      <GlobalPersonSearch />
+      <div className="hidden flex-1 sm:block">
+        <GlobalPersonSearch />
+      </div>
 
       {/* Toolbar */}
-      <div className="flex items-center gap-3">
+      <div className="ml-auto flex items-center gap-2 sm:gap-3">
         {/* Role badge */}
         <div
           className={`text-[10px] px-2 py-0.5 rounded-md font-medium flex items-center gap-1 ${
             isAdmin
               ? "bg-gurukul-dark text-white"
               : "bg-neutral-100 text-neutral-600"
-          }`}
+          } hidden sm:flex`}
         >
           {isAdmin ? (
             <ShieldCheck className="w-3 h-3" />
@@ -44,7 +46,7 @@ export function Header() {
         <NotificationsBell />
 
         {/* Current User Profile & Logout */}
-        <div className="flex items-center gap-2.5 pl-2.5 border-l border-neutral-200">
+        <div className="flex items-center gap-2 sm:gap-2.5 sm:pl-2.5 sm:border-l sm:border-neutral-200">
           <div className="text-right hidden md:block">
             <p className="text-[11px] font-medium text-gurukul-dark leading-tight">{currentUser.name}</p>
             <p className="text-[10px] text-neutral-400">{currentUser.department}</p>

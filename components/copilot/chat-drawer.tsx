@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import {
   ArrowUp,
   Loader2,
@@ -30,6 +31,7 @@ const SUGGESTIONS = [
 
 export function ChatDrawer() {
   const { currentUser, isAuthenticated } = useAuth();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -116,7 +118,7 @@ export function ChatDrawer() {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 font-sans">
+    <div className={`fixed right-4 z-50 font-sans ${pathname === "/attendance" ? "bottom-24" : "bottom-4"}`}>
       {/* FAB */}
       {!open && (
         <button

@@ -133,7 +133,7 @@ function StaffDirectory() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gurukul-gray pb-5">
+      <div className="flex flex-col items-start justify-between gap-3 border-b border-gurukul-gray pb-5 sm:flex-row sm:items-center">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-neutral-100 text-gurukul-dark flex items-center justify-center">
             <Users className="w-5 h-5" />

@@ -440,6 +440,37 @@
     border: 1px solid #e5e5e5;
   }
 
+  @media (max-width: 640px) {
+    .copilot-fab {
+      @apply gap-2 rounded-lg py-2 pl-2 pr-3;
+    }
+
+    .copilot-fab-icon {
+      @apply h-8 w-8;
+    }
+
+    .copilot-fab-subtitle {
+      display: none;
+    }
+
+    .copilot-panel {
+      width: calc(100vw - 32px);
+      height: min(70dvh, 520px);
+    }
+
+    .copilot-header {
+      @apply px-3 py-2.5;
+    }
+
+    .copilot-messages {
+      @apply px-3 py-2.5;
+    }
+
+    .copilot-footer {
+      @apply px-2.5 py-2;
+    }
+  }
+
   /* ═══════════════════════════════════════════════════════
      STRUCTURED RESULTS — Minimal Light
      ═══════════════════════════════════════════════════════ */
