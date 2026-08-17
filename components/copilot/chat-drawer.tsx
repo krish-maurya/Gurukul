@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import {
   ArrowUp,
   Loader2,
@@ -30,6 +31,9 @@ const SUGGESTIONS = [
 
 export function ChatDrawer() {
   const { currentUser, isAuthenticated } = useAuth();
+  const pathname = usePathname();
+  // On the regular attendance page, lift the floating assistant above the fixed action bar.
+  const clearsAttendanceBar = pathname === "/attendance";
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -116,7 +120,7 @@ export function ChatDrawer() {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-20 font-sans">
+    <div className={`fixed right-4 z-20 font-sans transition-[bottom] duration-200 ${clearsAttendanceBar ? "bottom-24" : "bottom-4"}`}>
       {/* FAB */}
       {!open && (
         <button
