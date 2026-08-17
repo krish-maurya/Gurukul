@@ -93,13 +93,3 @@ Gurukul is an AI-assisted school operating system for administrators, teachers, 
    ```bash
    npm run build
    ```
-
-## Landing-page brief for an AI designer
-
-Create a premium, trustworthy landing page for **Gurukul**, an AI-powered school operations platform. The visual identity should feel calm, modern, academic, and human — deep navy, soft blue, white surfaces, subtle gold accents, rounded cards, clean data visualisation, and accessible typography. Emphasise that the product connects administrators, teachers, and parents in one secure workspace.
-
-Hero message: **“Run your school with clarity, not chaos.”**
-
-Hero supporting copy: **“Gurukul brings admissions OCR, attendance, timetables, fees, parent communication, and practical AI into one secure school operating system.”**
-
-Include sections for: role-based workflows; OCR admissions; one-tap teacher attendance; personal teacher timetables; automated absence and admission updates; parent portal; real-time operational dashboard; secure notifications; and a final request-demo call to action. Use realistic Indian school examples, but do not use fake statistics presented as live product data.
