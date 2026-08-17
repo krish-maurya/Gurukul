@@ -25,7 +25,15 @@ export default function TimetablePage() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className={isFocusMode
+      ? "mx-auto min-h-screen max-w-7xl space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8"
+      : "space-y-6 animate-fade-in"}>
+      {isFocusMode && (
+        <div className="rounded-2xl border bg-white px-5 py-4 shadow-subtle sm:px-6" style={{ borderColor: "var(--line)" }}>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--faint)" }}>Teacher workspace</p>
+          <p className="mt-1 text-sm font-semibold text-gurukul-ink">Your personal teaching schedule</p>
+        </div>
+      )}
       <div className="border-b pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" style={{ borderColor: "var(--line)" }}>
         <div>
           <div className="flex items-center gap-2.5">
