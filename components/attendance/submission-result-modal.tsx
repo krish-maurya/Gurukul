@@ -8,9 +8,10 @@ interface SubmissionResultModalProps {
   title: string;
   message: string;
   onClose: () => void;
+  doneLabel?: string;
 }
 
-export function SubmissionResultModal({ type, title, message, onClose }: SubmissionResultModalProps) {
+export function SubmissionResultModal({ type, title, message, onClose, doneLabel }: SubmissionResultModalProps) {
   const isSuccess = type === "success";
 
   return (
@@ -38,7 +39,7 @@ export function SubmissionResultModal({ type, title, message, onClose }: Submiss
         <button onClick={onClose} className={`mt-5 w-full rounded-lg px-4 py-2.5 text-xs font-medium transition-colors ${
           isSuccess ? "btn-primary" : "btn-secondary"
         }`}>
-          {isSuccess ? "Done" : "Try Again"}
+          {isSuccess ? (doneLabel || "Done") : "Try Again"}
         </button>
       </div>
     </div>

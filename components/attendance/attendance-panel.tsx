@@ -104,7 +104,7 @@ export function AttendancePanel({ focusMode = false }: AttendancePanelProps) {
 
   const bottomBarClass = focusMode
     ? "fixed bottom-0 left-0 right-0 z-30"
-    : "fixed bottom-0 left-0 right-0 z-30 md:left-60";
+    : "fixed bottom-0 left-0 right-0 z-30 transition-[left] duration-200 md:left-[var(--sidebar-width)]";
 
   return (
     <div className={`${focusMode ? "min-h-screen bg-gurukul-white" : ""} space-y-4 pb-24 sm:space-y-5 sm:pb-28 animate-fade-in`}>

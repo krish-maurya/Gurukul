@@ -18,7 +18,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/session-context";
-import { useState } from "react";
+
 
 interface NavItem {
   name: string;
@@ -40,11 +40,15 @@ const NAV_ITEMS: NavItem[] = [
   { name: "Access Control", href: "/admin/roles", icon: ShieldAlert, adminOnly: true },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  collapsed: boolean;
+  onCollapsedChange: (collapsed: boolean) => void;
+}
+
+export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { currentUser, isAdmin, logout } = useAuth();
-  const [collapsed, setCollapsed] = useState(false);
 
   if (!currentUser) return null;
 
@@ -119,7 +123,7 @@ export function Sidebar() {
       <div className="p-3 border-t" style={{ borderColor: "var(--line)" }}>
         {/* Collapse toggle */}
         <button
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={() => onCollapsedChange(!collapsed)}
           className="w-full flex items-center justify-center p-1.5 rounded-md hover:bg-gurukul-soft transition-colors"
           style={{ color: "var(--faint)" }}
         >

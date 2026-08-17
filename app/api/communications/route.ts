@@ -11,11 +11,15 @@ export async function GET(req: Request) {
     await requireSession();
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status");
+    const type = searchParams.get("type");
     const q = searchParams.get("q")?.trim();
+    const validTypes = ["ABSENCE", "FEE", "ANNOUNCEMENT", "CUSTOM"];
+    const messageType = type && validTypes.includes(type) ? type : undefined;
 
     const messages = await prisma.parentMessage.findMany({
       where: {
         ...(status ? { status } : {}),
+        ...(messageType ? { type: messageType } : {}),
         ...(q
           ? { student: { name: { contains: q, mode: "insensitive" } } }
           : {}),

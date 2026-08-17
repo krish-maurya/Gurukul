@@ -34,7 +34,7 @@ const STATUS_CLS: Record<MessageRow["status"], string> = {
 export default function ParentConnectPage() {
   const [messages, setMessages] = useState<MessageRow[]>([]);
   const [stats, setStats] = useState<Record<string, number>>({});
-  const [tab, setTab] = useState<"DRAFT" | "SENT" | "ACKNOWLEDGED" | "ALL">("DRAFT");
+  const [tab, setTab] = useState<"DRAFT" | "SENT" | "ACKNOWLEDGED" | "ABSENT" | "ALL">("DRAFT");
   const [q, setQ] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -44,7 +44,8 @@ export default function ParentConnectPage() {
 
   const load = useCallback(() => {
     const params = new URLSearchParams();
-    if (tab !== "ALL") params.set("status", tab);
+    if (tab === "ABSENT") params.set("type", "ABSENCE");
+    else if (tab !== "ALL") params.set("status", tab);
     if (q.trim()) params.set("q", q.trim());
     fetch(`/api/communications?${params}`)
       .then((r) => r.json())
@@ -124,6 +125,7 @@ export default function ParentConnectPage() {
             ["DRAFT", `Drafts${draftCount ? ` (${draftCount})` : ""}`],
             ["SENT", "Sent"],
             ["ACKNOWLEDGED", "Read ✓"],
+            ["ABSENT", "Absent Students"],
             ["ALL", "All"],
           ] as const).map(([key, label]) => (
             <button key={key} onClick={() => setTab(key)}

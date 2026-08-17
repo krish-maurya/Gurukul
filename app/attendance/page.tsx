@@ -218,7 +218,7 @@ function AttendanceContent() {
       </div>
 
       {/* Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 flex items-center justify-between gap-4 border-t bg-white p-4 shadow-subtle md:left-60 md:px-8" style={{ borderColor: "var(--line)" }}>
+      <div className="fixed bottom-0 left-0 right-0 z-30 flex items-center justify-between gap-4 border-t bg-white p-4 shadow-subtle transition-[left] duration-200 md:left-[var(--sidebar-width)] md:px-8" style={{ borderColor: "var(--line)" }}>
         <div className="flex min-w-0 items-center gap-4 sm:gap-6">
           <div>
             <p className="text-[9px] font-medium uppercase tracking-wider" style={{ color: "var(--faint)" }}>Summary</p>

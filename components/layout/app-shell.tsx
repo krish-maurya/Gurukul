@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AuthProvider, useAuth } from "@/lib/auth/session-context";
 import { Sidebar } from "./sidebar";
@@ -11,7 +11,10 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { isAuthenticated, isTeacher } = useAuth();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
+  // These are intentional distraction-free workflows, not dashboard pages.
+  const isFocusPage = pathname === "/welcome" || pathname === "/attendance/take";
   const isPublicPage = pathname === "/login" || pathname === "/landing" || pathname.startsWith("/p/") || pathname.startsWith("/invite/");
   const isTeacherRestrictedPage = isTeacher && (pathname === "/staff" || pathname.startsWith("/staff/"));
 
@@ -33,9 +36,17 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
     return null;
   }
 
+  // Welcome and teacher attendance must have no dashboard chrome, sidebar, or Copilot.
+  if (isFocusPage) {
+    return <div className="min-h-screen bg-gurukul-canvas text-gurukul-ink antialiased">{children}</div>;
+  }
+
   return (
-    <div className="flex min-h-screen bg-gurukul-canvas text-gurukul-ink antialiased">
-      <Sidebar />
+    <div
+      className="flex min-h-screen bg-gurukul-canvas text-gurukul-ink antialiased"
+      style={{ "--sidebar-width": sidebarCollapsed ? "4rem" : "15rem" } as React.CSSProperties}
+    >
+      <Sidebar collapsed={sidebarCollapsed} onCollapsedChange={setSidebarCollapsed} />
       <div className="flex-1 flex flex-col min-w-0">
         <Header />
         <main className="flex-1 p-6 md:p-8 overflow-y-auto">{children}</main>

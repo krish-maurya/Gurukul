@@ -25,7 +25,7 @@ export default function WelcomePage() {
 
   const options = [
     {
-      href: "/attendance",
+      href: "/attendance/take",
       icon: ClipboardCheck,
       title: "Take Attendance",
       description: "Your class and today's date are pre-selected - just mark and submit.",
@@ -39,7 +39,7 @@ export default function WelcomePage() {
   ];
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center animate-fade-in">
+    <div className="min-h-screen flex items-center justify-center p-6 animate-fade-in">
       <div className="w-full max-w-xl">
         <div className="text-center mb-8">
           <h1 className="text-xl font-bold text-gurukul-ink tracking-tight" style={{ fontFamily: "var(--font-syne)" }}>
