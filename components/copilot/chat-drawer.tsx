@@ -219,7 +219,7 @@ export function ChatDrawer() {
               </div>
             </div>
 
-            {/* User badge */}
+
             <div className="mt-2 flex items-center justify-between">
               <span className="text-[9px] text-neutral-400">
                 {currentUser?.name}
