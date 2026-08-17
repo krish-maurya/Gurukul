@@ -75,7 +75,15 @@ function AttendanceContent() {
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.error || "The attendance record could not be saved.");
       setIsSubmitted(true); setIsModalOpen(false);
-      setResult({ type: "success", title: "Attendance submitted", message: `${grade} attendance for ${date} has been saved. ${students.length} students recorded.` });
+      const absentCount = students.filter((s) => s.status === "ABSENT").length;
+      const notified = typeof payload.parentNotified === "number" ? payload.parentNotified : 0;
+      let message = `${grade} attendance for ${date} has been saved. ${students.length} students recorded.`;
+      if (absentCount > 0) {
+        message += notified > 0
+          ? ` ${notified} parent${notified === 1 ? "" : "s"} notified about absence${notified === 1 ? "" : "s"} automatically.`
+          : " Absence alerts were already sent for today.";
+      }
+      setResult({ type: "success", title: "Attendance submitted", message });
     } catch (error) {
       setIsModalOpen(false); setResult({ type: "error", title: "Submission failed", message: error instanceof Error ? error.message : "Please check your connection and try again." });
     } finally { setIsSubmitting(false); }

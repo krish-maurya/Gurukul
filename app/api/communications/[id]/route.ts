@@ -30,7 +30,12 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
     const updated = await prisma.parentMessage.update({
       where: { id: message.id },
-      data: { status: "SENT", sentAt: new Date(), sentByName: session.name },
+      data: {
+        status: "SENT",
+        sentAt: new Date(),
+        sentByName: session.name,
+        sentByStaffId: session.staffId ?? null,
+      },
     });
 
     // Best-effort email notification — the portal is the source of truth

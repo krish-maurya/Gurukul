@@ -64,6 +64,7 @@ model ParentMessage {
   body           String
   status         String    @default("DRAFT") // DRAFT | SENT | ACKNOWLEDGED
   sentByName     String?
+  sentByStaffId  String?
   sentAt         DateTime?
   acknowledgedAt DateTime?
   createdAt      DateTime  @default(now())
@@ -71,6 +72,7 @@ model ParentMessage {
 
   @@index([studentId, status])
   @@index([status, createdAt])
+  @@index([type, sentByStaffId])
 }
 
 model FeeAccount {

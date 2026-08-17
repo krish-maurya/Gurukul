@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { MessagesSquare, Send, Trash2, PenSquare, RefreshCw, Search, X, AlertCircle, CheckCircle, Link2, Copy, Mail, Sparkles, UserX, IndianRupee, Megaphone } from "lucide-react";
+import React, { useCallback, useEffect, useMemo, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { MessagesSquare, Send, Trash2, PenSquare, Search, X, AlertCircle, CheckCircle, Link2, Copy, Mail, Sparkles, UserX, IndianRupee, Megaphone } from "lucide-react";
 
 interface MessageRow {
   id: string;
@@ -18,6 +19,9 @@ interface MessageRow {
 
 interface StudentLite { id: string; name: string; grade: string; rollNumber: number; }
 
+type SectionTab = "ABSENCE" | "MESSAGES";
+type StatusTab = "DRAFT" | "SENT" | "ACKNOWLEDGED" | "ALL";
+
 const TYPE_META: Record<MessageRow["type"], { icon: React.ElementType; cls: string; label: string }> = {
   ABSENCE: { icon: UserX, cls: "bg-amber-100 text-amber-700", label: "Absence" },
   FEE: { icon: IndianRupee, cls: "bg-rose-100 text-rose-700", label: "Fees" },
@@ -31,10 +35,59 @@ const STATUS_CLS: Record<MessageRow["status"], string> = {
   ACKNOWLEDGED: "bg-emerald-100 text-emerald-800 border border-emerald-200",
 };
 
+const ABSENCE_STATUS_TABS: [StatusTab, string][] = [
+  ["SENT", "Sent"],
+  ["ACKNOWLEDGED", "Read ✓"],
+  ["ALL", "All"],
+];
+
+const MESSAGE_STATUS_TABS = (draftCount: number): [StatusTab, string][] => [
+  ["DRAFT", `Drafts${draftCount ? ` (${draftCount})` : ""}`],
+  ["SENT", "Sent"],
+  ["ACKNOWLEDGED", "Read ✓"],
+  ["ALL", "All"],
+];
+
+/** YYYY-MM-DD sort key for grouping */
+function getMessageGroupKey(m: MessageRow): string {
+  const absenceMatch = m.title.match(/Absence on (\d{4}-\d{2}-\d{2})/);
+  if (absenceMatch) return absenceMatch[1];
+  const raw = m.sentAt || m.createdAt;
+  return raw.slice(0, 10);
+}
+
+/** Display as D-M-YYYY e.g. 22-8-2025 */
+function formatDateHeader(key: string): string {
+  const [y, mo, d] = key.split("-").map(Number);
+  return `${d}-${mo}-${y}`;
+}
+
+function groupMessagesByDate(messages: MessageRow[]): [string, MessageRow[]][] {
+  const map = new Map<string, MessageRow[]>();
+  for (const m of messages) {
+    const key = getMessageGroupKey(m);
+    const list = map.get(key) ?? [];
+    list.push(m);
+    map.set(key, list);
+  }
+  return [...map.entries()].sort(([a], [b]) => b.localeCompare(a));
+}
+
 export default function ParentConnectPage() {
+  return (
+    <Suspense fallback={<p className="text-sm text-slate-400 text-center py-12">Loading...</p>}>
+      <ParentConnectContent />
+    </Suspense>
+  );
+}
+
+function ParentConnectContent() {
+  const searchParams = useSearchParams();
+  const initialSection: SectionTab = searchParams.get("section") === "messages" ? "MESSAGES" : "ABSENCE";
   const [messages, setMessages] = useState<MessageRow[]>([]);
   const [stats, setStats] = useState<Record<string, number>>({});
-  const [tab, setTab] = useState<"DRAFT" | "SENT" | "ACKNOWLEDGED" | "ALL">("DRAFT");
+  const [section, setSection] = useState<SectionTab>(initialSection);
+  const [tab, setTab] = useState<StatusTab>(initialSection === "ABSENCE" ? "SENT" : "DRAFT");
   const [q, setQ] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -42,8 +95,14 @@ export default function ParentConnectPage() {
   const [showCompose, setShowCompose] = useState(false);
   const [linkModal, setLinkModal] = useState<MessageRow["student"] | null>(null);
 
+  const switchSection = (next: SectionTab) => {
+    setSection(next);
+    setTab(next === "ABSENCE" ? "SENT" : "DRAFT");
+  };
+
   const load = useCallback(() => {
     const params = new URLSearchParams();
+    params.set("type", section === "ABSENCE" ? "ABSENCE" : "CUSTOM");
     if (tab !== "ALL") params.set("status", tab);
     if (q.trim()) params.set("q", q.trim());
     fetch(`/api/communications?${params}`)
@@ -51,7 +110,7 @@ export default function ParentConnectPage() {
       .then((d) => { setMessages(d.messages || []); setStats(d.stats || {}); })
       .catch(() => setMessages([]))
       .finally(() => setIsLoading(false));
-  }, [tab, q]);
+  }, [section, tab, q]);
 
   useEffect(() => { setIsLoading(true); const t = setTimeout(load, q ? 250 : 0); return () => clearTimeout(t); }, [load, q]);
 
@@ -81,10 +140,25 @@ export default function ParentConnectPage() {
     const res = await fetch("/api/communications", { method: "PUT" });
     const data = await res.json().catch(() => ({}));
     showFlash(data.created > 0 ? `${data.created} fee reminder draft(s) created` : "No new drafts needed — everything is covered");
+    setSection("MESSAGES");
+    setTab("DRAFT");
     load();
   };
 
   const draftCount = stats.DRAFT || 0;
+  const statusTabs = section === "ABSENCE" ? ABSENCE_STATUS_TABS : MESSAGE_STATUS_TABS(draftCount);
+
+  const emptyMessage = useMemo(() => {
+    if (section === "ABSENCE") {
+      if (tab === "ACKNOWLEDGED") return "No absence alerts read by parents yet.";
+      if (tab === "SENT") return "No absence alerts yet. Submit attendance with absent students — parents are notified automatically.";
+      return "No absence alerts match your search.";
+    }
+    if (tab === "DRAFT") return "No drafts waiting. Tap Compose to write a custom message to parents.";
+    return "Nothing here yet.";
+  }, [section, tab]);
+
+  const groupedMessages = useMemo(() => groupMessagesByDate(messages), [messages]);
 
   return (
     <div className="space-y-6">
@@ -96,19 +170,25 @@ export default function ParentConnectPage() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-gurukul-dark">Parent Connect</h1>
-            <p className="text-xs text-slate-500">Every message is reviewed and sent by a teacher — parents read them on their private portal.</p>
+            <p className="text-xs text-slate-500">
+              {section === "ABSENCE"
+                ? "Absence alerts from your attendance — sent to parents automatically when you submit."
+                : "Custom messages you compose — review drafts, then send when ready."}
+            </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={handleGenerate} className="border border-slate-300 hover:border-gurukul-tech bg-white text-slate-700 font-medium text-xs px-3.5 py-2.5 rounded-lg transition-all flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-gurukul-tech" />
-            <span>Draft Fee Reminders</span>
-          </button>
-          <button onClick={() => setShowCompose(true)} className="bg-gurukul-tech hover:bg-gurukul-tech/90 text-white font-medium text-xs px-4 py-2.5 rounded-lg shadow-sm transition-all flex items-center gap-2">
-            <PenSquare className="w-4 h-4" />
-            <span>Compose</span>
-          </button>
-        </div>
+        {section === "MESSAGES" && (
+          <div className="flex items-center gap-2">
+            <button onClick={handleGenerate} className="border border-slate-300 hover:border-gurukul-tech bg-white text-slate-700 font-medium text-xs px-3.5 py-2.5 rounded-lg transition-all flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-gurukul-tech" />
+              <span>Draft Fee Reminders</span>
+            </button>
+            <button onClick={() => setShowCompose(true)} className="bg-gurukul-tech hover:bg-gurukul-tech/90 text-white font-medium text-xs px-4 py-2.5 rounded-lg shadow-sm transition-all flex items-center gap-2">
+              <PenSquare className="w-4 h-4" />
+              <span>Compose</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {flash && (
@@ -117,90 +197,131 @@ export default function ParentConnectPage() {
         </div>
       )}
 
-      {/* Tabs + search */}
-      <div className="flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
-        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-gurukul-gray w-fit">
-          {([
-            ["DRAFT", `Drafts${draftCount ? ` (${draftCount})` : ""}`],
-            ["SENT", "Sent"],
-            ["ACKNOWLEDGED", "Read ✓"],
-            ["ALL", "All"],
-          ] as const).map(([key, label]) => (
-            <button key={key} onClick={() => setTab(key)}
-              className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-all ${tab === key ? "bg-white text-gurukul-dark shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
-              {label}
-            </button>
-          ))}
+      {/* Section tabs: Absence vs Messages */}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-gurukul-gray w-fit">
+          <button
+            onClick={() => switchSection("ABSENCE")}
+            className={`text-xs px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-1.5 ${section === "ABSENCE" ? "bg-amber-50 text-amber-800 border border-amber-200 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+          >
+            <UserX className="w-3.5 h-3.5" />
+            <span>Absence Alerts</span>
+          </button>
+          <button
+            onClick={() => switchSection("MESSAGES")}
+            className={`text-xs px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-1.5 ${section === "MESSAGES" ? "bg-violet-50 text-violet-800 border border-violet-200 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+          >
+            <PenSquare className="w-3.5 h-3.5" />
+            <span>Messages</span>
+          </button>
         </div>
-        <div className="relative sm:w-64">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by student..."
-            className="w-full text-sm pl-9 pr-3 py-2 rounded-lg border border-slate-300 bg-white focus:border-gurukul-tech focus:outline-none" />
+
+        {/* Status tabs + search */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-gurukul-gray w-fit">
+            {statusTabs.map(([key, label]) => (
+              <button key={key} onClick={() => setTab(key)}
+                className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-all ${tab === key ? "bg-white text-gurukul-dark shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className="relative sm:w-64">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by student..."
+              className="w-full text-sm pl-9 pr-3 py-2 rounded-lg border border-slate-300 bg-white focus:border-gurukul-tech focus:outline-none" />
+          </div>
         </div>
       </div>
 
       {/* Message list */}
-      <div className="bg-white rounded-xl border border-gurukul-gray shadow-subtle divide-y divide-gurukul-gray overflow-hidden">
+      <div className="bg-white rounded-xl border border-gurukul-gray shadow-subtle overflow-hidden">
         {isLoading ? (
           <p className="text-sm text-slate-400 text-center py-12">Loading messages...</p>
         ) : messages.length === 0 ? (
           <div className="text-center py-12">
-            <MessagesSquare className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-            <p className="text-sm text-slate-400">{tab === "DRAFT" ? "No drafts waiting. Compose a message or submit attendance to auto-draft absence notes." : "Nothing here yet."}</p>
+            {section === "ABSENCE" ? (
+              <UserX className="w-8 h-8 text-amber-300 mx-auto mb-2" />
+            ) : (
+              <MessagesSquare className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+            )}
+            <p className="text-sm text-slate-400">{emptyMessage}</p>
           </div>
         ) : (
-          messages.map((m) => {
-            const meta = TYPE_META[m.type] || TYPE_META.CUSTOM;
-            const Icon = meta.icon;
-            return (
-              <div key={m.id} className="px-5 py-4 hover:bg-slate-50/60 transition-colors">
-                <div className="flex items-start gap-3">
-                  <div className={`w-9 h-9 rounded-lg ${meta.cls} flex items-center justify-center shrink-0 mt-0.5`}>
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-xs font-bold text-gurukul-dark">{m.student.name}</span>
-                      <span className="text-[10px] text-slate-400">{m.student.grade} · Roll {m.student.rollNumber}</span>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${STATUS_CLS[m.status]}`}>
-                        {m.status === "ACKNOWLEDGED" ? "Read by parent ✓" : m.status === "SENT" ? "Sent" : "Draft"}
-                      </span>
-                    </div>
-                    <p className="text-xs font-semibold text-slate-700 mt-1">{m.title}</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-2 whitespace-pre-line">{m.body}</p>
-                    <p className="text-[10px] text-slate-400 mt-1">
-                      To {m.student.parentName}
-                      {m.student.parentEmail ? ` · ${m.student.parentEmail}` : " · no email on file"}
-                      {m.sentAt ? ` · sent ${new Date(m.sentAt).toLocaleString()} by ${m.sentByName || "staff"}` : ""}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <button onClick={() => setLinkModal(m.student)} title="Parent portal link"
-                      className="p-2 rounded-lg text-slate-400 hover:text-gurukul-tech hover:bg-gurukul-tech/10 transition-colors">
-                      <Link2 className="w-4 h-4" />
-                    </button>
-                    {m.status === "DRAFT" && (
-                      <>
-                        <button onClick={() => handleDelete(m.id)} disabled={busyId === m.id} title="Discard draft"
-                          className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => handleSend(m.id)} disabled={busyId === m.id}
-                          className="bg-gurukul-tech hover:bg-gurukul-tech/90 disabled:opacity-60 text-white font-semibold text-xs px-4 py-2 rounded-lg flex items-center gap-1.5 transition-all">
-                          <Send className="w-3.5 h-3.5" />
-                          <span>{busyId === m.id ? "Sending..." : "Send"}</span>
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
+          groupedMessages.map(([dateKey, dayMessages]) => (
+            <section key={dateKey}>
+              <div className="sticky top-0 z-10 px-5 py-2.5 bg-slate-50 border-y border-gurukul-gray first:border-t-0">
+                <p className="text-xs font-bold text-gurukul-dark tracking-wide">{formatDateHeader(dateKey)}</p>
               </div>
-            );
-          })
+              <div className="divide-y divide-gurukul-gray">
+                {dayMessages.map((m) => {
+                  const meta = TYPE_META[m.type] || TYPE_META.CUSTOM;
+                  const Icon = meta.icon;
+                  const isAbsence = m.type === "ABSENCE";
+                  return (
+                    <div key={m.id} className="px-5 py-4 hover:bg-slate-50/60 transition-colors">
+                      <div className="flex items-start gap-3">
+                        <div className={`w-9 h-9 rounded-lg ${meta.cls} flex items-center justify-center shrink-0 mt-0.5`}>
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-xs font-bold text-gurukul-dark">{m.student.name}</span>
+                            <span className="text-[10px] text-slate-400">{m.student.grade} · Roll {m.student.rollNumber}</span>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${STATUS_CLS[m.status]}`}>
+                              {m.status === "ACKNOWLEDGED" ? "Read by parent ✓" : m.status === "SENT" ? "Sent — awaiting read" : "Draft"}
+                            </span>
+                          </div>
+                          <p className="text-xs font-semibold text-slate-700 mt-1">{m.title}</p>
+                          <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-2 whitespace-pre-line">{m.body}</p>
+                          <p className="text-[10px] text-slate-400 mt-1">
+                            To {m.student.parentName}
+                            {m.student.parentEmail ? ` · ${m.student.parentEmail}` : " · no email on file"}
+                            {m.sentAt ? ` · sent ${new Date(m.sentAt).toLocaleString()}${m.sentByName ? ` by ${m.sentByName}` : ""}` : ""}
+                            {m.acknowledgedAt ? ` · read ${new Date(m.acknowledgedAt).toLocaleString()}` : ""}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button onClick={() => setLinkModal(m.student)} title="Parent portal link"
+                            className="p-2 rounded-lg text-slate-400 hover:text-gurukul-tech hover:bg-gurukul-tech/10 transition-colors">
+                            <Link2 className="w-4 h-4" />
+                          </button>
+                          {!isAbsence && m.status === "DRAFT" && (
+                            <>
+                              <button onClick={() => handleDelete(m.id)} disabled={busyId === m.id} title="Discard draft"
+                                className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => handleSend(m.id)} disabled={busyId === m.id}
+                                className="bg-gurukul-tech hover:bg-gurukul-tech/90 disabled:opacity-60 text-white font-semibold text-xs px-4 py-2 rounded-lg flex items-center gap-1.5 transition-all">
+                                <Send className="w-3.5 h-3.5" />
+                                <span>{busyId === m.id ? "Sending..." : "Send"}</span>
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          ))
         )}
       </div>
 
-      {showCompose && <ComposeModal onClose={() => setShowCompose(false)} onCreated={() => { setShowCompose(false); setTab("DRAFT"); load(); showFlash("Draft(s) created — review and press Send"); }} />}
+      {showCompose && (
+        <ComposeModal
+          onClose={() => setShowCompose(false)}
+          onCreated={() => {
+            setShowCompose(false);
+            setSection("MESSAGES");
+            setTab("DRAFT");
+            load();
+            showFlash("Draft(s) created — review and press Send");
+          }}
+        />
+      )}
       {linkModal && <PortalLinkModal student={linkModal} onClose={() => setLinkModal(null)} />}
     </div>
   );
@@ -333,7 +454,7 @@ function ComposeModal({ onClose, onCreated }: { onClose: () => void; onCreated: 
             <PenSquare className="w-4 h-4" />
             <span>{isSubmitting ? "Saving..." : "Save as Draft"}</span>
           </button>
-          <p className="text-[11px] text-slate-400 text-center">Drafts are never delivered automatically — you press Send when ready.</p>
+          <p className="text-[11px] text-slate-400 text-center">Custom messages stay as drafts until you press Send. Absence alerts from attendance are sent automatically.</p>
         </form>
       </div>
     </div>

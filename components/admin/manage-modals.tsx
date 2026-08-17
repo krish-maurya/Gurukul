@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { X, Save, AlertCircle, CheckCircle, IndianRupee, Receipt, Pencil, GraduationCap } from "lucide-react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { X, Save, AlertCircle, CheckCircle, IndianRupee, Receipt, Pencil, GraduationCap, ChevronDown, Search } from "lucide-react";
 
 /* =========================================================================
  * Edit Student modal (ADMIN only) — includes the parent email field
@@ -132,6 +132,7 @@ export function ManageFeesModal({ studentId, studentName, onClose, onChanged }: 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [flash, setFlash] = useState("");
+  const [showEditFee, setShowEditFee] = useState(false);
 
   // set-amount form
   const [amountDue, setAmountDue] = useState("");
@@ -151,6 +152,9 @@ export function ManageFeesModal({ studentId, studentName, onClose, onChanged }: 
           setAmountDue(String(d.account.amountDue));
           setDueDate(d.account.dueDate);
           setAcademicYear(d.account.academicYear);
+          setShowEditFee(false);
+        } else {
+          setShowEditFee(true);
         }
       })
       .catch(() => setError("Failed to load fees"))
@@ -171,7 +175,12 @@ export function ManageFeesModal({ studentId, studentName, onClose, onChanged }: 
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) setError(data.error || "Failed to save");
-      else { setAccount(data.account); showFlash("Fee details saved ✓"); onChanged?.(); }
+      else {
+        setAccount(data.account);
+        setShowEditFee(false);
+        showFlash("Fee details saved ✓");
+        onChanged?.();
+      }
     } finally { setIsBusy(false); }
   };
 
@@ -198,10 +207,21 @@ export function ManageFeesModal({ studentId, studentName, onClose, onChanged }: 
     <div className="fixed inset-0 bg-gurukul-dark/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-base font-bold text-gurukul-dark flex items-center gap-2">
-            <IndianRupee className="w-4 h-4 text-gurukul-tech" /><span>Fees — {studentName}</span>
+          <h2 className="text-base font-bold text-gurukul-dark flex items-center gap-2 min-w-0">
+            <IndianRupee className="w-4 h-4 text-gurukul-tech shrink-0" />
+            <span className="truncate">Fees — {studentName}</span>
+            {account && (
+              <button
+                type="button"
+                onClick={() => setShowEditFee((v) => !v)}
+                title={showEditFee ? "Hide fee details" : "Update fee details"}
+                className={`p-1.5 rounded-lg shrink-0 transition-colors ${showEditFee ? "bg-gurukul-tech/10 text-gurukul-tech" : "text-slate-400 hover:text-gurukul-tech hover:bg-gurukul-tech/10"}`}
+              >
+                <Pencil className="w-3.5 h-3.5" />
+              </button>
+            )}
           </h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100"><X className="w-4 h-4" /></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 shrink-0"><X className="w-4 h-4" /></button>
         </div>
 
         {error && (
@@ -242,37 +262,44 @@ export function ManageFeesModal({ studentId, studentName, onClose, onChanged }: 
               </span>
             )}
 
-            {/* Set / update fee amount */}
-            <form onSubmit={saveAccount} className="border border-slate-200 rounded-xl p-4 space-y-3">
-              <p className="text-xs font-bold text-gurukul-dark">{account ? "Update fee details" : "Set the fee for this student"}</p>
-              <div className="grid grid-cols-3 gap-2">
-                <div><label className={label}>Amount (₹)</label><input required type="number" min="1" className={input} value={amountDue} onChange={(e) => setAmountDue(e.target.value)} placeholder="45000" /></div>
-                <div><label className={label}>Due Date</label><input required type="date" className={input} value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></div>
-                <div><label className={label}>Year</label><input required className={input} value={academicYear} onChange={(e) => setAcademicYear(e.target.value)} /></div>
-              </div>
-              <button type="submit" disabled={isBusy}
-                className="w-full border border-gurukul-tech text-gurukul-tech hover:bg-gurukul-tech hover:text-white disabled:opacity-60 font-semibold text-xs py-2 rounded-lg transition-colors">
-                {account ? "Update Fee Details" : "Create Fee Account"}
-              </button>
-            </form>
-
-            {/* Record payment */}
+            {/* Record payment — primary action */}
             {account && remaining > 0 && (
-              <form onSubmit={recordPayment} className="border border-slate-200 rounded-xl p-4 space-y-3">
-                <p className="text-xs font-bold text-gurukul-dark">Record a payment</p>
+              <form onSubmit={recordPayment} className="rounded-xl border-2 border-gurukul-tech bg-gradient-to-br from-gurukul-tech/5 to-emerald-50/40 p-4 space-y-3 shadow-sm ring-1 ring-gurukul-tech/10">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-bold text-gurukul-dark">Record a payment</p>
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-gurukul-tech bg-white/80 border border-gurukul-tech/20 px-2 py-0.5 rounded-full">
+                    Primary
+                  </span>
+                </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <div><label className={label}>Amount (₹)</label><input required type="number" min="1" max={remaining} className={input} value={payAmount} onChange={(e) => setPayAmount(e.target.value)} placeholder={String(remaining)} /></div>
+                  <div><label className={label}>Amount (₹)</label><input required type="number" min="1" max={remaining} className={`${input} bg-white`} value={payAmount} onChange={(e) => setPayAmount(e.target.value)} placeholder={String(remaining)} /></div>
                   <div>
                     <label className={label}>Method</label>
-                    <select className={input} value={payMethod} onChange={(e) => setPayMethod(e.target.value)}>
+                    <select className={`${input} bg-white`} value={payMethod} onChange={(e) => setPayMethod(e.target.value)}>
                       <option value="CASH">Cash</option><option value="UPI">UPI</option>
                       <option value="CARD">Card</option><option value="BANK">Bank Transfer</option>
                     </select>
                   </div>
                 </div>
                 <button type="submit" disabled={isBusy}
-                  className="w-full bg-gurukul-tech hover:bg-gurukul-tech/90 disabled:opacity-60 text-white font-semibold text-xs py-2 rounded-lg flex items-center justify-center gap-1.5">
-                  <Receipt className="w-3.5 h-3.5" /><span>Record Payment</span>
+                  className="w-full bg-gurukul-dark hover:bg-gurukul-dark/90 disabled:opacity-60 text-white font-semibold text-sm py-2.5 rounded-lg flex items-center justify-center gap-1.5 shadow-sm">
+                  <Receipt className="w-4 h-4" /><span>Record Payment</span>
+                </button>
+              </form>
+            )}
+
+            {/* Set / update fee amount — hidden until pencil click (or no account yet) */}
+            {showEditFee && (
+              <form onSubmit={saveAccount} className="border border-slate-200 rounded-xl p-4 space-y-3 bg-slate-50/50">
+                <p className="text-xs font-bold text-gurukul-dark">{account ? "Update fee details" : "Set the fee for this student"}</p>
+                <div className="grid grid-cols-3 gap-2">
+                  <div><label className={label}>Amount (₹)</label><input required type="number" min="1" className={`${input} bg-white`} value={amountDue} onChange={(e) => setAmountDue(e.target.value)} placeholder="45000" /></div>
+                  <div><label className={label}>Due Date</label><input required type="date" className={`${input} bg-white`} value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></div>
+                  <div><label className={label}>Year</label><input required className={`${input} bg-white`} value={academicYear} onChange={(e) => setAcademicYear(e.target.value)} /></div>
+                </div>
+                <button type="submit" disabled={isBusy}
+                  className="w-full border border-gurukul-tech text-gurukul-tech hover:bg-gurukul-tech hover:text-white disabled:opacity-60 font-semibold text-xs py-2 rounded-lg transition-colors bg-white">
+                  {account ? "Update Fee Details" : "Create Fee Account"}
                 </button>
               </form>
             )}
@@ -386,6 +413,102 @@ function splitGrade(g: string): { standard: string; division: string } {
   return m ? { standard: m[1].trim(), division: m[2].toUpperCase() } : { standard: g, division: "" };
 }
 
+interface StandardOption { standard: string; divisions: string[] }
+
+function StandardPicker({ options, value, onChange }: { options: StandardOption[]; value: string; onChange: (standard: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  const selected = options.find((o) => o.standard === value);
+  const filtered = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    if (!term) return options;
+    return options.filter((o) =>
+      o.standard.toLowerCase().includes(term) ||
+      o.divisions.some((d) => d.toLowerCase().includes(term))
+    );
+  }, [options, query]);
+
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
+
+  return (
+    <div ref={rootRef} className="relative">
+      <label className="text-xs font-semibold text-slate-600 mb-1.5 block">Standard</label>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border border-slate-300 bg-white hover:border-gurukul-tech focus:border-gurukul-tech focus:outline-none focus:ring-2 focus:ring-gurukul-tech/20 transition-all text-left"
+      >
+        <div className="w-8 h-8 rounded-lg bg-gurukul-tech/10 text-gurukul-tech flex items-center justify-center shrink-0">
+          <GraduationCap className="w-4 h-4" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-gurukul-dark truncate">{selected?.standard || "Choose a standard..."}</p>
+          {selected && selected.divisions.length > 0 && (
+            <p className="text-[10px] text-slate-400 truncate">Divisions {selected.divisions.join(" · ")}</p>
+          )}
+        </div>
+        <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {open && (
+        <div className="absolute z-20 mt-1.5 w-full rounded-xl border border-slate-200 bg-white shadow-xl overflow-hidden">
+          {options.length > 6 && (
+            <div className="p-2 border-b border-slate-100">
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  autoFocus
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search standards..."
+                  className="w-full text-xs pl-8 pr-3 py-2 rounded-lg border border-slate-200 focus:border-gurukul-tech focus:outline-none"
+                />
+              </div>
+            </div>
+          )}
+          <ul className="max-h-56 overflow-y-auto py-1">
+            {filtered.length === 0 ? (
+              <li className="px-3 py-4 text-xs text-slate-400 text-center">No standards match your search</li>
+            ) : (
+              filtered.map(({ standard: st, divisions }) => {
+                const active = st === value;
+                return (
+                  <li key={st}>
+                    <button
+                      type="button"
+                      onClick={() => { onChange(st); setOpen(false); setQuery(""); }}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${active ? "bg-gurukul-tech/10" : "hover:bg-slate-50"}`}
+                    >
+                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${active ? "bg-gurukul-tech text-white" : "bg-slate-100 text-slate-500"}`}>
+                        <GraduationCap className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className={`text-xs font-semibold truncate ${active ? "text-gurukul-tech" : "text-gurukul-dark"}`}>{st}</p>
+                        {divisions.length > 0 && (
+                          <p className="text-[10px] text-slate-400 truncate">Div {divisions.join(" · ")}</p>
+                        )}
+                      </div>
+                      {active && <CheckCircle className="w-4 h-4 text-gurukul-tech shrink-0 ml-auto" />}
+                    </button>
+                  </li>
+                );
+              })
+            )}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function BatchFeesModal({ grades, onClose, onDone }: { grades: string[]; onClose: () => void; onDone?: () => void }) {
   // Group divisions under their standard: Grade 10 -> [A, B]
   const standards = React.useMemo(() => {
@@ -461,39 +584,11 @@ export function BatchFeesModal({ grades, onClose, onDone }: { grades: string[]; 
           </div>
         ) : (
           <form onSubmit={submit} className="space-y-4">
-            <div>
-              <label className={label}>Standard</label>
-              <div className="grid grid-cols-3 gap-2">
-                {standards.map(({ standard: st, divisions }) => {
-                  const active = st === standard;
-                  return (
-                    <button
-                      key={st}
-                      type="button"
-                      onClick={() => setStandard(st)}
-                      className={`group relative rounded-xl border-2 px-2 py-3 text-center transition-all ${
-                        active
-                          ? "border-gurukul-tech bg-gurukul-tech text-white shadow-md"
-                          : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
-                      }`}
-                    >
-                      <GraduationCap className={`w-4 h-4 mx-auto mb-1 ${active ? "text-white" : "text-slate-400 group-hover:text-slate-500"}`} />
-                      <span className="block text-xs font-bold leading-tight">{st}</span>
-                      {divisions.length > 0 && (
-                        <span className={`block text-[10px] mt-0.5 ${active ? "text-white/70" : "text-slate-400"}`}>
-                          Div {divisions.join(" · ")}
-                        </span>
-                      )}
-                      {active && (
-                        <span className="absolute -top-1.5 -right-1.5 bg-white rounded-full shadow">
-                          <CheckCircle className="w-4 h-4 text-gurukul-tech" />
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            <StandardPicker
+              options={standards}
+              value={standard}
+              onChange={setStandard}
+            />
             <div className="grid grid-cols-3 gap-2">
               <div><label className={label}>Amount (₹)</label><input required type="number" min="1" className={input} value={amountDue} onChange={(e) => setAmountDue(e.target.value)} placeholder="45000" /></div>
               <div><label className={label}>Due Date</label><input required type="date" className={input} value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></div>

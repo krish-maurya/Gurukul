@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AuthProvider, useAuth } from "@/lib/auth/session-context";
 import { MobileNavigation, Sidebar } from "./sidebar";
@@ -11,6 +11,7 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { isAuthenticated, isTeacher } = useAuth();
+  const [shellReady, setShellReady] = useState(false);
 
   const isPublicPage = pathname === "/login" || pathname === "/landing" || pathname.startsWith("/p/") || pathname.startsWith("/invite/");
   const isTeacherRestrictedPage = isTeacher && (pathname === "/staff" || pathname.startsWith("/staff/"));
@@ -19,6 +20,20 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
     if (isTeacherRestrictedPage) router.replace("/students");
   }, [isTeacherRestrictedPage, router]);
 
+  // Coordinate entrance: delay shell visibility by one frame so the
+  // layout paints completely before the transition begins.
+  useEffect(() => {
+    if (isPublicPage || !isAuthenticated) {
+      setShellReady(true);
+      return;
+    }
+    // Use requestAnimationFrame to ensure the DOM tree is fully painted,
+    // then trigger the entrance transition so everything appears together.
+    const raf = requestAnimationFrame(() => {
+      setShellReady(true);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [isAuthenticated, isPublicPage]);
 
   if (isPublicPage || !isAuthenticated) {
     return (
@@ -34,7 +49,9 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-gurukul-white text-gurukul-dark antialiased">
+    <div
+      className={`flex min-h-screen bg-gurukul-white text-gurukul-dark antialiased shell-entrance ${shellReady ? "shell-entered" : ""}`}
+    >
       <Sidebar />
       <div className="flex-1 flex min-w-0 flex-col">
         <Header />
@@ -53,3 +70,4 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </AuthProvider>
   );
 }
+

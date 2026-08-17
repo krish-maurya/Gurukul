@@ -23,7 +23,7 @@ export async function GET() {
     const session = await requireSession();
     const today = new Date().toLocaleDateString("en-CA");
 
-    const [docs, proxies, pendingStudents, leaves] = await Promise.all([
+    const [docs, proxies, pendingStudents, leaves, draftCount] = await Promise.all([
       prisma.documentRecord.findMany({
         where: { status: "NEEDS_REVIEW" },
         orderBy: { createdAt: "desc" },
@@ -47,9 +47,9 @@ export async function GET() {
         include: { teacher: { select: { name: true } } },
         take: 10,
       }),
+      // Safe fallback: parentMessage may not exist in a stale Prisma client
+      prisma.parentMessage?.count({ where: { status: "DRAFT" } }).catch(() => 0) ?? Promise.resolve(0),
     ]);
-
-    const draftCount = await prisma.parentMessage.count({ where: { status: "DRAFT" } });
 
     const isAdmin = session.role === "ADMIN";
 
@@ -60,7 +60,7 @@ export async function GET() {
             type: "PARENT_MSG" as const,
             title: "Parent messages ready to send",
             detail: `${draftCount} draft${draftCount === 1 ? "" : "s"} waiting for review`,
-            href: "/communications",
+            href: "/communications?section=messages",
             createdAt: new Date().toISOString(),
           }]
         : []),
@@ -74,14 +74,16 @@ export async function GET() {
       })),
       // substitute coverage is an admin task
       ...(isAdmin
-        ? proxies.map((p) => ({
-            id: `proxy-${p.id}`,
-            type: "PROXY" as const,
-            title: "Class needs a substitute teacher",
-            detail: `${p.timetableSlot.grade} · ${p.timetableSlot.subject.name} · ${p.timetableSlot.day} P${p.timetableSlot.period} (${p.date})`,
-            href: "/timetable",
-            createdAt: new Date(p.createdAt).toISOString(),
-          }))
+        ? proxies
+            .filter((p) => p.timetableSlot != null)
+            .map((p) => ({
+              id: `proxy-${p.id}`,
+              type: "PROXY" as const,
+              title: "Class needs a substitute teacher",
+              detail: `${p.timetableSlot.grade} · ${p.timetableSlot.subject?.name ?? "Unknown"} · ${p.timetableSlot.day} P${p.timetableSlot.period} (${p.date})`,
+              href: "/timetable",
+              createdAt: new Date(p.createdAt).toISOString(),
+            }))
         : []),
       ...(isAdmin
         ? pendingStudents.map((s) => ({

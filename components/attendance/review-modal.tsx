@@ -100,6 +100,9 @@ export function ReviewModal({
 
           <p className="text-[10px] text-neutral-400">
             Attendance for {students.length} students will be saved.
+            {absentRolls.length > 0 && (
+              <> Parents of absent students will be notified automatically — no extra step needed.</>
+            )}
           </p>
         </div>
 
