@@ -1,17 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireSession, AuthError } from "@/lib/auth/server";
 import { evaluateTimetable, TimetableSlotInput } from "@/lib/timetable/optimizer";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await requireSession();
     const dateParam = request.nextUrl.searchParams.get("date");
     const today = new Date().toLocaleDateString("en-CA");
     const targetDate = dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : today;
 
     const [slots, studentCounts] = await Promise.all([
       prisma.timetableSlot.findMany({
+        // Teachers can only receive their own weekly schedule.
+        where: session.role === "TEACHER" && session.staffId ? { teacherId: session.staffId } : undefined,
         include: {
           subject: true,
           teacher: true,

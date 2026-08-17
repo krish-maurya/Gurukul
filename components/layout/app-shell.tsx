@@ -14,7 +14,7 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // These are intentional distraction-free workflows, not dashboard pages.
-  const isFocusPage = pathname === "/welcome" || pathname === "/attendance/take";
+  const isFocusPage = pathname === "/welcome" || pathname === "/attendance/take" || pathname === "/timetable/my";
   const isPublicPage = pathname === "/login" || pathname === "/landing" || pathname.startsWith("/p/") || pathname.startsWith("/invite/");
   const isTeacherRestrictedPage = isTeacher && (pathname === "/staff" || pathname.startsWith("/staff/"));
 

@@ -13,6 +13,26 @@ export async function GET() {
   }
 }
 
+export async function PATCH(req: Request) {
+  try {
+    const body = await req.json();
+    const id = String(body.id || "");
+    if (!id) return NextResponse.json({ error: "Document id is required" }, { status: 400 });
+    const document = await prisma.documentRecord.update({
+      where: { id },
+      data: {
+        ...(body.status ? { status: String(body.status) } : {}),
+        ...(body.confidenceScore !== undefined ? { confidenceScore: Number(body.confidenceScore) } : {}),
+        ...(body.extractedFields ? { extractedFields: typeof body.extractedFields === "string" ? body.extractedFields : JSON.stringify(body.extractedFields) } : {}),
+      },
+    });
+    return NextResponse.json(document);
+  } catch (error) {
+    console.error("[api/documents] update failed:", error);
+    return NextResponse.json({ error: "Failed to update document record" }, { status: 500 });
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();

@@ -15,9 +15,9 @@ export async function ensurePortalToken(studentId: string): Promise<string> {
 }
 
 /**
- * Creates ABSENCE message drafts for students marked absent on a date.
- * Skips students who already have an absence draft/message for that date.
- * Nothing is sent automatically — a teacher reviews and clicks Send.
+ * Sends absence notices automatically when attendance is submitted.
+ * They are immediately available in the parent portal; email delivery remains
+ * best-effort and is handled when the school has configured a mail provider.
  */
 export async function draftAbsenceMessages(
   absentees: { studentId: string }[],
@@ -50,6 +50,9 @@ export async function draftAbsenceMessages(
         `${s.name} was marked absent in ${grade} today (${date}). ` +
         `If this was expected, no action is needed. Otherwise, please contact the class teacher.\n\n` +
         `Regular attendance makes a big difference — thank you for your support.\n\nGurukul School Office`,
+      status: "SENT",
+      sentAt: new Date(),
+      sentByName: "Gurukul Attendance",
     }));
 
   if (toCreate.length === 0) return 0;

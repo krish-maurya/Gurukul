@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FileDropzone } from "@/components/document/file-dropzone";
 import { ReviewPanel } from "@/components/document/review-panel";
 import { DocumentRecordData, parseAdmissionDocument, makeExtracted } from "@/lib/document/ocr-engine";
@@ -8,7 +8,9 @@ import { processRealImageOCR } from "@/lib/document/real-ocr";
 import { FileText, CheckCircle, AlertCircle } from "lucide-react";
 
 // Initial Mock Queue
-const INITIAL_QUEUE: DocumentRecordData[] = [
+const INITIAL_QUEUE: DocumentRecordData[] = [];
+/* Historical mock examples retained below for OCR field-shape reference only; they are not rendered.
+const MOCK_EXAMPLES: DocumentRecordData[] = [
   {
     id: "doc-101",
     fileName: "Admission_Form_Aarav_Sharma.pdf",
@@ -47,7 +49,7 @@ const INITIAL_QUEUE: DocumentRecordData[] = [
     }),
     createdAt: "2026-08-13 09:15 AM",
   },
-];
+]; */
 
 export default function DocumentIntelligencePage() {
   const [queue, setQueue] = useState<DocumentRecordData[]>(INITIAL_QUEUE);
@@ -55,6 +57,20 @@ export default function DocumentIntelligencePage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [ocrProgressStatus, setOcrProgressStatus] = useState("");
   const [filterStatus, setFilterStatus] = useState<"ALL" | "NEEDS_REVIEW" | "APPROVED">("ALL");
+
+  useEffect(() => {
+    fetch("/api/documents")
+      .then((r) => r.json())
+      .then((rows) => {
+        if (!Array.isArray(rows)) return;
+        setQueue(rows.map((row) => ({
+          ...row,
+          createdAt: new Date(row.createdAt).toLocaleString(),
+          extractedFields: typeof row.extractedFields === "string" ? JSON.parse(row.extractedFields) : row.extractedFields,
+        })));
+      })
+      .catch(() => setQueue([]));
+  }, []);
 
   const handleFileSelect = async (fileOrName: File | string) => {
     setIsProcessing(true);
@@ -95,14 +111,50 @@ export default function DocumentIntelligencePage() {
       };
     }
 
+    // Persist every OCR job so the queue survives refreshes and is shared by admins.
+    const saved = await fetch("/api/documents", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newDoc),
+    }).then((r) => r.ok ? r.json() : null).catch(() => null);
+    if (saved) newDoc = {
+      ...newDoc,
+      id: saved.id,
+      status: saved.status,
+      confidenceScore: saved.confidenceScore,
+      createdAt: new Date(saved.createdAt).toLocaleString(),
+    };
     setQueue((prev) => [newDoc, ...prev]);
     setActiveDocId(newDoc.id);
     setIsProcessing(false);
     setOcrProgressStatus("");
   };
 
-  const handleApproveRecord = (updatedValues: Record<string, string>) => {
+  const handleApproveRecord = async (updatedValues: Record<string, string>) => {
     if (!activeDocId) return;
+    const studentResponse = await fetch("/api/students", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        studentName: updatedValues.studentName,
+        dob: updatedValues.dob,
+        grade: updatedValues.grade,
+        parentName: updatedValues.parentName || updatedValues.fatherName || updatedValues.motherName,
+        contact: updatedValues.contact || updatedValues.emergencyPhone,
+        address: updatedValues.address,
+        medicalNotes: updatedValues.medicalNotes,
+        previousSchool: updatedValues.previousSchool,
+      }),
+    });
+    if (!studentResponse.ok) {
+      alert((await studentResponse.json().catch(() => ({}))).error || "Student record could not be created. Check the required fields.");
+      return;
+    }
+    await fetch("/api/documents", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: activeDocId, status: "APPROVED", confidenceScore: 100, extractedFields: updatedValues }),
+    });
 
     setQueue((prev) =>
       prev.map((doc) => {

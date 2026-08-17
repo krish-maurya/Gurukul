@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ProxyCoverage } from "@/components/timetable/proxy-coverage";
 import { MasterTimetable } from "@/components/timetable/master-timetable";
 import { AddSlotModal } from "@/components/timetable/add-slot-modal";
@@ -9,6 +11,8 @@ import { Calendar, CalendarPlus } from "lucide-react";
 
 export default function TimetablePage() {
   const { currentUser } = useAuth();
+  const pathname = usePathname();
+  const isFocusMode = pathname === "/timetable/my";
   // Admin role check: if role is TEACHER, user sees read-only approved timetable
   const isAdmin = currentUser ? currentUser.role === "ADMIN" : true;
 
@@ -41,6 +45,9 @@ export default function TimetablePage() {
 
         {/* Add Slot + Clean Date Picker */}
         <div className="flex items-center gap-2 self-start sm:self-auto">
+          {isFocusMode && (
+            <Link href="/" className="btn-secondary text-xs whitespace-nowrap">Go to Dashboard</Link>
+          )}
           <button
             onClick={() => setShowAddSlot(true)}
             className="btn-primary flex items-center gap-1.5"
@@ -48,7 +55,7 @@ export default function TimetablePage() {
             <CalendarPlus className="w-3.5 h-3.5" />
             <span>{isAdmin ? "Add Slot" : "Add My Lecture"}</span>
           </button>
-          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl shadow-subtle" style={{ border: "1px solid var(--line)" }}>
+          <div className="flex shrink-0 whitespace-nowrap items-center gap-2 bg-white px-3 py-1.5 rounded-xl shadow-subtle" style={{ border: "1px solid var(--line)" }}>
             <Calendar className="w-3.5 h-3.5" style={{ color: "var(--faint)" }} />
             <span className="text-xs font-medium" style={{ color: "var(--muted)" }}>Schedule Date:</span>
             <input

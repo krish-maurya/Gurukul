@@ -105,7 +105,7 @@ export async function POST(req: Request) {
       return { recordId, totalEntries: entriesToCreate.length };
     });
 
-    // Draft parent messages for absentees — teachers review & send manually
+    // Absence notices are automatically sent to the parent portal.
     let parentDrafts = 0;
     try {
       const absentees = entries.filter((e: { status: string }) => e.status === "ABSENT");
@@ -114,7 +114,7 @@ export async function POST(req: Request) {
       console.warn("[attendance] absence draft generation failed:", e);
     }
 
-    return NextResponse.json({ success: true, result, parentDrafts });
+    return NextResponse.json({ success: true, result, parentDrafts, parentNotified: parentDrafts });
   } catch (error) {
     if (error instanceof AuthError) {
       return NextResponse.json({ error: error.message }, { status: error.status });

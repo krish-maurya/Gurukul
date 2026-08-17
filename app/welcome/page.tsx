@@ -31,7 +31,7 @@ export default function WelcomePage() {
       description: "Your class and today's date are pre-selected - just mark and submit.",
     },
     {
-      href: "/timetable",
+      href: "/timetable/my",
       icon: CalendarDays,
       title: "My Timetable",
       description: "See your schedule for the week or add a lecture.",

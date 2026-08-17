@@ -5,8 +5,15 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const students = await prisma.student.findMany({
-      orderBy: { createdAt: "desc" },
+    const students = await prisma.student.findMany();
+    // Sort by standard, division, then roll number (10A #1, #2 … 10B … 11A).
+    students.sort((a, b) => {
+      const gradeA = a.grade.match(/(\d+)\s*([A-Za-z]*)/) || ["", "0", ""];
+      const gradeB = b.grade.match(/(\d+)\s*([A-Za-z]*)/) || ["", "0", ""];
+      const standard = Number(gradeA[1]) - Number(gradeB[1]);
+      if (standard) return standard;
+      const division = gradeA[2].localeCompare(gradeB[2], undefined, { numeric: true });
+      return division || a.rollNumber - b.rollNumber || a.name.localeCompare(b.name);
     });
     return NextResponse.json(students);
   } catch (error) {
@@ -62,6 +69,19 @@ export async function POST(req: Request) {
           status: "ADMITTED",
         },
       });
+    });
+
+    // Admission confirmation is sent automatically to the private parent portal.
+    await prisma.parentMessage.create({
+      data: {
+        studentId: student.id,
+        type: "ANNOUNCEMENT",
+        title: "Welcome to Gurukul — admission confirmed",
+        body: `Dear ${student.parentName},\n\nWe are pleased to confirm that ${student.name}'s admission to ${student.grade} has been recorded. Welcome to the Gurukul community.\n\nGurukul School Office`,
+        status: "SENT",
+        sentAt: new Date(),
+        sentByName: "Gurukul Admissions",
+      },
     });
 
     return NextResponse.json(student, { status: 201 });
