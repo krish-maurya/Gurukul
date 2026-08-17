@@ -2,7 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { GraduationCap, Lock, CheckCircle, AlertCircle, ShieldCheck } from "lucide-react";
+import {
+  GraduationCap,
+  Lock,
+  CheckCircle,
+  AlertCircle,
+  ShieldCheck,
+} from "lucide-react";
 
 interface InviteInfo {
   name: string;
@@ -38,7 +44,8 @@ export default function AcceptInvitePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    if (password.length < 8) return setError("Password must be at least 8 characters");
+    if (password.length < 8)
+      return setError("Password must be at least 8 characters");
     if (password !== confirm) return setError("Passwords do not match");
 
     setIsSubmitting(true);
@@ -62,14 +69,27 @@ export default function AcceptInvitePage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 animate-fade-in" style={{ background: "var(--canvas)" }}>
+    <div
+      className="min-h-screen flex items-center justify-center p-6 animate-fade-in"
+      style={{ background: "var(--canvas)" }}
+    >
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl text-white flex items-center justify-center mx-auto mb-4" style={{ background: "var(--accent)" }}>
+          <div
+            className="w-14 h-14 rounded-2xl text-white flex items-center justify-center mx-auto mb-4"
+            style={{ background: "var(--accent)" }}
+          >
             <GraduationCap className="w-7 h-7" />
           </div>
-          <h1 className="text-2xl font-bold text-gurukul-ink tracking-tight" style={{ fontFamily: "var(--font-syne)" }}>Join GURUKUL</h1>
-          <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Activate your staff account</p>
+          <h1
+            className="text-2xl font-bold text-gurukul-ink tracking-tight"
+            style={{ fontFamily: "var(--font-syne)" }}
+          >
+            Join GURUKUL
+          </h1>
+          <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
+            Activate your staff account
+          </p>
         </div>
 
         <div className="card p-6">
@@ -79,21 +99,45 @@ export default function AcceptInvitePage() {
             </div>
           ) : loadError ? (
             <div className="text-center py-6">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: "var(--soft)", border: "1px solid var(--line)" }}>
-                <AlertCircle className="w-5 h-5" style={{ color: "var(--muted)" }} />
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3"
+                style={{
+                  background: "var(--soft)",
+                  border: "1px solid var(--line)",
+                }}
+              >
+                <AlertCircle
+                  className="w-5 h-5"
+                  style={{ color: "var(--muted)" }}
+                />
               </div>
-              <p className="text-sm font-semibold text-gurukul-ink">{loadError}</p>
-              <p className="text-xs mt-2" style={{ color: "var(--muted)" }}>Ask your administrator for a new invitation link.</p>
+              <p className="text-sm font-semibold text-gurukul-ink">
+                {loadError}
+              </p>
+              <p className="text-xs mt-2" style={{ color: "var(--muted)" }}>
+                Ask your administrator for a new invitation link.
+              </p>
             </div>
           ) : invite ? (
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="rounded-lg p-3 text-xs space-y-1" style={{ background: "var(--soft)", border: "1px solid var(--line)" }}>
+              <div
+                className="rounded-lg p-3 text-xs space-y-1"
+                style={{
+                  background: "var(--soft)",
+                  border: "1px solid var(--line)",
+                }}
+              >
                 <div className="flex items-center gap-2 text-gurukul-ink font-semibold">
                   <ShieldCheck className="w-4 h-4" />
                   <span>Invitation verified</span>
                 </div>
-                <p style={{ color: "var(--muted)" }}><strong className="text-gurukul-ink">{invite.name}</strong> · {invite.email}</p>
-                <p style={{ color: "var(--faint)" }}>{invite.department || invite.role}</p>
+                <p style={{ color: "var(--muted)" }}>
+                  <strong className="text-gurukul-ink">{invite.name}</strong> ·{" "}
+                  {invite.email}
+                </p>
+                <p style={{ color: "var(--faint)" }}>
+                  {invite.department || invite.role}
+                </p>
               </div>
 
               {error && (
@@ -104,9 +148,14 @@ export default function AcceptInvitePage() {
               )}
 
               <div>
-                <label className="text-xs font-medium text-gurukul-ink mb-1.5 block">Create Password</label>
+                <label className="text-xs font-medium text-gurukul-ink mb-1.5 block">
+                  Create Password
+                </label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--faint)" }} />
+                  <Lock
+                    className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2"
+                    style={{ color: "var(--faint)" }}
+                  />
                   <input
                     type="password"
                     required
@@ -121,9 +170,14 @@ export default function AcceptInvitePage() {
               </div>
 
               <div>
-                <label className="text-xs font-medium text-gurukul-ink mb-1.5 block">Confirm Password</label>
+                <label className="text-xs font-medium text-gurukul-ink mb-1.5 block">
+                  Confirm Password
+                </label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--faint)" }} />
+                  <Lock
+                    className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2"
+                    style={{ color: "var(--faint)" }}
+                  />
                   <input
                     type="password"
                     required
@@ -142,7 +196,11 @@ export default function AcceptInvitePage() {
                 className="btn-primary w-full"
               >
                 <CheckCircle className="w-4 h-4" />
-                <span>{isSubmitting ? "Activating..." : "Activate Account & Sign In"}</span>
+                <span>
+                  {isSubmitting
+                    ? "Activating..."
+                    : "Activate Account & Sign In"}
+                </span>
               </button>
             </form>
           ) : null}

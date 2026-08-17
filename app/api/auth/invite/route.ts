@@ -19,27 +19,40 @@ export async function POST(req: Request) {
 
     const body = await req.json().catch(() => ({}));
     const name = String(body.name || "").trim();
-    const email = String(body.email || "").trim().toLowerCase();
+    const email = String(body.email || "")
+      .trim()
+      .toLowerCase();
     const department = String(body.department || "").trim();
 
     if (!name || !email || !department) {
       return NextResponse.json(
-        { error: "Missing required fields", details: ["name", "email", "department"].filter((k) => !body[k]) },
-        { status: 400 }
+        {
+          error: "Missing required fields",
+          details: ["name", "email", "department"].filter((k) => !body[k]),
+        },
+        { status: 400 },
       );
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid email address" },
+        { status: 400 },
+      );
     }
 
     // Refuse duplicates
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      return NextResponse.json({ error: "A user with this email already exists" }, { status: 409 });
+      return NextResponse.json(
+        { error: "A user with this email already exists" },
+        { status: 409 },
+      );
     }
 
     const token = randomBytes(24).toString("hex");
-    const expiresAt = new Date(Date.now() + INVITE_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+    const expiresAt = new Date(
+      Date.now() + INVITE_EXPIRY_DAYS * 24 * 60 * 60 * 1000,
+    );
 
     const result = await prisma.$transaction(async (tx) => {
       // Reuse staff record if the email matches an existing staff member
@@ -57,15 +70,26 @@ export async function POST(req: Request) {
       }
 
       // Replace any previous (unused) invitation for this staff member
-      await tx.invitation.deleteMany({ where: { staffId: staff.id, usedAt: null } });
+      await tx.invitation.deleteMany({
+        where: { staffId: staff.id, usedAt: null },
+      });
 
       const invitation = await tx.invitation.create({
-        data: { token, email, name, role: "TEACHER", staffId: staff.id, expiresAt },
+        data: {
+          token,
+          email,
+          name,
+          role: "TEACHER",
+          staffId: staff.id,
+          expiresAt,
+        },
       });
       return { staff, invitation };
     });
 
-    const origin = req.headers.get("origin") || `http://${req.headers.get("host") || "localhost:3000"}`;
+    const origin =
+      req.headers.get("origin") ||
+      `http://${req.headers.get("host") || "localhost:3000"}`;
     const inviteUrl = `${origin}/invite/${result.invitation.token}`;
 
     // Send the invitation email via Brevo
@@ -93,13 +117,19 @@ export async function POST(req: Request) {
         expiresAt: result.invitation.expiresAt,
         staffId: result.staff.id,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: error.status });
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status },
+      );
     }
     console.error("[api/auth/invite] failed:", error);
-    return NextResponse.json({ error: "Failed to create invitation" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create invitation" },
+      { status: 500 },
+    );
   }
 }

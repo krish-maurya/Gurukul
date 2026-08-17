@@ -104,7 +104,11 @@ export function buildInviteEmail(opts: {
 }
 
 /** Email carrying the parent portal magic link. */
-export function buildPortalLinkEmail(opts: { parentName: string; studentName: string; portalUrl: string }) {
+export function buildPortalLinkEmail(opts: {
+  parentName: string;
+  studentName: string;
+  portalUrl: string;
+}) {
   return {
     subject: `Your parent portal for ${opts.studentName} — Gurukul`,
     htmlContent: `
@@ -134,7 +138,12 @@ export function buildPortalLinkEmail(opts: { parentName: string; studentName: st
 }
 
 /** Short notification that a new message is waiting on the portal. */
-export function buildNewMessageEmail(opts: { parentName: string; studentName: string; title: string; portalUrl: string }) {
+export function buildNewMessageEmail(opts: {
+  parentName: string;
+  studentName: string;
+  title: string;
+  portalUrl: string;
+}) {
   return {
     subject: `New message about ${opts.studentName} — Gurukul`,
     htmlContent: `

@@ -21,7 +21,8 @@ type TeacherSearchRecord = {
 
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("q")?.trim();
-  const includeTeachers = request.nextUrl.searchParams.get("people") !== "students";
+  const includeTeachers =
+    request.nextUrl.searchParams.get("people") !== "students";
 
   if (!query) {
     return NextResponse.json({ results: [] });
@@ -30,7 +31,12 @@ export async function GET(request: NextRequest) {
   try {
     // Query only matching rows. Prefix queries are separate so they can be
     // deterministically shown before broader contains matches.
-    const [startingStudents, matchingStudents, startingTeachers, matchingTeachers] = await Promise.all([
+    const [
+      startingStudents,
+      matchingStudents,
+      startingTeachers,
+      matchingTeachers,
+    ] = await Promise.all([
       prisma.student.findMany({
         where: { name: { startsWith: query, mode: "insensitive" } },
         select: { id: true, name: true, rollNumber: true, grade: true },
@@ -43,27 +49,35 @@ export async function GET(request: NextRequest) {
         orderBy: { name: "asc" },
         take: MAX_RESULTS,
       }),
-      includeTeachers ? prisma.staff.findMany({
-        where: { name: { startsWith: query, mode: "insensitive" } },
-        select: { id: true, name: true, email: true, department: true },
-        orderBy: { name: "asc" },
-        take: MAX_RESULTS,
-      }) : Promise.resolve([] as TeacherSearchRecord[]),
-      includeTeachers ? prisma.staff.findMany({
-        where: { name: { contains: query, mode: "insensitive" } },
-        select: { id: true, name: true, email: true, department: true },
-        orderBy: { name: "asc" },
-        take: MAX_RESULTS,
-      }) : Promise.resolve([] as TeacherSearchRecord[]),
+      includeTeachers
+        ? prisma.staff.findMany({
+            where: { name: { startsWith: query, mode: "insensitive" } },
+            select: { id: true, name: true, email: true, department: true },
+            orderBy: { name: "asc" },
+            take: MAX_RESULTS,
+          })
+        : Promise.resolve([] as TeacherSearchRecord[]),
+      includeTeachers
+        ? prisma.staff.findMany({
+            where: { name: { contains: query, mode: "insensitive" } },
+            select: { id: true, name: true, email: true, department: true },
+            orderBy: { name: "asc" },
+            take: MAX_RESULTS,
+          })
+        : Promise.resolve([] as TeacherSearchRecord[]),
     ]);
 
-    const toStudentResult = (student: (typeof matchingStudents)[number]): SearchResult => ({
+    const toStudentResult = (
+      student: (typeof matchingStudents)[number],
+    ): SearchResult => ({
       id: student.id,
       name: student.name,
       type: "student",
       detail: `Roll ${student.rollNumber} - ${student.grade}`,
     });
-    const toTeacherResult = (teacher: (typeof matchingTeachers)[number]): SearchResult => ({
+    const toTeacherResult = (
+      teacher: (typeof matchingTeachers)[number],
+    ): SearchResult => ({
       id: teacher.id,
       name: teacher.name,
       type: "teacher",
@@ -76,16 +90,21 @@ export async function GET(request: NextRequest) {
       ...startingTeachers.map(toTeacherResult),
       ...matchingStudents.map(toStudentResult),
       ...matchingTeachers.map(toTeacherResult),
-    ].filter((result) => {
-      const key = `${result.type}:${result.id}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    }).slice(0, MAX_RESULTS);
+    ]
+      .filter((result) => {
+        const key = `${result.type}:${result.id}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .slice(0, MAX_RESULTS);
 
     return NextResponse.json({ results });
   } catch (error) {
     console.error("Global person search failed:", error);
-    return NextResponse.json({ error: "Failed to search people" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to search people" },
+      { status: 500 },
+    );
   }
 }

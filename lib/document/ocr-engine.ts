@@ -65,15 +65,32 @@ const BLANK: ExtractedField = { value: "", confidence: 0 };
  * Builds a complete ExtractedDocument from a partial one — every missing
  * field becomes blank (""/0%). Handy for mock queue items and demo data.
  */
-export function makeExtracted(partial: Partial<ExtractedDocument>): ExtractedDocument {
+export function makeExtracted(
+  partial: Partial<ExtractedDocument>,
+): ExtractedDocument {
   return {
-    academicYear: BLANK, applicationDate: BLANK,
-    studentName: BLANK, dob: BLANK, gender: BLANK, nationality: BLANK,
-    religion: BLANK, address: BLANK, cityStateZip: BLANK,
-    grade: BLANK, previousSchool: BLANK, mediumOfInstruction: BLANK, tcNumber: BLANK,
-    fatherName: BLANK, fatherOccupation: BLANK, motherName: BLANK, motherOccupation: BLANK,
-    parentName: BLANK, contact: BLANK, email: BLANK,
-    emergencyContactPerson: BLANK, emergencyPhone: BLANK,
+    academicYear: BLANK,
+    applicationDate: BLANK,
+    studentName: BLANK,
+    dob: BLANK,
+    gender: BLANK,
+    nationality: BLANK,
+    religion: BLANK,
+    address: BLANK,
+    cityStateZip: BLANK,
+    grade: BLANK,
+    previousSchool: BLANK,
+    mediumOfInstruction: BLANK,
+    tcNumber: BLANK,
+    fatherName: BLANK,
+    fatherOccupation: BLANK,
+    motherName: BLANK,
+    motherOccupation: BLANK,
+    parentName: BLANK,
+    contact: BLANK,
+    email: BLANK,
+    emergencyContactPerson: BLANK,
+    emergencyPhone: BLANK,
     medicalNotes: BLANK,
     ...partial,
   };
@@ -95,7 +112,7 @@ export async function parseAdmissionDocument(
   fileName: string,
   fileSize?: number,
   fileOrUrl?: File | string,
-  progressCallback?: (status: string, progress: number) => void
+  progressCallback?: (status: string, progress: number) => void,
 ): Promise<ParseResult> {
   // If an actual file/URL is provided, always run REAL OCR.
   if (fileOrUrl) {
@@ -113,7 +130,8 @@ export async function parseAdmissionDocument(
   await new Promise((res) => setTimeout(res, 800));
 
   const isSophia =
-    fileName.toLowerCase().includes("sophia") || fileName.toLowerCase().includes("chen");
+    fileName.toLowerCase().includes("sophia") ||
+    fileName.toLowerCase().includes("chen");
 
   if (isSophia) {
     const extracted = makeExtracted({

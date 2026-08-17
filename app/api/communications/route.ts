@@ -25,20 +25,42 @@ export async function GET(req: Request) {
           : {}),
       },
       include: {
-        student: { select: { id: true, name: true, grade: true, rollNumber: true, parentName: true, parentEmail: true, portalToken: true } },
+        student: {
+          select: {
+            id: true,
+            name: true,
+            grade: true,
+            rollNumber: true,
+            parentName: true,
+            parentEmail: true,
+            portalToken: true,
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
       take: 200,
     });
 
-    const counts = await prisma.parentMessage.groupBy({ by: ["status"], _count: { _all: true } });
-    const stats = Object.fromEntries(counts.map((c) => [c.status, c._count._all]));
+    const counts = await prisma.parentMessage.groupBy({
+      by: ["status"],
+      _count: { _all: true },
+    });
+    const stats = Object.fromEntries(
+      counts.map((c) => [c.status, c._count._all]),
+    );
 
     return NextResponse.json({ messages, stats });
   } catch (error) {
-    if (error instanceof AuthError) return NextResponse.json({ error: error.message }, { status: error.status });
+    if (error instanceof AuthError)
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status },
+      );
     console.error("[api/communications] GET failed:", error);
-    return NextResponse.json({ error: "Failed to load messages" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to load messages" },
+      { status: 500 },
+    );
   }
 }
 
@@ -53,22 +75,36 @@ export async function POST(req: Request) {
     const payload = await req.json().catch(() => ({}));
     const title = String(payload.title || "").trim();
     const body = String(payload.body || "").trim();
-    const type = ["ABSENCE", "FEE", "ANNOUNCEMENT", "CUSTOM"].includes(payload.type) ? payload.type : "CUSTOM";
+    const type = ["ABSENCE", "FEE", "ANNOUNCEMENT", "CUSTOM"].includes(
+      payload.type,
+    )
+      ? payload.type
+      : "CUSTOM";
 
     if (!title || !body) {
-      return NextResponse.json({ error: "Title and message are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Title and message are required" },
+        { status: 400 },
+      );
     }
 
-    let studentIds: string[] = Array.isArray(payload.studentIds) ? payload.studentIds.filter((x: unknown) => typeof x === "string") : [];
+    let studentIds: string[] = Array.isArray(payload.studentIds)
+      ? payload.studentIds.filter((x: unknown) => typeof x === "string")
+      : [];
     if (payload.grade && typeof payload.grade === "string") {
       const gradeStudents = await prisma.student.findMany({
         where: { grade: payload.grade, status: "ADMITTED" },
         select: { id: true },
       });
-      studentIds = [...new Set([...studentIds, ...gradeStudents.map((s) => s.id)])];
+      studentIds = [
+        ...new Set([...studentIds, ...gradeStudents.map((s) => s.id)]),
+      ];
     }
     if (studentIds.length === 0) {
-      return NextResponse.json({ error: "Choose at least one student or a grade" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Choose at least one student or a grade" },
+        { status: 400 },
+      );
     }
 
     const created = await prisma.parentMessage.createMany({
@@ -77,9 +113,16 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ created: created.count }, { status: 201 });
   } catch (error) {
-    if (error instanceof AuthError) return NextResponse.json({ error: error.message }, { status: error.status });
+    if (error instanceof AuthError)
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status },
+      );
     console.error("[api/communications] POST failed:", error);
-    return NextResponse.json({ error: "Failed to create messages" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create messages" },
+      { status: 500 },
+    );
   }
 }
 
@@ -90,8 +133,15 @@ export async function PUT() {
     const feeDrafts = await draftFeeReminders();
     return NextResponse.json({ created: feeDrafts });
   } catch (error) {
-    if (error instanceof AuthError) return NextResponse.json({ error: error.message }, { status: error.status });
+    if (error instanceof AuthError)
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status },
+      );
     console.error("[api/communications] PUT failed:", error);
-    return NextResponse.json({ error: "Failed to generate drafts" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to generate drafts" },
+      { status: 500 },
+    );
   }
 }

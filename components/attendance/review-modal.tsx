@@ -33,16 +33,27 @@ export function ReviewModal({
   onClose,
   isEditMode,
 }: ReviewModalProps) {
-  const absentStudents = students.filter((s) => absentRolls.includes(s.rollNumber));
+  const absentStudents = students.filter((s) =>
+    absentRolls.includes(s.rollNumber),
+  );
   const presentCount = students.length - absentRolls.length;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-[2px] flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-white rounded-xl border shadow-modal max-w-md w-full overflow-hidden animate-scale-in" style={{ borderColor: "var(--line)" }}>
+      <div
+        className="bg-white rounded-xl border shadow-modal max-w-md w-full overflow-hidden animate-scale-in"
+        style={{ borderColor: "var(--line)" }}
+      >
         {/* Header */}
-        <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: "var(--line)" }}>
+        <div
+          className="p-4 border-b flex items-center justify-between"
+          style={{ borderColor: "var(--line)" }}
+        >
           <div>
-            <h3 className="text-sm font-semibold text-gurukul-ink" style={{ fontFamily: "var(--font-syne)" }}>
+            <h3
+              className="text-sm font-semibold text-gurukul-ink"
+              style={{ fontFamily: "var(--font-syne)" }}
+            >
               {isEditMode ? "Update Review" : "Confirm Attendance"}
             </h3>
             <p className="text-[10px] mt-0.5" style={{ color: "var(--faint)" }}>
@@ -62,38 +73,85 @@ export function ReviewModal({
         <div className="p-4 space-y-4">
           {/* Summary */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-3 rounded-lg border text-center" style={{ background: "var(--hover)", borderColor: "var(--line)" }}>
-              <p className="text-[9px] font-medium uppercase tracking-wider" style={{ color: "var(--muted)" }}>Present</p>
-              <p className="text-lg font-bold text-gurukul-ink mt-0.5" style={{ fontFamily: "var(--font-syne)" }}>{presentCount}</p>
+            <div
+              className="p-3 rounded-lg border text-center"
+              style={{ background: "var(--hover)", borderColor: "var(--line)" }}
+            >
+              <p
+                className="text-[9px] font-medium uppercase tracking-wider"
+                style={{ color: "var(--muted)" }}
+              >
+                Present
+              </p>
+              <p
+                className="text-lg font-bold text-gurukul-ink mt-0.5"
+                style={{ fontFamily: "var(--font-syne)" }}
+              >
+                {presentCount}
+              </p>
             </div>
-            <div className="p-3 rounded-lg border text-center" style={{ background: "var(--hover)", borderColor: "var(--line)" }}>
-              <p className="text-[9px] font-medium uppercase tracking-wider" style={{ color: "var(--muted)" }}>Absent</p>
-              <p className="text-lg font-bold text-gurukul-ink mt-0.5" style={{ fontFamily: "var(--font-syne)" }}>{absentRolls.length}</p>
+            <div
+              className="p-3 rounded-lg border text-center"
+              style={{ background: "var(--hover)", borderColor: "var(--line)" }}
+            >
+              <p
+                className="text-[9px] font-medium uppercase tracking-wider"
+                style={{ color: "var(--muted)" }}
+              >
+                Absent
+              </p>
+              <p
+                className="text-lg font-bold text-gurukul-ink mt-0.5"
+                style={{ fontFamily: "var(--font-syne)" }}
+              >
+                {absentRolls.length}
+              </p>
             </div>
           </div>
 
           {/* Absentee List */}
           <div>
-            <p className="text-[10px] font-medium uppercase tracking-wider mb-2" style={{ color: "var(--muted)" }}>
+            <p
+              className="text-[10px] font-medium uppercase tracking-wider mb-2"
+              style={{ color: "var(--muted)" }}
+            >
               Absent Students ({absentRolls.length})
             </p>
 
             {absentRolls.length > 0 ? (
-              <div className="max-h-40 overflow-y-auto border rounded-lg divide-y custom-scrollbar" style={{ borderColor: "var(--hover)" }}>
+              <div
+                className="max-h-40 overflow-y-auto border rounded-lg divide-y custom-scrollbar"
+                style={{ borderColor: "var(--hover)" }}
+              >
                 {absentStudents.map((s) => (
-                  <div key={s.id} className="p-2.5 flex items-center justify-between text-xs">
+                  <div
+                    key={s.id}
+                    className="p-2.5 flex items-center justify-between text-xs"
+                  >
                     <div className="flex items-center gap-2.5">
-                      <span className="w-6 h-6 rounded-md text-white font-bold flex items-center justify-center text-[10px]" style={{ background: "var(--accent)" }}>
+                      <span
+                        className="w-6 h-6 rounded-md text-white font-bold flex items-center justify-center text-[10px]"
+                        style={{ background: "var(--accent)" }}
+                      >
                         #{s.rollNumber}
                       </span>
-                      <span className="text-[11px] font-medium text-gurukul-ink">{s.name}</span>
+                      <span className="text-[11px] font-medium text-gurukul-ink">
+                        {s.name}
+                      </span>
                     </div>
                     <span className="badge-default text-[9px]">ABSENT</span>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="p-3 border rounded-lg text-center text-xs" style={{ background: "var(--hover)", borderColor: "var(--line)", color: "var(--muted)" }}>
+              <div
+                className="p-3 border rounded-lg text-center text-xs"
+                style={{
+                  background: "var(--hover)",
+                  borderColor: "var(--line)",
+                  color: "var(--muted)",
+                }}
+              >
                 All {students.length} students are present.
               </div>
             )}
@@ -105,7 +163,10 @@ export function ReviewModal({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t flex items-center justify-between gap-3" style={{ borderColor: "var(--line)" }}>
+        <div
+          className="p-4 border-t flex items-center justify-between gap-3"
+          style={{ borderColor: "var(--line)" }}
+        >
           <button
             onClick={onClose}
             disabled={isSubmitting}

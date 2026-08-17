@@ -27,7 +27,11 @@ export async function GET() {
     ).map((g) => g.grade);
 
     if (session.role === "ADMIN" || !session.staffId) {
-      return NextResponse.json({ grades: allGrades, defaultGrade: allGrades[0] ?? null, scope: "ALL" });
+      return NextResponse.json({
+        grades: allGrades,
+        defaultGrade: allGrades[0] ?? null,
+        scope: "ALL",
+      });
     }
 
     // Teacher: their own classes, ordered by today's schedule
@@ -39,16 +43,29 @@ export async function GET() {
 
     const myGrades = Array.from(new Set(slots.map((s) => s.grade))).sort();
     const today = WEEKDAYS[new Date().getDay()];
-    const todayFirst = slots.filter((s) => s.day === today).sort((a, b) => a.period - b.period)[0];
+    const todayFirst = slots
+      .filter((s) => s.day === today)
+      .sort((a, b) => a.period - b.period)[0];
 
     // Teachers with no timetable yet fall back to all grades
     const grades = myGrades.length > 0 ? myGrades : allGrades;
     const defaultGrade = todayFirst?.grade ?? grades[0] ?? null;
 
-    return NextResponse.json({ grades, defaultGrade, scope: myGrades.length > 0 ? "MINE" : "ALL" });
+    return NextResponse.json({
+      grades,
+      defaultGrade,
+      scope: myGrades.length > 0 ? "MINE" : "ALL",
+    });
   } catch (error) {
-    if (error instanceof AuthError) return NextResponse.json({ error: error.message }, { status: error.status });
+    if (error instanceof AuthError)
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status },
+      );
     console.error("[api/attendance/grades] failed:", error);
-    return NextResponse.json({ error: "Failed to load classes" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to load classes" },
+      { status: 500 },
+    );
   }
 }

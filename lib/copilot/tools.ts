@@ -16,11 +16,18 @@ export interface CopilotToolResult {
 /**
  * Business Service Tools for AI Copilot Function Calling
  */
-export async function executeCopilotTool(query: string): Promise<CopilotToolResult> {
+export async function executeCopilotTool(
+  query: string,
+): Promise<CopilotToolResult> {
   const q = query.toLowerCase();
 
   // 1. Attendance Risk Tool Query
-  if (q.includes("75%") || q.includes("attendance") || q.includes("risk") || q.includes("absent")) {
+  if (
+    q.includes("75%") ||
+    q.includes("attendance") ||
+    q.includes("risk") ||
+    q.includes("absent")
+  ) {
     const riskStudents: RiskStudent[] = [
       {
         rollNumber: 7,
@@ -56,7 +63,12 @@ export async function executeCopilotTool(query: string): Promise<CopilotToolResu
   }
 
   // 2. Pending Documents Tool Query
-  if (q.includes("document") || q.includes("ocr") || q.includes("review") || q.includes("admission")) {
+  if (
+    q.includes("document") ||
+    q.includes("ocr") ||
+    q.includes("review") ||
+    q.includes("admission")
+  ) {
     const pendingDocs = [
       {
         id: "doc-101",
@@ -76,18 +88,25 @@ export async function executeCopilotTool(query: string): Promise<CopilotToolResu
   }
 
   // 3. Timetable Conflicts Tool Query
-  if (q.includes("timetable") || q.includes("conflict") || q.includes("clash") || q.includes("schedule")) {
+  if (
+    q.includes("timetable") ||
+    q.includes("conflict") ||
+    q.includes("clash") ||
+    q.includes("schedule")
+  ) {
     const conflicts = [
       {
         id: "conflict-t-1",
         type: "TEACHER_CLASH",
-        description: "Prof. Alan Turing double-booked at Mon Period 1 (Math 101 & CS 102).",
+        description:
+          "Prof. Alan Turing double-booked at Mon Period 1 (Math 101 & CS 102).",
         suggestedFix: "Move Grade 11B CS 102 to Mon Period 2.",
       },
       {
         id: "conflict-r-2",
         type: "ROOM_CLASH",
-        description: "Room 101 double-booked at Mon Period 2 for Curie & Feynman.",
+        description:
+          "Room 101 double-booked at Mon Period 2 for Curie & Feynman.",
         suggestedFix: "Reassign Grade 12A Chem to Room 201.",
       },
     ];

@@ -20,7 +20,13 @@ function FocusAttendanceContent() {
 
 export default function TakeAttendancePage() {
   return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center text-xs text-neutral-400">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center text-xs text-neutral-400">
+          Loading...
+        </div>
+      }
+    >
       <FocusAttendanceContent />
     </Suspense>
   );

@@ -40,7 +40,8 @@ async function main() {
       email: "admin@gurukul.edu",
       passwordHash: await bcrypt.hash(adminPassword, 10),
       role: "ADMIN",
-      avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150",
+      avatar:
+        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150",
     },
   });
   console.log(`  Admin login -> admin@gurukul.edu / ${adminPassword}`);
@@ -214,13 +215,19 @@ async function main() {
       id: "user-staff",
       name: "Prof. Alan Turing",
       email: "turing@gurukul.edu",
-      passwordHash: await bcrypt.hash(process.env.SEED_TEACHER_PASSWORD || "teacher123", 10),
+      passwordHash: await bcrypt.hash(
+        process.env.SEED_TEACHER_PASSWORD || "teacher123",
+        10,
+      ),
       role: "TEACHER",
       staffId: staff.turing.id,
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
+      avatar:
+        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
     },
   });
-  console.log(`  Teacher login -> turing@gurukul.edu / ${process.env.SEED_TEACHER_PASSWORD || "teacher123"}`);
+  console.log(
+    `  Teacher login -> turing@gurukul.edu / ${process.env.SEED_TEACHER_PASSWORD || "teacher123"}`,
+  );
 
   // ============================================================
   // 4. ROOMS
@@ -357,31 +364,91 @@ async function main() {
   await prisma.staffSubject.createMany({
     data: [
       // Mathematics
-      { staffId: staff.newton.id, subjectId: subjects.math.id, isPreferred: true },
-      { staffId: staff.ramanujan.id, subjectId: subjects.math.id, isPreferred: true },
-      { staffId: staff.katherine.id, subjectId: subjects.math.id, isPreferred: false },
-      { staffId: staff.bhaskara.id, subjectId: subjects.math.id, isPreferred: false },
-      { staffId: staff.turing.id, subjectId: subjects.math.id, isPreferred: false },
+      {
+        staffId: staff.newton.id,
+        subjectId: subjects.math.id,
+        isPreferred: true,
+      },
+      {
+        staffId: staff.ramanujan.id,
+        subjectId: subjects.math.id,
+        isPreferred: true,
+      },
+      {
+        staffId: staff.katherine.id,
+        subjectId: subjects.math.id,
+        isPreferred: false,
+      },
+      {
+        staffId: staff.bhaskara.id,
+        subjectId: subjects.math.id,
+        isPreferred: false,
+      },
+      {
+        staffId: staff.turing.id,
+        subjectId: subjects.math.id,
+        isPreferred: false,
+      },
 
       // Computer Science (Turing, Ada, Grace, Ramanujan)
-      { staffId: staff.turing.id, subjectId: subjects.cs.id, isPreferred: true },
+      {
+        staffId: staff.turing.id,
+        subjectId: subjects.cs.id,
+        isPreferred: true,
+      },
       { staffId: staff.ada.id, subjectId: subjects.cs.id, isPreferred: true },
       { staffId: staff.grace.id, subjectId: subjects.cs.id, isPreferred: true },
-      { staffId: staff.ramanujan.id, subjectId: subjects.cs.id, isPreferred: false },
+      {
+        staffId: staff.ramanujan.id,
+        subjectId: subjects.cs.id,
+        isPreferred: false,
+      },
 
       // Physics
-      { staffId: staff.curie.id, subjectId: subjects.physics.id, isPreferred: true },
-      { staffId: staff.feynman.id, subjectId: subjects.physics.id, isPreferred: true },
-      { staffId: staff.faraday.id, subjectId: subjects.physics.id, isPreferred: false },
+      {
+        staffId: staff.curie.id,
+        subjectId: subjects.physics.id,
+        isPreferred: true,
+      },
+      {
+        staffId: staff.feynman.id,
+        subjectId: subjects.physics.id,
+        isPreferred: true,
+      },
+      {
+        staffId: staff.faraday.id,
+        subjectId: subjects.physics.id,
+        isPreferred: false,
+      },
 
       // Chemistry
-      { staffId: staff.curie.id, subjectId: subjects.chemistry.id, isPreferred: true },
-      { staffId: staff.feynman.id, subjectId: subjects.chemistry.id, isPreferred: false },
+      {
+        staffId: staff.curie.id,
+        subjectId: subjects.chemistry.id,
+        isPreferred: true,
+      },
+      {
+        staffId: staff.feynman.id,
+        subjectId: subjects.chemistry.id,
+        isPreferred: false,
+      },
 
       // Biology
-      { staffId: staff.darwin.id, subjectId: subjects.biology.id, isPreferred: true },
-      { staffId: staff.mendel.id, subjectId: subjects.biology.id, isPreferred: true },
-      { staffId: staff.bhaskara.id, subjectId: subjects.biology.id, isPreferred: false },
+      {
+        staffId: staff.darwin.id,
+        subjectId: subjects.biology.id,
+        isPreferred: true,
+      },
+      {
+        staffId: staff.mendel.id,
+        subjectId: subjects.biology.id,
+        isPreferred: true,
+      },
+      {
+        staffId: staff.bhaskara.id,
+        subjectId: subjects.biology.id,
+        isPreferred: false,
+      },
     ],
   });
 
@@ -416,17 +483,40 @@ async function main() {
   ];
 
   const studentNames = [
-    "Aarav Sharma", "Vivaan Patel", "Aditya Shah", "Anaya Mehta", "Ishaan Desai",
-    "Diya Joshi", "Arjun Patel", "Myra Shah", "Kabir Mehta", "Sara Desai",
-    "Reyansh Joshi", "Aadhya Patel", "Vihaan Shah", "Kiara Mehta", "Atharv Desai",
-    "Riya Joshi", "Advait Patel", "Ira Shah", "Dhruv Mehta", "Navya Desai",
-    "Rohan Verma", "Saanvi Reddy", "Aryan Gupta", "Ananya Rao", "Kavya Nair",
+    "Aarav Sharma",
+    "Vivaan Patel",
+    "Aditya Shah",
+    "Anaya Mehta",
+    "Ishaan Desai",
+    "Diya Joshi",
+    "Arjun Patel",
+    "Myra Shah",
+    "Kabir Mehta",
+    "Sara Desai",
+    "Reyansh Joshi",
+    "Aadhya Patel",
+    "Vihaan Shah",
+    "Kiara Mehta",
+    "Atharv Desai",
+    "Riya Joshi",
+    "Advait Patel",
+    "Ira Shah",
+    "Dhruv Mehta",
+    "Navya Desai",
+    "Rohan Verma",
+    "Saanvi Reddy",
+    "Aryan Gupta",
+    "Ananya Rao",
+    "Kavya Nair",
   ];
 
   const students = [];
   for (const grade of grades) {
     for (let i = 1; i <= 25; i++) {
-      const name = i <= studentNames.length ? `${studentNames[i - 1]} (${grade.replace("Grade ", "")})` : `${grade} Student ${i}`;
+      const name =
+        i <= studentNames.length
+          ? `${studentNames[i - 1]} (${grade.replace("Grade ", "")})`
+          : `${grade} Student ${i}`;
       students.push({
         rollNumber: i,
         name,
@@ -455,7 +545,8 @@ async function main() {
       documentType: "Admission Application",
       status: "APPROVED",
       confidenceScore: 95.0,
-      rawText: "GURUKUL HIGH SCHOOL ADMISSION FORM\nStudent Name: Aarav Sharma\nApplying Grade: Grade 10A",
+      rawText:
+        "GURUKUL HIGH SCHOOL ADMISSION FORM\nStudent Name: Aarav Sharma\nApplying Grade: Grade 10A",
       extractedFields: JSON.stringify({
         studentName: { value: "Aarav Sharma", confidence: 98 },
         grade: { value: "Grade 10A", confidence: 95 },
@@ -848,18 +939,78 @@ async function main() {
 
   await prisma.teacherWorkload.createMany({
     data: [
-      { teacherId: staff.turing.id, date: "2026-08-17", lectureCount: 1, proxyCount: 0 },
-      { teacherId: staff.ada.id, date: "2026-08-17", lectureCount: 1, proxyCount: 0 },
-      { teacherId: staff.grace.id, date: "2026-08-17", lectureCount: 1, proxyCount: 0 },
-      { teacherId: staff.newton.id, date: "2026-08-17", lectureCount: 2, proxyCount: 0 },
-      { teacherId: staff.ramanujan.id, date: "2026-08-17", lectureCount: 1, proxyCount: 0 },
-      { teacherId: staff.curie.id, date: "2026-08-17", lectureCount: 1, proxyCount: 0 },
-      { teacherId: staff.feynman.id, date: "2026-08-17", lectureCount: 1, proxyCount: 0 },
-      { teacherId: staff.faraday.id, date: "2026-08-17", lectureCount: 1, proxyCount: 0 },
-      { teacherId: staff.darwin.id, date: "2026-08-17", lectureCount: 1, proxyCount: 0 },
-      { teacherId: staff.mendel.id, date: "2026-08-17", lectureCount: 1, proxyCount: 0 },
-      { teacherId: staff.katherine.id, date: "2026-08-17", lectureCount: 1, proxyCount: 0 },
-      { teacherId: staff.bhaskara.id, date: "2026-08-17", lectureCount: 0, proxyCount: 0 },
+      {
+        teacherId: staff.turing.id,
+        date: "2026-08-17",
+        lectureCount: 1,
+        proxyCount: 0,
+      },
+      {
+        teacherId: staff.ada.id,
+        date: "2026-08-17",
+        lectureCount: 1,
+        proxyCount: 0,
+      },
+      {
+        teacherId: staff.grace.id,
+        date: "2026-08-17",
+        lectureCount: 1,
+        proxyCount: 0,
+      },
+      {
+        teacherId: staff.newton.id,
+        date: "2026-08-17",
+        lectureCount: 2,
+        proxyCount: 0,
+      },
+      {
+        teacherId: staff.ramanujan.id,
+        date: "2026-08-17",
+        lectureCount: 1,
+        proxyCount: 0,
+      },
+      {
+        teacherId: staff.curie.id,
+        date: "2026-08-17",
+        lectureCount: 1,
+        proxyCount: 0,
+      },
+      {
+        teacherId: staff.feynman.id,
+        date: "2026-08-17",
+        lectureCount: 1,
+        proxyCount: 0,
+      },
+      {
+        teacherId: staff.faraday.id,
+        date: "2026-08-17",
+        lectureCount: 1,
+        proxyCount: 0,
+      },
+      {
+        teacherId: staff.darwin.id,
+        date: "2026-08-17",
+        lectureCount: 1,
+        proxyCount: 0,
+      },
+      {
+        teacherId: staff.mendel.id,
+        date: "2026-08-17",
+        lectureCount: 1,
+        proxyCount: 0,
+      },
+      {
+        teacherId: staff.katherine.id,
+        date: "2026-08-17",
+        lectureCount: 1,
+        proxyCount: 0,
+      },
+      {
+        teacherId: staff.bhaskara.id,
+        date: "2026-08-17",
+        lectureCount: 0,
+        proxyCount: 0,
+      },
     ],
   });
 
@@ -889,7 +1040,10 @@ async function main() {
       attendanceRecordId: attendanceRecord.id,
       studentId: student.id,
       rollNumber: student.rollNumber,
-      status: student.rollNumber === 7 || student.rollNumber === 19 ? "ABSENT" : "PRESENT",
+      status:
+        student.rollNumber === 7 || student.rollNumber === 19
+          ? "ABSENT"
+          : "PRESENT",
     })),
   });
 
@@ -931,15 +1085,25 @@ async function main() {
   console.log("🧪 TEST SCENARIOS:");
   console.log("1. Teacher Absence & Proxy Assignment (Test Date: 2026-08-17):");
   console.log("   - Prof. Alan Turing is absent on Monday 2026-08-17");
-  console.log("   - Affected lecture: Monday Period 1 (Grade 10A Computer Science)");
-  console.log("   - Eligible & qualified CS candidates: Ada Lovelace, Grace Hopper, Srinivasa Ramanujan");
+  console.log(
+    "   - Affected lecture: Monday Period 1 (Grade 10A Computer Science)",
+  );
+  console.log(
+    "   - Eligible & qualified CS candidates: Ada Lovelace, Grace Hopper, Srinivasa Ramanujan",
+  );
   console.log("");
   console.log("2. Room Conflict Resolution:");
-  console.log("   - Monday Period 2: Room 101 double-booked (Grade 10A Physics & Grade 11A Math)");
-  console.log("   - Available alternative lecture rooms: Room 102, Room 201, Room 202");
+  console.log(
+    "   - Monday Period 2: Room 101 double-booked (Grade 10A Physics & Grade 11A Math)",
+  );
+  console.log(
+    "   - Available alternative lecture rooms: Room 102, Room 201, Room 202",
+  );
   console.log("");
   console.log("3. Lab Conflict Resolution:");
-  console.log("   - Wednesday Period 2: Science Lab A double-booked (Grade 10A CS & Grade 11A Chem)");
+  console.log(
+    "   - Wednesday Period 2: Science Lab A double-booked (Grade 10A CS & Grade 11A Chem)",
+  );
   console.log("   - Available alternative lab: Science Lab B");
   console.log("==========================================");
 }

@@ -4,7 +4,11 @@ import { requireSession, AuthError } from "@/lib/auth/server";
 
 export const dynamic = "force-dynamic";
 
-function computeStatus(amountDue: number, amountPaid: number, dueDate: string): string {
+function computeStatus(
+  amountDue: number,
+  amountPaid: number,
+  dueDate: string,
+): string {
   if (amountPaid >= amountDue && amountDue > 0) return "PAID";
   const today = new Date().toLocaleDateString("en-CA");
   if (dueDate < today) return "OVERDUE";
@@ -21,7 +25,11 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
     });
     return NextResponse.json({ account });
   } catch (error) {
-    if (error instanceof AuthError) return NextResponse.json({ error: error.message }, { status: error.status });
+    if (error instanceof AuthError)
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status },
+      );
     console.error("[api/students/id/fees] GET failed:", error);
     return NextResponse.json({ error: "Failed to load fees" }, { status: 500 });
   }
@@ -31,12 +39,18 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
  * PUT /api/students/[id]/fees — create or update the fee account (ADMIN only)
  * Body: { amountDue, dueDate (YYYY-MM-DD), academicYear? }
  */
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(
+  req: Request,
+  { params }: { params: { id: string } },
+) {
   try {
     await requireSession("ADMIN");
 
-    const student = await prisma.student.findUnique({ where: { id: params.id } });
-    if (!student) return NextResponse.json({ error: "Student not found" }, { status: 404 });
+    const student = await prisma.student.findUnique({
+      where: { id: params.id },
+    });
+    if (!student)
+      return NextResponse.json({ error: "Student not found" }, { status: 404 });
 
     const body = await req.json().catch(() => ({}));
     const amountDue = Number(body.amountDue);
@@ -44,13 +58,21 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     const academicYear = String(body.academicYear || "2026-27");
 
     if (!Number.isFinite(amountDue) || amountDue <= 0) {
-      return NextResponse.json({ error: "Amount due must be a positive number" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Amount due must be a positive number" },
+        { status: 400 },
+      );
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) {
-      return NextResponse.json({ error: "Due date must be YYYY-MM-DD" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Due date must be YYYY-MM-DD" },
+        { status: 400 },
+      );
     }
 
-    const existing = await prisma.feeAccount.findUnique({ where: { studentId: params.id } });
+    const existing = await prisma.feeAccount.findUnique({
+      where: { studentId: params.id },
+    });
     const amountPaid = existing?.amountPaid ?? 0;
 
     const account = await prisma.feeAccount.upsert({
@@ -73,9 +95,16 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
     return NextResponse.json({ account });
   } catch (error) {
-    if (error instanceof AuthError) return NextResponse.json({ error: error.message }, { status: error.status });
+    if (error instanceof AuthError)
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status },
+      );
     console.error("[api/students/id/fees] PUT failed:", error);
-    return NextResponse.json({ error: "Failed to save fee account" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to save fee account" },
+      { status: 500 },
+    );
   }
 }
 
@@ -83,25 +112,43 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
  * POST /api/students/[id]/fees — record a payment (ADMIN only)
  * Body: { amount, method: "CASH" | "UPI" | "CARD" | "BANK" }
  */
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(
+  req: Request,
+  { params }: { params: { id: string } },
+) {
   try {
     await requireSession("ADMIN");
 
     const body = await req.json().catch(() => ({}));
     const amount = Number(body.amount);
-    const method = ["CASH", "UPI", "CARD", "BANK"].includes(body.method) ? body.method : "CASH";
+    const method = ["CASH", "UPI", "CARD", "BANK"].includes(body.method)
+      ? body.method
+      : "CASH";
 
     if (!Number.isFinite(amount) || amount <= 0) {
-      return NextResponse.json({ error: "Payment amount must be a positive number" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Payment amount must be a positive number" },
+        { status: 400 },
+      );
     }
 
-    const existing = await prisma.feeAccount.findUnique({ where: { studentId: params.id } });
+    const existing = await prisma.feeAccount.findUnique({
+      where: { studentId: params.id },
+    });
     if (!existing) {
-      return NextResponse.json({ error: "Set the fee amount first, then record payments" }, { status: 409 });
+      return NextResponse.json(
+        { error: "Set the fee amount first, then record payments" },
+        { status: 409 },
+      );
     }
     const remaining = existing.amountDue - existing.amountPaid;
     if (amount > remaining) {
-      return NextResponse.json({ error: `Payment exceeds remaining balance (₹${remaining.toLocaleString("en-IN")})` }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: `Payment exceeds remaining balance (₹${remaining.toLocaleString("en-IN")})`,
+        },
+        { status: 400 },
+      );
     }
 
     const today = new Date().toLocaleDateString("en-CA");
@@ -109,20 +156,36 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
     const account = await prisma.$transaction(async (tx) => {
       await tx.feePayment.create({
-        data: { feeAccountId: existing.id, amount: Math.round(amount), paidAt: today, method, receiptNo },
+        data: {
+          feeAccountId: existing.id,
+          amount: Math.round(amount),
+          paidAt: today,
+          method,
+          receiptNo,
+        },
       });
       const newPaid = existing.amountPaid + Math.round(amount);
       return tx.feeAccount.update({
         where: { id: existing.id },
-        data: { amountPaid: newPaid, status: computeStatus(existing.amountDue, newPaid, existing.dueDate) },
+        data: {
+          amountPaid: newPaid,
+          status: computeStatus(existing.amountDue, newPaid, existing.dueDate),
+        },
         include: { payments: { orderBy: { paidAt: "desc" } } },
       });
     });
 
     return NextResponse.json({ account, receiptNo }, { status: 201 });
   } catch (error) {
-    if (error instanceof AuthError) return NextResponse.json({ error: error.message }, { status: error.status });
+    if (error instanceof AuthError)
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status },
+      );
     console.error("[api/students/id/fees] POST failed:", error);
-    return NextResponse.json({ error: "Failed to record payment" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to record payment" },
+      { status: 500 },
+    );
   }
 }

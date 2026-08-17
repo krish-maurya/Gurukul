@@ -120,7 +120,9 @@ export function ChatDrawer() {
   if (!isAuthenticated) return null;
 
   return (
-    <div className={`fixed right-4 z-20 font-sans transition-[bottom] duration-200 ${clearsAttendanceBar ? "bottom-24" : "bottom-4"}`}>
+    <div
+      className={`fixed right-4 z-20 font-sans transition-[bottom] duration-200 ${clearsAttendanceBar ? "bottom-24" : "bottom-4"}`}
+    >
       {/* FAB */}
       {!open && (
         <button
@@ -150,7 +152,10 @@ export function ChatDrawer() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="copilot-header-avatar">
-                  <Sparkles className="h-3.5 w-3.5 text-neutral-500" strokeWidth={2} />
+                  <Sparkles
+                    className="h-3.5 w-3.5 text-neutral-500"
+                    strokeWidth={2}
+                  />
                 </div>
                 <div>
                   <h2 className="text-[12px] font-semibold tracking-tight text-gurukul-dark">
@@ -235,13 +240,14 @@ export function ChatDrawer() {
                     style={{ animationDelay: `${Math.min(idx * 30, 150)}ms` }}
                   >
                     {message.sender === "user" ? (
-                      <div className="copilot-bubble-user">
-                        {message.text}
-                      </div>
+                      <div className="copilot-bubble-user">{message.text}</div>
                     ) : (
                       <div className="copilot-bubble-wrapper">
                         <div className="copilot-bot-avatar">
-                          <Sparkles className="h-2 w-2 text-neutral-400" strokeWidth={2.5} />
+                          <Sparkles
+                            className="h-2 w-2 text-neutral-400"
+                            strokeWidth={2.5}
+                          />
                         </div>
                         <div className="copilot-bubble-bot">
                           <p
@@ -251,7 +257,10 @@ export function ChatDrawer() {
                                 .replace(/&/g, "&amp;")
                                 .replace(/</g, "&lt;")
                                 .replace(/>/g, "&gt;")
-                                .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+                                .replace(
+                                  /\*\*(.+?)\*\*/g,
+                                  "<strong>$1</strong>",
+                                )
                                 .replace(/\*(.+?)\*/g, "<em>$1</em>"),
                             }}
                           />
@@ -270,7 +279,10 @@ export function ChatDrawer() {
             {loading && (
               <div className="copilot-typing">
                 <div className="copilot-bot-avatar">
-                  <Sparkles className="h-2 w-2 text-neutral-400" strokeWidth={2.5} />
+                  <Sparkles
+                    className="h-2 w-2 text-neutral-400"
+                    strokeWidth={2.5}
+                  />
                 </div>
                 <div className="copilot-typing-dots">
                   <span />

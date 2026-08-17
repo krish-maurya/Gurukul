@@ -3,7 +3,16 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { GraduationCap, Eye, EyeOff, ChevronLeft, ShieldCheck, UserCheck, AlertCircle, Loader2 } from "lucide-react";
+import {
+  GraduationCap,
+  Eye,
+  EyeOff,
+  ChevronLeft,
+  ShieldCheck,
+  UserCheck,
+  AlertCircle,
+  Loader2,
+} from "lucide-react";
 import { useAuth } from "@/lib/auth/session-context";
 
 type LoginTab = "ADMIN" | "TEACHER";
@@ -28,7 +37,9 @@ export default function LoginPage() {
       setError(result.error || "Login failed");
       return;
     }
-    const me = await fetch("/api/auth/me").then((r) => r.json()).catch(() => null);
+    const me = await fetch("/api/auth/me")
+      .then((r) => r.json())
+      .catch(() => null);
     if (me?.user?.role === "TEACHER") {
       router.push("/welcome");
     } else {
@@ -38,7 +49,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "var(--canvas)" }}>
+    <div
+      className="min-h-screen flex items-center justify-center p-6"
+      style={{ background: "var(--canvas)" }}
+    >
       <div className="w-full max-w-sm animate-fade-in">
         {/* Back */}
         <Link
@@ -52,24 +66,45 @@ export default function LoginPage() {
 
         {/* Logo */}
         <div className="flex justify-center mb-6">
-          <div className="w-10 h-10 rounded-xl text-white flex items-center justify-center" style={{ background: "var(--accent)" }}>
+          <div
+            className="w-10 h-10 rounded-xl text-white flex items-center justify-center"
+            style={{ background: "var(--accent)" }}
+          >
             <GraduationCap className="w-5 h-5" />
           </div>
         </div>
 
         {/* Heading */}
         <div className="text-center mb-6">
-          <h1 className="text-lg font-semibold text-gurukul-ink tracking-tight" style={{ fontFamily: "var(--font-syne)" }}>Welcome back</h1>
-          <p className="text-xs mt-1" style={{ color: "var(--faint)" }}>Sign in to your Gurukul workspace</p>
+          <h1
+            className="text-lg font-semibold text-gurukul-ink tracking-tight"
+            style={{ fontFamily: "var(--font-syne)" }}
+          >
+            Welcome back
+          </h1>
+          <p className="text-xs mt-1" style={{ color: "var(--faint)" }}>
+            Sign in to your Gurukul workspace
+          </p>
         </div>
 
         {/* Role tabs */}
-        <div className="grid grid-cols-2 gap-px p-px rounded-lg mb-5" style={{ background: "var(--line)" }}>
+        <div
+          className="grid grid-cols-2 gap-px p-px rounded-lg mb-5"
+          style={{ background: "var(--line)" }}
+        >
           <button
             type="button"
             onClick={() => setTab("ADMIN")}
             className="flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-md transition-all"
-            style={tab === "ADMIN" ? { background: "#ffffff", color: "var(--ink)", boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)" } : { background: "transparent", color: "var(--faint)" }}
+            style={
+              tab === "ADMIN"
+                ? {
+                    background: "#ffffff",
+                    color: "var(--ink)",
+                    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
+                  }
+                : { background: "transparent", color: "var(--faint)" }
+            }
           >
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>Admin</span>
@@ -78,7 +113,15 @@ export default function LoginPage() {
             type="button"
             onClick={() => setTab("TEACHER")}
             className="flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-md transition-all"
-            style={tab === "TEACHER" ? { background: "#ffffff", color: "var(--ink)", boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)" } : { background: "transparent", color: "var(--faint)" }}
+            style={
+              tab === "TEACHER"
+                ? {
+                    background: "#ffffff",
+                    color: "var(--ink)",
+                    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
+                  }
+                : { background: "transparent", color: "var(--faint)" }
+            }
           >
             <UserCheck className="w-3.5 h-3.5" />
             <span>Teacher</span>
@@ -122,7 +165,11 @@ export default function LoginPage() {
               style={{ color: "var(--faint)" }}
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              {showPassword ? (
+                <EyeOff className="w-3.5 h-3.5" />
+              ) : (
+                <Eye className="w-3.5 h-3.5" />
+              )}
             </button>
           </div>
 
@@ -142,7 +189,10 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="text-[10px] text-center mt-6" style={{ color: "var(--faint)" }}>
+        <p
+          className="text-[10px] text-center mt-6"
+          style={{ color: "var(--faint)" }}
+        >
           {tab === "TEACHER"
             ? "New here? Open the invitation link from your administrator."
             : "Access managed by your school. Contact IT for help."}

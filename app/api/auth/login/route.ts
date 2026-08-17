@@ -10,13 +10,19 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid request body" },
+      { status: 400 },
+    );
   }
 
   const email = (body.email || "").trim().toLowerCase();
   const password = body.password || "";
   if (!email || !password) {
-    return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Email and password are required" },
+      { status: 400 },
+    );
   }
 
   try {
@@ -26,8 +32,15 @@ export async function POST(req: Request) {
     });
 
     // Same generic error for unknown email / wrong password (no user enumeration)
-    if (!user || !user.isActive || !(await verifyPassword(password, user.passwordHash))) {
-      return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
+    if (
+      !user ||
+      !user.isActive ||
+      !(await verifyPassword(password, user.passwordHash))
+    ) {
+      return NextResponse.json(
+        { error: "Invalid email or password" },
+        { status: 401 },
+      );
     }
 
     await createSessionCookie({

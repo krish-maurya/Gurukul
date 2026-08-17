@@ -3,7 +3,11 @@
 import React, { useEffect, useState } from "react";
 import { FileDropzone } from "@/components/document/file-dropzone";
 import { ReviewPanel } from "@/components/document/review-panel";
-import { DocumentRecordData, parseAdmissionDocument, makeExtracted } from "@/lib/document/ocr-engine";
+import {
+  DocumentRecordData,
+  parseAdmissionDocument,
+  makeExtracted,
+} from "@/lib/document/ocr-engine";
 import { processRealImageOCR } from "@/lib/document/real-ocr";
 import { FileText, CheckCircle, AlertCircle } from "lucide-react";
 
@@ -56,18 +60,25 @@ export default function DocumentIntelligencePage() {
   const [activeDocId, setActiveDocId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [ocrProgressStatus, setOcrProgressStatus] = useState("");
-  const [filterStatus, setFilterStatus] = useState<"ALL" | "NEEDS_REVIEW" | "APPROVED">("ALL");
+  const [filterStatus, setFilterStatus] = useState<
+    "ALL" | "NEEDS_REVIEW" | "APPROVED"
+  >("ALL");
 
   useEffect(() => {
     fetch("/api/documents")
       .then((r) => r.json())
       .then((rows) => {
         if (!Array.isArray(rows)) return;
-        setQueue(rows.map((row) => ({
-          ...row,
-          createdAt: new Date(row.createdAt).toLocaleString(),
-          extractedFields: typeof row.extractedFields === "string" ? JSON.parse(row.extractedFields) : row.extractedFields,
-        })));
+        setQueue(
+          rows.map((row) => ({
+            ...row,
+            createdAt: new Date(row.createdAt).toLocaleString(),
+            extractedFields:
+              typeof row.extractedFields === "string"
+                ? JSON.parse(row.extractedFields)
+                : row.extractedFields,
+          })),
+        );
       })
       .catch(() => setQueue([]));
   }, []);
@@ -95,14 +106,17 @@ export default function DocumentIntelligencePage() {
       });
 
       const hasEmptyFields = Object.values(realResult.extracted).some(
-        (f) => !f.value || f.value.trim().length === 0
+        (f) => !f.value || f.value.trim().length === 0,
       );
 
       newDoc = {
         id: `doc-${Date.now()}`,
         fileName: fileOrName.name,
         documentType: "Scanned Document (OCR)",
-        status: hasEmptyFields || realResult.overallConfidence < 85 ? "NEEDS_REVIEW" : "APPROVED",
+        status:
+          hasEmptyFields || realResult.overallConfidence < 85
+            ? "NEEDS_REVIEW"
+            : "APPROVED",
         confidenceScore: realResult.overallConfidence,
         rawText: realResult.rawText,
         extractedFields: realResult.extracted,
@@ -116,14 +130,17 @@ export default function DocumentIntelligencePage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newDoc),
-    }).then((r) => r.ok ? r.json() : null).catch(() => null);
-    if (saved) newDoc = {
-      ...newDoc,
-      id: saved.id,
-      status: saved.status,
-      confidenceScore: saved.confidenceScore,
-      createdAt: new Date(saved.createdAt).toLocaleString(),
-    };
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null);
+    if (saved)
+      newDoc = {
+        ...newDoc,
+        id: saved.id,
+        status: saved.status,
+        confidenceScore: saved.confidenceScore,
+        createdAt: new Date(saved.createdAt).toLocaleString(),
+      };
     setQueue((prev) => [newDoc, ...prev]);
     setActiveDocId(newDoc.id);
     setIsProcessing(false);
@@ -139,7 +156,10 @@ export default function DocumentIntelligencePage() {
         studentName: updatedValues.studentName,
         dob: updatedValues.dob,
         grade: updatedValues.grade,
-        parentName: updatedValues.parentName || updatedValues.fatherName || updatedValues.motherName,
+        parentName:
+          updatedValues.parentName ||
+          updatedValues.fatherName ||
+          updatedValues.motherName,
         parentEmail: updatedValues.email,
         contact: updatedValues.contact || updatedValues.emergencyPhone,
         address: updatedValues.address,
@@ -148,22 +168,35 @@ export default function DocumentIntelligencePage() {
       }),
     });
     if (!studentResponse.ok) {
-      alert((await studentResponse.json().catch(() => ({}))).error || "Student record could not be created. Check the required fields.");
+      alert(
+        (await studentResponse.json().catch(() => ({}))).error ||
+          "Student record could not be created. Check the required fields.",
+      );
       return;
     }
     await fetch("/api/documents", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: activeDocId, status: "APPROVED", confidenceScore: 100, extractedFields: updatedValues }),
+      body: JSON.stringify({
+        id: activeDocId,
+        status: "APPROVED",
+        confidenceScore: 100,
+        extractedFields: updatedValues,
+      }),
     });
 
     setQueue((prev) =>
       prev.map((doc) => {
         if (doc.id === activeDocId) {
           const updatedFields = { ...doc.extractedFields };
-          (Object.keys(updatedFields) as (keyof typeof updatedFields)[]).forEach((key) => {
+          (
+            Object.keys(updatedFields) as (keyof typeof updatedFields)[]
+          ).forEach((key) => {
             updatedFields[key] = {
-              value: updatedValues[key] !== undefined ? updatedValues[key] : updatedFields[key].value,
+              value:
+                updatedValues[key] !== undefined
+                  ? updatedValues[key]
+                  : updatedFields[key].value,
               confidence: 100,
             };
           });
@@ -176,7 +209,7 @@ export default function DocumentIntelligencePage() {
           };
         }
         return doc;
-      })
+      }),
     );
 
     setActiveDocId(null);
@@ -193,9 +226,17 @@ export default function DocumentIntelligencePage() {
   return (
     <div className="space-y-5">
       {/* Page Header */}
-      <div className="flex items-center justify-between border-b pb-4" style={{ borderColor: "var(--line)" }}>
+      <div
+        className="flex items-center justify-between border-b pb-4"
+        style={{ borderColor: "var(--line)" }}
+      >
         <div>
-          <h1 className="text-base font-semibold text-gurukul-ink tracking-tight" style={{ fontFamily: "var(--font-syne)" }}>Document Intelligence</h1>
+          <h1
+            className="text-base font-semibold text-gurukul-ink tracking-tight"
+            style={{ fontFamily: "var(--font-syne)" }}
+          >
+            Document Intelligence
+          </h1>
           <p className="text-[11px] mt-0.5" style={{ color: "var(--faint)" }}>
             Automated ingestion, OCR parsing, and human verification.
           </p>
@@ -218,37 +259,74 @@ export default function DocumentIntelligencePage() {
           />
 
           {/* Processing Queue & Records Table */}
-          <div className="bg-white rounded-xl overflow-hidden" style={{ border: "1px solid var(--line)", boxShadow: "0 0 0 0.5px rgba(15, 23, 42, 0.04)" }}>
-            <div className="px-5 py-3.5 border-b flex items-center justify-between" style={{ borderColor: "var(--line)" }}>
+          <div
+            className="bg-white rounded-xl overflow-hidden"
+            style={{
+              border: "1px solid var(--line)",
+              boxShadow: "0 0 0 0.5px rgba(15, 23, 42, 0.04)",
+            }}
+          >
+            <div
+              className="px-5 py-3.5 border-b flex items-center justify-between"
+              style={{ borderColor: "var(--line)" }}
+            >
               <div>
-                <h3 className="text-sm font-semibold text-gurukul-ink" style={{ fontFamily: "var(--font-syne)" }}>Processing Queue</h3>
-                <p className="text-[11px] mt-0.5" style={{ color: "var(--faint)" }}>
+                <h3
+                  className="text-sm font-semibold text-gurukul-ink"
+                  style={{ fontFamily: "var(--font-syne)" }}
+                >
+                  Processing Queue
+                </h3>
+                <p
+                  className="text-[11px] mt-0.5"
+                  style={{ color: "var(--faint)" }}
+                >
                   Click any document to open the verification view.
                 </p>
               </div>
 
               {/* Status Filter Tabs */}
-              <div className="flex items-center gap-0.5 p-0.5 rounded-lg text-[11px] font-medium" style={{ background: "var(--hover)", border: "1px solid var(--line)" }}>
+              <div
+                className="flex items-center gap-0.5 p-0.5 rounded-lg text-[11px] font-medium"
+                style={{
+                  background: "var(--hover)",
+                  border: "1px solid var(--line)",
+                }}
+              >
                 <button
                   onClick={() => setFilterStatus("ALL")}
                   className="px-3 py-1 rounded-md transition-colors"
-                  style={filterStatus === "ALL" ? { background: "var(--accent)", color: "#ffffff" } : { color: "var(--muted)" }}
+                  style={
+                    filterStatus === "ALL"
+                      ? { background: "var(--accent)", color: "#ffffff" }
+                      : { color: "var(--muted)" }
+                  }
                 >
                   All ({queue.length})
                 </button>
                 <button
                   onClick={() => setFilterStatus("NEEDS_REVIEW")}
                   className="px-3 py-1 rounded-md transition-colors"
-                  style={filterStatus === "NEEDS_REVIEW" ? { background: "var(--accent)", color: "#ffffff" } : { color: "var(--muted)" }}
+                  style={
+                    filterStatus === "NEEDS_REVIEW"
+                      ? { background: "var(--accent)", color: "#ffffff" }
+                      : { color: "var(--muted)" }
+                  }
                 >
-                  Review ({queue.filter((q) => q.status === "NEEDS_REVIEW").length})
+                  Review (
+                  {queue.filter((q) => q.status === "NEEDS_REVIEW").length})
                 </button>
                 <button
                   onClick={() => setFilterStatus("APPROVED")}
                   className="px-3 py-1 rounded-md transition-colors"
-                  style={filterStatus === "APPROVED" ? { background: "var(--accent)", color: "#ffffff" } : { color: "var(--muted)" }}
+                  style={
+                    filterStatus === "APPROVED"
+                      ? { background: "var(--accent)", color: "#ffffff" }
+                      : { color: "var(--muted)" }
+                  }
                 >
-                  Approved ({queue.filter((q) => q.status === "APPROVED").length})
+                  Approved (
+                  {queue.filter((q) => q.status === "APPROVED").length})
                 </button>
               </div>
             </div>
@@ -256,50 +334,115 @@ export default function DocumentIntelligencePage() {
             {/* Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="border-b text-[10px] uppercase tracking-wider" style={{ borderColor: "var(--line)" }}>
+                <thead
+                  className="border-b text-[10px] uppercase tracking-wider"
+                  style={{ borderColor: "var(--line)" }}
+                >
                   <tr>
-                    <th className="px-5 py-2.5" style={{ color: "var(--faint)" }}>Document</th>
-                    <th className="px-5 py-2.5" style={{ color: "var(--faint)" }}>Type</th>
-                    <th className="px-5 py-2.5" style={{ color: "var(--faint)" }}>Score</th>
-                    <th className="px-5 py-2.5" style={{ color: "var(--faint)" }}>Status</th>
-                    <th className="px-5 py-2.5" style={{ color: "var(--faint)" }}>Student</th>
-                    <th className="px-5 py-2.5 text-right" style={{ color: "var(--faint)" }}>Action</th>
+                    <th
+                      className="px-5 py-2.5"
+                      style={{ color: "var(--faint)" }}
+                    >
+                      Document
+                    </th>
+                    <th
+                      className="px-5 py-2.5"
+                      style={{ color: "var(--faint)" }}
+                    >
+                      Type
+                    </th>
+                    <th
+                      className="px-5 py-2.5"
+                      style={{ color: "var(--faint)" }}
+                    >
+                      Score
+                    </th>
+                    <th
+                      className="px-5 py-2.5"
+                      style={{ color: "var(--faint)" }}
+                    >
+                      Status
+                    </th>
+                    <th
+                      className="px-5 py-2.5"
+                      style={{ color: "var(--faint)" }}
+                    >
+                      Student
+                    </th>
+                    <th
+                      className="px-5 py-2.5 text-right"
+                      style={{ color: "var(--faint)" }}
+                    >
+                      Action
+                    </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y" style={{ borderColor: "var(--hover)" }}>
+                <tbody
+                  className="divide-y"
+                  style={{ borderColor: "var(--hover)" }}
+                >
                   {filteredQueue.map((doc) => (
                     <tr
                       key={doc.id}
                       className="transition-colors group cursor-pointer"
                       style={{ background: "transparent" }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = "var(--hover)"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "var(--hover)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "transparent";
+                      }}
                       onClick={() => setActiveDocId(doc.id)}
                     >
                       <td className="px-5 py-3 font-medium text-gurukul-ink flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-md flex items-center justify-center" style={{ background: "var(--soft)", color: "var(--faint)" }}>
+                        <div
+                          className="w-7 h-7 rounded-md flex items-center justify-center"
+                          style={{
+                            background: "var(--soft)",
+                            color: "var(--faint)",
+                          }}
+                        >
                           <FileText className="w-3.5 h-3.5" />
                         </div>
                         <div>
                           <p className="font-medium text-gurukul-ink text-xs">
                             {doc.fileName}
                           </p>
-                          <p className="text-[10px]" style={{ color: "var(--faint)" }}>{doc.createdAt}</p>
+                          <p
+                            className="text-[10px]"
+                            style={{ color: "var(--faint)" }}
+                          >
+                            {doc.createdAt}
+                          </p>
                         </div>
                       </td>
-                      <td className="px-5 py-3 text-xs" style={{ color: "var(--muted)" }}>{doc.documentType}</td>
+                      <td
+                        className="px-5 py-3 text-xs"
+                        style={{ color: "var(--muted)" }}
+                      >
+                        {doc.documentType}
+                      </td>
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-2">
-                          <div className="w-12 rounded-full h-1 overflow-hidden" style={{ background: "var(--soft)" }}>
+                          <div
+                            className="w-12 rounded-full h-1 overflow-hidden"
+                            style={{ background: "var(--soft)" }}
+                          >
                             <div
                               className="h-1 rounded-full"
                               style={{
                                 width: `${doc.confidenceScore}%`,
-                                background: doc.confidenceScore >= 85 ? "var(--accent)" : "var(--faint)"
+                                background:
+                                  doc.confidenceScore >= 85
+                                    ? "var(--accent)"
+                                    : "var(--faint)",
                               }}
                             />
                           </div>
-                          <span className="font-mono text-[11px]" style={{ color: "var(--muted)" }}>
+                          <span
+                            className="font-mono text-[11px]"
+                            style={{ color: "var(--muted)" }}
+                          >
                             {doc.confidenceScore.toFixed(1)}%
                           </span>
                         </div>
@@ -309,8 +452,14 @@ export default function DocumentIntelligencePage() {
                           className="text-[10px] px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1"
                           style={
                             doc.status === "APPROVED"
-                              ? { background: "var(--soft)", color: "var(--muted)" }
-                              : { background: "var(--amber-soft)", color: "var(--amber-text)" }
+                              ? {
+                                  background: "var(--soft)",
+                                  color: "var(--muted)",
+                                }
+                              : {
+                                  background: "var(--amber-soft)",
+                                  color: "var(--amber-text)",
+                                }
                           }
                         >
                           {doc.status === "APPROVED" ? (
@@ -326,11 +475,19 @@ export default function DocumentIntelligencePage() {
                           )}
                         </span>
                       </td>
-                      <td className="px-5 py-3 text-xs" style={{ color: "var(--muted)" }}>
+                      <td
+                        className="px-5 py-3 text-xs"
+                        style={{ color: "var(--muted)" }}
+                      >
                         {doc.extractedFields.studentName.value ? (
                           `${doc.extractedFields.studentName.value} (${doc.extractedFields.grade.value || "—"})`
                         ) : (
-                          <span className="italic" style={{ color: "var(--faint)" }}>[Not detected]</span>
+                          <span
+                            className="italic"
+                            style={{ color: "var(--faint)" }}
+                          >
+                            [Not detected]
+                          </span>
                         )}
                       </td>
                       <td className="px-5 py-3 text-right">
@@ -340,7 +497,9 @@ export default function DocumentIntelligencePage() {
                             setActiveDocId(doc.id);
                           }}
                           className={`text-[11px] px-3 py-1.5 rounded-md font-medium transition-colors ${
-                            doc.status === "APPROVED" ? "btn-secondary" : "btn-primary"
+                            doc.status === "APPROVED"
+                              ? "btn-secondary"
+                              : "btn-primary"
                           }`}
                         >
                           {doc.status === "APPROVED" ? "View" : "Review"}

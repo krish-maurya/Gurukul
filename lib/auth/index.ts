@@ -11,7 +11,10 @@ export interface UserSession {
   staffId?: string | null;
 }
 
-export function hasPermission(userRole: UserRole, requiredRole: UserRole): boolean {
+export function hasPermission(
+  userRole: UserRole,
+  requiredRole: UserRole,
+): boolean {
   if (userRole === "ADMIN") return true;
   return userRole === requiredRole;
 }

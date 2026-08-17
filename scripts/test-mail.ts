@@ -7,9 +7,20 @@ import { sendMail } from "../lib/mail";
 
 async function main() {
   console.log("🔧 Testing Brevo email configuration...\n");
-  console.log("  BREVO_API_KEY:", process.env.BREVO_API_KEY ? `${process.env.BREVO_API_KEY.slice(0, 8)}...` : "❌ NOT SET");
-  console.log("  BREVO_SENDER_EMAIL:", process.env.BREVO_SENDER_EMAIL || "(default: noreply@gurukul.edu)");
-  console.log("  BREVO_SENDER_NAME:", process.env.BREVO_SENDER_NAME || "(default: Gurukul)");
+  console.log(
+    "  BREVO_API_KEY:",
+    process.env.BREVO_API_KEY
+      ? `${process.env.BREVO_API_KEY.slice(0, 8)}...`
+      : "❌ NOT SET",
+  );
+  console.log(
+    "  BREVO_SENDER_EMAIL:",
+    process.env.BREVO_SENDER_EMAIL || "(default: noreply@gurukul.edu)",
+  );
+  console.log(
+    "  BREVO_SENDER_NAME:",
+    process.env.BREVO_SENDER_NAME || "(default: Gurukul)",
+  );
   console.log();
 
   try {
@@ -58,7 +69,9 @@ async function main() {
 
     console.log("✅ Email sent successfully!");
     console.log("  Response:", JSON.stringify(result));
-    console.log("\n📬 Check snehpatel1233@gmail.com for the test email (also check spam folder).");
+    console.log(
+      "\n📬 Check snehpatel1233@gmail.com for the test email (also check spam folder).",
+    );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     console.error("❌ Failed to send email:", message);

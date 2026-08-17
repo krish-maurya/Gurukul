@@ -21,7 +21,13 @@ export interface TimetableSlotInput {
 
 export interface TimetableConflictDetail {
   id: string;
-  type: "TEACHER_CLASH" | "ROOM_CLASH" | "LAB_CLASH" | "CAPACITY_EXCEEDED" | "WORKLOAD_EXCEEDED" | "LAB_REQUIRED";
+  type:
+    | "TEACHER_CLASH"
+    | "ROOM_CLASH"
+    | "LAB_CLASH"
+    | "CAPACITY_EXCEEDED"
+    | "WORKLOAD_EXCEEDED"
+    | "LAB_REQUIRED";
   severity: "CRITICAL" | "WARNING";
   day: string;
   period: number;
@@ -51,14 +57,20 @@ export interface OptimizationResult {
 const PERIODS = [1, 2, 3, 4, 5, 6];
 
 /** Evaluates timetable constraints and returns deterministic suggestions only; it never mutates input. */
-export function evaluateTimetable(slots: TimetableSlotInput[]): OptimizationResult {
+export function evaluateTimetable(
+  slots: TimetableSlotInput[],
+): OptimizationResult {
   const teacherPeriod = new Map<string, TimetableSlotInput[]>();
   const roomPeriod = new Map<string, TimetableSlotInput[]>();
   const roomsByPeriod = new Map<string, Set<string>>();
   const allRoomIds = new Set(slots.map((slot) => slot.roomId));
 
   slots.forEach((slot) => {
-    addToIndex(teacherPeriod, `${slot.teacherId}:${slot.day}:${slot.period}`, slot);
+    addToIndex(
+      teacherPeriod,
+      `${slot.teacherId}:${slot.day}:${slot.period}`,
+      slot,
+    );
     addToIndex(roomPeriod, `${slot.roomId}:${slot.day}:${slot.period}`, slot);
     const key = `${slot.day}:${slot.period}`;
     const occupied = roomsByPeriod.get(key) ?? new Set<string>();
@@ -79,8 +91,8 @@ export function evaluateTimetable(slots: TimetableSlotInput[]): OptimizationResu
           slots,
           allRoomIds,
           roomsByPeriod,
-          `Teacher Double-Booking: ${group[0].teacherName} is assigned to ${group.length} simultaneous lectures.`
-        )
+          `Teacher Double-Booking: ${group[0].teacherName} is assigned to ${group.length} simultaneous lectures.`,
+        ),
       );
     }
   }
@@ -96,14 +108,18 @@ export function evaluateTimetable(slots: TimetableSlotInput[]): OptimizationResu
           slots,
           allRoomIds,
           roomsByPeriod,
-          `${group[0].roomName} is booked for ${group.length} simultaneous lectures.`
-        )
+          `${group[0].roomName} is booked for ${group.length} simultaneous lectures.`,
+        ),
       );
     }
   }
 
   for (const slot of slots) {
-    if (slot.classSize !== undefined && slot.roomCapacity !== undefined && slot.classSize > slot.roomCapacity) {
+    if (
+      slot.classSize !== undefined &&
+      slot.roomCapacity !== undefined &&
+      slot.classSize > slot.roomCapacity
+    ) {
       conflicts.push(
         buildConflict(
           `conflict-c-${counter++}`,
@@ -112,8 +128,8 @@ export function evaluateTimetable(slots: TimetableSlotInput[]): OptimizationResu
           slots,
           allRoomIds,
           roomsByPeriod,
-          `${slot.grade} has ${slot.classSize} students but ${slot.roomName} holds ${slot.roomCapacity}.`
-        )
+          `${slot.grade} has ${slot.classSize} students but ${slot.roomName} holds ${slot.roomCapacity}.`,
+        ),
       );
     }
     if (slot.requiresLab && slot.roomType !== "LAB") {
@@ -125,8 +141,8 @@ export function evaluateTimetable(slots: TimetableSlotInput[]): OptimizationResu
           slots,
           allRoomIds,
           roomsByPeriod,
-          `${slot.subjectName} requires a laboratory but is assigned to ${slot.roomName}.`
-        )
+          `${slot.subjectName} requires a laboratory but is assigned to ${slot.roomName}.`,
+        ),
       );
     }
   }
@@ -146,7 +162,7 @@ function buildConflict(
   allSlots: TimetableSlotInput[],
   allRoomIds: Set<string>,
   roomsByPeriod: Map<string, Set<string>>,
-  description: string
+  description: string,
 ): TimetableConflictDetail {
   const primary = affected[0];
   const freePeriods = PERIODS.filter(
@@ -156,14 +172,19 @@ function buildConflict(
         (slot) =>
           slot.day === primary.day &&
           slot.period === period &&
-          (slot.teacherId === primary.teacherId || slot.grade === primary.grade)
-      )
+          (slot.teacherId === primary.teacherId ||
+            slot.grade === primary.grade),
+      ),
   );
 
-  const occupiedRooms = roomsByPeriod.get(`${primary.day}:${primary.period}`) ?? new Set<string>();
+  const occupiedRooms =
+    roomsByPeriod.get(`${primary.day}:${primary.period}`) ?? new Set<string>();
 
   // Map distinct rooms
-  const uniqueRooms = new Map<string, { id: string; name: string; type?: "LECTURE" | "LAB"; capacity?: number }>();
+  const uniqueRooms = new Map<
+    string,
+    { id: string; name: string; type?: "LECTURE" | "LAB"; capacity?: number }
+  >();
   allSlots.forEach((s) => {
     if (!uniqueRooms.has(s.roomId)) {
       uniqueRooms.set(s.roomId, {
@@ -180,13 +201,15 @@ function buildConflict(
     (r) =>
       r.id !== primary.roomId &&
       !occupiedRooms.has(r.id) &&
-      (r.type === requiredType || (!r.type && !primary.requiresLab))
+      (r.type === requiredType || (!r.type && !primary.requiresLab)),
   );
 
   const alternativeRooms = (
     typedCandidates.length > 0
       ? typedCandidates
-      : [...uniqueRooms.values()].filter((r) => r.id !== primary.roomId && !occupiedRooms.has(r.id))
+      : [...uniqueRooms.values()].filter(
+          (r) => r.id !== primary.roomId && !occupiedRooms.has(r.id),
+        )
   )
     .slice(0, 3)
     .map((r) => ({
@@ -199,7 +222,11 @@ function buildConflict(
 
   const suggestedRoomIds = alternativeRooms.map((r) => r.roomId);
   if (!suggestedRoomIds.length) {
-    const fallback = [...allRoomIds].filter((roomId) => roomId !== primary.roomId && !occupiedRooms.has(roomId)).sort();
+    const fallback = [...allRoomIds]
+      .filter(
+        (roomId) => roomId !== primary.roomId && !occupiedRooms.has(roomId),
+      )
+      .sort();
     suggestedRoomIds.push(...fallback.slice(0, 3));
   }
 
@@ -209,7 +236,7 @@ function buildConflict(
         slot.id !== primary.id &&
         slot.day === primary.day &&
         slot.period === primary.period &&
-        slot.roomId !== primary.roomId
+        slot.roomId !== primary.roomId,
     )
     .map((slot) => slot.id)
     .sort()
@@ -235,7 +262,11 @@ function buildConflict(
     suggestedFix,
     affectedSlotIds: affected.map((slot) => slot.id),
     suggestedTargetSlot: freePeriods.length
-      ? { day: primary.day, period: freePeriods[0], roomId: suggestedRoomIds[0] }
+      ? {
+          day: primary.day,
+          period: freePeriods[0],
+          roomId: suggestedRoomIds[0],
+        }
       : undefined,
     suggestedRoomIds,
     alternativeRooms,
@@ -244,7 +275,11 @@ function buildConflict(
   };
 }
 
-function addToIndex(index: Map<string, TimetableSlotInput[]>, key: string, value: TimetableSlotInput) {
+function addToIndex(
+  index: Map<string, TimetableSlotInput[]>,
+  key: string,
+  value: TimetableSlotInput,
+) {
   const values = index.get(key) ?? [];
   values.push(value);
   index.set(key, values);

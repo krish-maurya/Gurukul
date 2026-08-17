@@ -4,7 +4,11 @@ import { requireSession, AuthError } from "@/lib/auth/server";
 
 export const dynamic = "force-dynamic";
 
-function computeStatus(amountDue: number, amountPaid: number, dueDate: string): string {
+function computeStatus(
+  amountDue: number,
+  amountPaid: number,
+  dueDate: string,
+): string {
   if (amountPaid >= amountDue && amountDue > 0) return "PAID";
   const today = new Date().toLocaleDateString("en-CA");
   if (dueDate < today) return "OVERDUE";
@@ -37,21 +41,37 @@ export async function POST(req: Request) {
     const academicYear = String(body.academicYear || "2026-27");
     const overwrite = body.overwrite === true;
 
-    if (!grade) return NextResponse.json({ error: "Choose a standard" }, { status: 400 });
+    if (!grade)
+      return NextResponse.json({ error: "Choose a standard" }, { status: 400 });
     if (!Number.isFinite(amountDue) || amountDue <= 0) {
-      return NextResponse.json({ error: "Amount due must be a positive number" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Amount due must be a positive number" },
+        { status: 400 },
+      );
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) {
-      return NextResponse.json({ error: "Due date must be YYYY-MM-DD" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Due date must be YYYY-MM-DD" },
+        { status: 400 },
+      );
     }
 
     // Match every division of the standard: "Grade 10" -> Grade 10A, Grade 10B...
     const students = await prisma.student.findMany({
-      where: { grade: { startsWith: grade, mode: "insensitive" }, status: "ADMITTED" },
-      select: { id: true, feeAccount: { select: { id: true, amountPaid: true } } },
+      where: {
+        grade: { startsWith: grade, mode: "insensitive" },
+        status: "ADMITTED",
+      },
+      select: {
+        id: true,
+        feeAccount: { select: { id: true, amountPaid: true } },
+      },
     });
     if (students.length === 0) {
-      return NextResponse.json({ error: `No admitted students found in ${grade}` }, { status: 404 });
+      return NextResponse.json(
+        { error: `No admitted students found in ${grade}` },
+        { status: 404 },
+      );
     }
 
     const due = Math.round(amountDue);
@@ -90,7 +110,11 @@ export async function POST(req: Request) {
         }
       }
 
-      return { created: withoutAccount.length, updated, skipped: overwrite ? 0 : withAccount.length };
+      return {
+        created: withoutAccount.length,
+        updated,
+        skipped: overwrite ? 0 : withAccount.length,
+      };
     });
 
     return NextResponse.json({
@@ -101,8 +125,15 @@ export async function POST(req: Request) {
       dueDate,
     });
   } catch (error) {
-    if (error instanceof AuthError) return NextResponse.json({ error: error.message }, { status: error.status });
+    if (error instanceof AuthError)
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status },
+      );
     console.error("[api/fees/batch] failed:", error);
-    return NextResponse.json({ error: "Failed to set class fees" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to set class fees" },
+      { status: 500 },
+    );
   }
 }

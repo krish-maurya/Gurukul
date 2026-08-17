@@ -11,12 +11,14 @@ Gurukul is an AI-assisted school operating system for administrators, teachers, 
 ## Core features
 
 ### Authentication and roles
+
 - Secure Admin and Teacher login.
 - Teacher accounts are linked to staff records.
 - Role-based routing and permissions.
 - Admin-only access to configuration, staff, and bulk operations.
 
 ### Student registry and admissions
+
 - Central student profiles with class/division, roll number, parent contact, address, medical notes, prior school, fees, and attendance.
 - Natural registry order: standard, division, then roll number, for example **10A → 10B → 11A**, each in roll-number order.
 - OCR admission-document upload, field extraction, human review, and editable verification.
@@ -25,6 +27,7 @@ Gurukul is an AI-assisted school operating system for administrators, teachers, 
 - Processing Queue is database-backed, not sample data.
 
 ### Attendance
+
 - Class and date selection with roll-grid attendance marking.
 - One attendance record per class/division per day.
 - Teacher focus mode removes navigation, dashboard chrome, and Ask AI controls.
@@ -33,6 +36,7 @@ Gurukul is an AI-assisted school operating system for administrators, teachers, 
 - Attendance review identifies present and absent totals before submission.
 
 ### Timetable
+
 - Weekly school timetable with day and period slots.
 - Teacher timetable only exposes that teacher’s scheduled classes.
 - Date picker and scheduling controls.
@@ -41,6 +45,7 @@ Gurukul is an AI-assisted school operating system for administrators, teachers, 
 - Responsive date selector keeps “Schedule Date” on one line.
 
 ### Fees and parent communication
+
 - Student fee accounts, payments, due dates, and overdue status.
 - Class/division fee configuration and individual fee adjustments.
 - Parent Connect supports Draft, Sent, Read, All, and Absent Students views.
@@ -49,10 +54,12 @@ Gurukul is an AI-assisted school operating system for administrators, teachers, 
 - Fee reminders are generated from live fee-account data and should be scoped to the selected class/division when configured.
 
 ### Notifications
+
 - Notification bell is reserved for operationally important events such as documents requiring review, admissions needing action, timetable/proxy issues, and parent-message events.
 - The notification list is database-driven and refreshes automatically.
 
 ### Dashboard and AI
+
 - Admin overview should report real database metrics: active student count, attendance status, outstanding fees, documents requiring review, timetable conflicts, and recent operational activity.
 - Ask AI supports queries about attendance, students, staff, timetable, and school operations.
 - Ask AI must never obscure critical task controls such as the attendance submission button.

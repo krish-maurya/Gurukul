@@ -30,8 +30,25 @@ export type AssistantResponse = {
   intent: AssistantIntent;
   sources?: AssistantSource[];
   actions?: AssistantAction[];
-  data?: { kind: "students" | "student_profile" | "attendance" | "fees" | "timetable" | "documents" | "staff" | "stats" | "conflicts"; rows: Record<string, string | number>[]; stats?: { label: string; value: string }[] };
+  data?: {
+    kind:
+      | "students"
+      | "student_profile"
+      | "attendance"
+      | "fees"
+      | "timetable"
+      | "documents"
+      | "staff"
+      | "stats"
+      | "conflicts";
+    rows: Record<string, string | number>[];
+    stats?: { label: string; value: string }[];
+  };
   requiresConfirmation?: boolean;
 };
 
-export type CopilotContext = { userId: string; role: CopilotRole; name: string };
+export type CopilotContext = {
+  userId: string;
+  role: CopilotRole;
+  name: string;
+};

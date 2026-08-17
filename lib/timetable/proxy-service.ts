@@ -17,28 +17,16 @@ const DEFAULT_WEIGHTS = {
 
 const CONSTRAINT_KEYS = {
   freeSlot: ["PROXY_BASE_SCORE", "proxy.scoring.free_slot"],
-  sameDepartment: [
-    "SAME_DEPARTMENT_WEIGHT",
-    "proxy.scoring.same_department",
-  ],
-  workload: [
-    "WORKLOAD_WEIGHT",
-    "proxy.scoring.lowest_workload",
-  ],
-  noPreviousProxy: [
-    "NO_PROXY_WEIGHT",
-    "proxy.scoring.no_previous_proxy",
-  ],
+  sameDepartment: ["SAME_DEPARTMENT_WEIGHT", "proxy.scoring.same_department"],
+  workload: ["WORKLOAD_WEIGHT", "proxy.scoring.lowest_workload"],
+  noPreviousProxy: ["NO_PROXY_WEIGHT", "proxy.scoring.no_previous_proxy"],
   preferredTeacher: [
     "PREFERRED_TEACHER_WEIGHT",
     "proxy.scoring.preferred_teacher",
   ],
 } as const;
 
-type ProxyWeights = Record<
-  keyof typeof DEFAULT_WEIGHTS,
-  number
->;
+type ProxyWeights = Record<keyof typeof DEFAULT_WEIGHTS, number>;
 
 type ConstraintSettings = {
   weights: ProxyWeights;
@@ -100,10 +88,7 @@ export class ProxyAssignmentNotFoundError extends ProxyDomainError {
 
 export class ProxyAssignmentUnavailableError extends ProxyDomainError {
   constructor() {
-    super(
-      "This coverage request is no longer available",
-      409,
-    );
+    super("This coverage request is no longer available", 409);
     this.name = "ProxyAssignmentUnavailableError";
   }
 }
@@ -124,47 +109,26 @@ export class ProxyCandidateIneligibleError extends ProxyDomainError {
  * Uses UTC deliberately so the result does not depend on
  * the server's local timezone.
  */
-export function getTimetableDayForDate(
-  date: string,
-): string {
-  const match =
-    /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+export function getTimetableDayForDate(date: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
 
   if (!match) {
-    throw new ProxyDomainError(
-      "A valid YYYY-MM-DD date is required",
-      400,
-    );
+    throw new ProxyDomainError("A valid YYYY-MM-DD date is required", 400);
   }
 
-  const [year, month, day] = match
-    .slice(1)
-    .map(Number);
+  const [year, month, day] = match.slice(1).map(Number);
 
-  const utcDate = new Date(
-    Date.UTC(year, month - 1, day),
-  );
+  const utcDate = new Date(Date.UTC(year, month - 1, day));
 
   if (
     utcDate.getUTCFullYear() !== year ||
     utcDate.getUTCMonth() !== month - 1 ||
     utcDate.getUTCDate() !== day
   ) {
-    throw new ProxyDomainError(
-      "A valid YYYY-MM-DD date is required",
-      400,
-    );
+    throw new ProxyDomainError("A valid YYYY-MM-DD date is required", 400);
   }
 
-  return [
-    "Sun",
-    "Mon",
-    "Tue",
-    "Wed",
-    "Thu",
-    "Fri",
-    "Sat",
-  ][utcDate.getUTCDay()];
+  return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][utcDate.getUTCDay()];
 }
 
 export class ProxyService {
@@ -180,11 +144,7 @@ export class ProxyService {
    * 5. Existing ASSIGNED proxy assignments are NOT
    *    silently removed.
    */
-  async reportAbsence(
-    teacherId: string,
-    date: string,
-    reason?: string,
-  ) {
+  async reportAbsence(teacherId: string, date: string, reason?: string) {
     const input = validateTeacherAbsenceInput({
       teacherId,
       date,
@@ -216,13 +176,12 @@ export class ProxyService {
     }
 
     // Verify teacher has at least one class scheduled
-    const scheduledClasses =
-      await prisma.timetableSlot.count({
-        where: {
-          teacherId: input.teacherId,
-          day,
-        },
-      });
+    const scheduledClasses = await prisma.timetableSlot.count({
+      where: {
+        teacherId: input.teacherId,
+        day,
+      },
+    });
 
     if (scheduledClasses === 0) {
       throw new ProxyDomainError(
@@ -263,19 +222,18 @@ export class ProxyService {
 
       await Promise.all(
         slots.map(async (slot) => {
-          const existing =
-            await tx.proxyAssignment.findUnique({
-              where: {
-                timetableSlotId_date: {
-                  timetableSlotId: slot.id,
-                  date: input.date,
-                },
+          const existing = await tx.proxyAssignment.findUnique({
+            where: {
+              timetableSlotId_date: {
+                timetableSlotId: slot.id,
+                date: input.date,
               },
-              select: {
-                id: true,
-                status: true,
-              },
-            });
+            },
+            select: {
+              id: true,
+              status: true,
+            },
+          });
 
           if (existing?.status === "ASSIGNED") {
             return;
@@ -307,11 +265,7 @@ export class ProxyService {
       );
     });
 
-    return this.getAffectedLectures(
-      input.teacherId,
-      input.date,
-      true,
-    );
+    return this.getAffectedLectures(input.teacherId, input.date, true);
   }
 
   /**
@@ -322,49 +276,39 @@ export class ProxyService {
     date: string,
     refresh = false,
   ): Promise<AffectedLecture[]> {
-    const assignments =
-      await prisma.proxyAssignment.findMany({
-        where: {
-          absentTeacherId: teacherId,
-          date,
-        },
-        include: {
-          timetableSlot: {
-            include: {
-              subject: true,
-              teacher: true,
-              room: true,
-            },
+    const assignments = await prisma.proxyAssignment.findMany({
+      where: {
+        absentTeacherId: teacherId,
+        date,
+      },
+      include: {
+        timetableSlot: {
+          include: {
+            subject: true,
+            teacher: true,
+            room: true,
           },
         },
-        orderBy: {
-          timetableSlot: {
-            period: "asc",
-          },
+      },
+      orderBy: {
+        timetableSlot: {
+          period: "asc",
         },
-      });
+      },
+    });
 
     const settings =
       refresh ||
-        assignments.some(
-          (assignment) =>
-            assignment.recommendations === "[]",
-        )
+      assignments.some((assignment) => assignment.recommendations === "[]")
         ? await this.fetchConstraintSettings()
         : undefined;
 
     return Promise.all(
       assignments.map(async (assignment) => {
         const recommendations =
-          refresh ||
-            assignment.recommendations === "[]"
-            ? await this.generateRecommendations(
-              assignment.id,
-              settings,
-            )
-            : this.parseRecommendations(
-              assignment.recommendations,
-            );
+          refresh || assignment.recommendations === "[]"
+            ? await this.generateRecommendations(assignment.id, settings)
+            : this.parseRecommendations(assignment.recommendations);
 
         const slot = assignment.timetableSlot;
 
@@ -415,48 +359,41 @@ export class ProxyService {
     proxyAssignmentId: string,
     preloadedSettings?: ConstraintSettings,
   ): Promise<ProxyRecommendation[]> {
-    const assignment =
-      await prisma.proxyAssignment.findUnique({
-        where: {
-          id: proxyAssignmentId,
-        },
-        include: {
-          timetableSlot: {
-            include: {
-              teacher: true,
-              subject: true,
-            },
+    const assignment = await prisma.proxyAssignment.findUnique({
+      where: {
+        id: proxyAssignmentId,
+      },
+      include: {
+        timetableSlot: {
+          include: {
+            teacher: true,
+            subject: true,
           },
         },
-      });
+      },
+    });
 
     if (!assignment) {
       throw new ProxyAssignmentNotFoundError();
     }
 
     if (assignment.status !== "PENDING") {
-      return this.parseRecommendations(
-        assignment.recommendations,
-      );
+      return this.parseRecommendations(assignment.recommendations);
     }
 
     const slot = assignment.timetableSlot;
 
-    const qualifications =
-      await prisma.staffSubject.findMany({
-        where: {
-          subjectId: slot.subjectId,
-        },
-        include: {
-          staff: true,
-        },
-      });
+    const qualifications = await prisma.staffSubject.findMany({
+      where: {
+        subjectId: slot.subjectId,
+      },
+      include: {
+        staff: true,
+      },
+    });
 
     if (qualifications.length === 0) {
-      return this.persistRecommendations(
-        proxyAssignmentId,
-        [],
-      );
+      return this.persistRecommendations(proxyAssignmentId, []);
     }
 
     const candidateIds = qualifications.map(
@@ -471,9 +408,7 @@ export class ProxyService {
       periodOccupancy,
       assignedProxies,
     ] = await Promise.all([
-      preloadedSettings
-        ? Promise.resolve(null)
-        : this.fetchConstraintRows(),
+      preloadedSettings ? Promise.resolve(null) : this.fetchConstraintRows(),
 
       prisma.teacherLeave.findMany({
         where: {
@@ -548,17 +483,12 @@ export class ProxyService {
     ]);
 
     const settings =
-      preloadedSettings ??
-      this.loadConstraints(constraints ?? []);
+      preloadedSettings ?? this.loadConstraints(constraints ?? []);
 
-    const leaveIds = new Set(
-      leaves.map((leave) => leave.teacherId),
-    );
+    const leaveIds = new Set(leaves.map((leave) => leave.teacherId));
 
     const busyTeacherIds = new Set(
-      periodOccupancy.map(
-        (occupancy) => occupancy.teacherId,
-      ),
+      periodOccupancy.map((occupancy) => occupancy.teacherId),
     );
 
     const dailyCountByTeacher = new Map(
@@ -587,47 +517,29 @@ export class ProxyService {
           staff,
           isPreferred,
 
-          absentTeacherId:
-            assignment.absentTeacherId,
+          absentTeacherId: assignment.absentTeacherId,
 
-          absentDepartment:
-            slot.teacher.department,
+          absentDepartment: slot.teacher.department,
 
           isOnLeave: leaveIds.has(staff.id),
 
           isBusy: busyTeacherIds.has(staff.id),
 
-          hasProxyClash:
-            proxyMetrics.busyTeacherIds.has(
-              staff.id,
-            ),
+          hasProxyClash: proxyMetrics.busyTeacherIds.has(staff.id),
 
-          dailyLectures:
-            dailyCountByTeacher.get(staff.id) ?? 0,
+          dailyLectures: dailyCountByTeacher.get(staff.id) ?? 0,
 
-          weeklyLectures:
-            weeklyCountByTeacher.get(staff.id) ?? 0,
+          weeklyLectures: weeklyCountByTeacher.get(staff.id) ?? 0,
 
-          proxyCount:
-            proxyMetrics.countByTeacher.get(
-              staff.id,
-            ) ?? 0,
+          proxyCount: proxyMetrics.countByTeacher.get(staff.id) ?? 0,
 
-          maxDailyLoad:
-            settings.maxDailyLoad,
+          maxDailyLoad: settings.maxDailyLoad,
 
-          maxWeeklyLoad:
-            settings.maxWeeklyLoad,
+          maxWeeklyLoad: settings.maxWeeklyLoad,
         }),
       )
-      .filter(
-        (candidate) =>
-          candidate.id !==
-          assignment.absentTeacherId,
-      )
-      .filter((candidate) =>
-        this.isEligible(candidate),
-      )
+      .filter((candidate) => candidate.id !== assignment.absentTeacherId)
+      .filter((candidate) => this.isEligible(candidate))
       .map((candidate) =>
         this.toRecommendation(
           candidate,
@@ -639,20 +551,13 @@ export class ProxyService {
       .sort(
         (a, b) =>
           b.score - a.score ||
-          a.currentLectures -
-          b.currentLectures ||
-          a.currentProxies -
-          b.currentProxies ||
-          a.teacherName.localeCompare(
-            b.teacherName,
-          ),
+          a.currentLectures - b.currentLectures ||
+          a.currentProxies - b.currentProxies ||
+          a.teacherName.localeCompare(b.teacherName),
       )
       .slice(0, 3);
 
-    return this.persistRecommendations(
-      proxyAssignmentId,
-      recommendations,
-    );
+    return this.persistRecommendations(proxyAssignmentId, recommendations);
   }
 
   /**
@@ -670,20 +575,19 @@ export class ProxyService {
     }
 
     return prisma.$transaction(async (tx) => {
-      const assignment =
-        await tx.proxyAssignment.findUnique({
-          where: {
-            id: proxyAssignmentId,
-          },
-          include: {
-            timetableSlot: {
-              include: {
-                teacher: true,
-                subject: true,
-              },
+      const assignment = await tx.proxyAssignment.findUnique({
+        where: {
+          id: proxyAssignmentId,
+        },
+        include: {
+          timetableSlot: {
+            include: {
+              teacher: true,
+              subject: true,
             },
           },
-        });
+        },
+      });
 
       if (!assignment) {
         throw new ProxyAssignmentNotFoundError();
@@ -694,7 +598,10 @@ export class ProxyService {
       }
 
       // If already assigned to this exact teacher, return early
-      if (assignment.status === "ASSIGNED" && assignment.proxyTeacherId === teacherId) {
+      if (
+        assignment.status === "ASSIGNED" &&
+        assignment.proxyTeacherId === teacherId
+      ) {
         return assignment;
       }
 
@@ -703,18 +610,17 @@ export class ProxyService {
       /**
        * 1. Verify selected teacher is qualified.
        */
-      const qualification =
-        await tx.staffSubject.findUnique({
-          where: {
-            staffId_subjectId: {
-              staffId: teacherId,
-              subjectId: slot.subjectId,
-            },
+      const qualification = await tx.staffSubject.findUnique({
+        where: {
+          staffId_subjectId: {
+            staffId: teacherId,
+            subjectId: slot.subjectId,
           },
-          include: {
-            staff: true,
-          },
-        });
+        },
+        include: {
+          staff: true,
+        },
+      });
 
       if (!qualification) {
         throw new ProxyCandidateIneligibleError();
@@ -732,29 +638,25 @@ export class ProxyService {
       /**
        * 3. Selected teacher cannot be absent teacher.
        */
-      if (
-        teacher.id ===
-        assignment.absentTeacherId
-      ) {
+      if (teacher.id === assignment.absentTeacherId) {
         throw new ProxyCandidateIneligibleError();
       }
 
       /**
        * 4. Teacher cannot be on approved leave.
        */
-      const leave =
-        await tx.teacherLeave.findUnique({
-          where: {
-            teacherId_date: {
-              teacherId,
-              date: assignment.date,
-            },
+      const leave = await tx.teacherLeave.findUnique({
+        where: {
+          teacherId_date: {
+            teacherId,
+            date: assignment.date,
           },
-          select: {
-            id: true,
-            status: true,
-          },
-        });
+        },
+        select: {
+          id: true,
+          status: true,
+        },
+      });
 
       if (leave?.status === "APPROVED") {
         throw new ProxyCandidateIneligibleError();
@@ -764,17 +666,16 @@ export class ProxyService {
        * 5. Teacher cannot already have a normal
        * timetable lecture at the affected period.
        */
-      const timetableClash =
-        await tx.timetableSlot.findFirst({
-          where: {
-            teacherId,
-            day: slot.day,
-            period: slot.period,
-          },
-          select: {
-            id: true,
-          },
-        });
+      const timetableClash = await tx.timetableSlot.findFirst({
+        where: {
+          teacherId,
+          day: slot.day,
+          period: slot.period,
+        },
+        select: {
+          id: true,
+        },
+      });
 
       if (timetableClash) {
         throw new ProxyCandidateIneligibleError();
@@ -784,22 +685,21 @@ export class ProxyService {
        * 6. Teacher cannot already be a proxy at
        * the exact day + period (excluding current assignment).
        */
-      const proxyClash =
-        await tx.proxyAssignment.findFirst({
-          where: {
-            id: { not: proxyAssignmentId },
-            date: assignment.date,
-            status: "ASSIGNED",
-            proxyTeacherId: teacherId,
-            timetableSlot: {
-              day: slot.day,
-              period: slot.period,
-            },
+      const proxyClash = await tx.proxyAssignment.findFirst({
+        where: {
+          id: { not: proxyAssignmentId },
+          date: assignment.date,
+          status: "ASSIGNED",
+          proxyTeacherId: teacherId,
+          timetableSlot: {
+            day: slot.day,
+            period: slot.period,
           },
-          select: {
-            id: true,
-          },
-        });
+        },
+        select: {
+          id: true,
+        },
+      });
 
       if (proxyClash) {
         throw new ProxyCandidateIneligibleError();
@@ -808,56 +708,49 @@ export class ProxyService {
       /**
        * 7. Count current daily lectures.
        */
-      const dailyLectures =
-        await tx.timetableSlot.count({
-          where: {
-            teacherId,
-            day: slot.day,
-          },
-        });
+      const dailyLectures = await tx.timetableSlot.count({
+        where: {
+          teacherId,
+          day: slot.day,
+        },
+      });
 
       /**
        * 8. Count current weekly lectures.
        */
-      const weeklyLectures =
-        await tx.timetableSlot.count({
-          where: {
-            teacherId,
-          },
-        });
+      const weeklyLectures = await tx.timetableSlot.count({
+        where: {
+          teacherId,
+        },
+      });
 
       /**
        * 9. Count today's assigned proxies (excluding current assignment).
        */
-      const dailyProxies =
-        await tx.proxyAssignment.count({
-          where: {
-            id: { not: proxyAssignmentId },
-            date: assignment.date,
-            status: "ASSIGNED",
-            proxyTeacherId: teacherId,
-          },
-        });
+      const dailyProxies = await tx.proxyAssignment.count({
+        where: {
+          id: { not: proxyAssignmentId },
+          date: assignment.date,
+          status: "ASSIGNED",
+          proxyTeacherId: teacherId,
+        },
+      });
 
       /**
        * 10. Read active global workload constraints.
        */
-      const constraintRows =
-        await tx.schedulingConstraint.findMany({
-          where: {
-            key: {
-              in: [
-                "MAX_DAILY_LOAD",
-                "MAX_WEEKLY_LOAD",
-              ],
-            },
-            isActive: true,
+      const constraintRows = await tx.schedulingConstraint.findMany({
+        where: {
+          key: {
+            in: ["MAX_DAILY_LOAD", "MAX_WEEKLY_LOAD"],
           },
-          select: {
-            key: true,
-            value: true,
-          },
-        });
+          isActive: true,
+        },
+        select: {
+          key: true,
+          value: true,
+        },
+      });
 
       const constraintValues = new Map(
         constraintRows.map((constraint) => [
@@ -866,68 +759,54 @@ export class ProxyService {
         ]),
       );
 
-      const globalDailyLimit =
-        this.getOptionalPositiveValue(
-          constraintValues,
-          "MAX_DAILY_LOAD",
-        );
+      const globalDailyLimit = this.getOptionalPositiveValue(
+        constraintValues,
+        "MAX_DAILY_LOAD",
+      );
 
-      const globalWeeklyLimit =
-        this.getOptionalPositiveValue(
-          constraintValues,
-          "MAX_WEEKLY_LOAD",
-        );
+      const globalWeeklyLimit = this.getOptionalPositiveValue(
+        constraintValues,
+        "MAX_WEEKLY_LOAD",
+      );
 
       const effectiveDailyLimit = Math.min(
         teacher.maxPeriodsPerDay,
-        globalDailyLimit ??
-        teacher.maxPeriodsPerDay,
+        globalDailyLimit ?? teacher.maxPeriodsPerDay,
       );
 
       const effectiveWeeklyLimit = Math.min(
         teacher.maxPeriodsPerWeek,
-        globalWeeklyLimit ??
-        teacher.maxPeriodsPerWeek,
+        globalWeeklyLimit ?? teacher.maxPeriodsPerWeek,
       );
 
       /**
        * 11. Validate workload.
        */
-      if (
-        dailyLectures + 1 >
-        effectiveDailyLimit
-      ) {
+      if (dailyLectures + 1 > effectiveDailyLimit) {
         throw new ProxyCandidateIneligibleError();
       }
 
-      if (
-        weeklyLectures + 1 >
-        effectiveWeeklyLimit
-      ) {
+      if (weeklyLectures + 1 > effectiveWeeklyLimit) {
         throw new ProxyCandidateIneligibleError();
       }
 
-      if (
-        dailyProxies + 1 >
-        teacher.maxProxiesPerDay
-      ) {
+      if (dailyProxies + 1 > teacher.maxProxiesPerDay) {
         throw new ProxyCandidateIneligibleError();
       }
 
       /**
        * 12. Final atomic assignment.
        */
-      const result =
-        await tx.proxyAssignment.update({
-          where: {
-            id: proxyAssignmentId,
-          },
-          data: {
-            proxyTeacherId: teacherId,
-            selectedByUserId,
-            status: "ASSIGNED",
-          },
-        });
+      const result = await tx.proxyAssignment.update({
+        where: {
+          id: proxyAssignmentId,
+        },
+        data: {
+          proxyTeacherId: teacherId,
+          selectedByUserId,
+          status: "ASSIGNED",
+        },
+      });
 
       /**
        * 13. Keep TeacherWorkload synchronized.
@@ -1004,24 +883,14 @@ export class ProxyService {
         ),
       },
 
-      maxDailyLoad:
-        this.getOptionalPositiveValue(
-          values,
-          "MAX_DAILY_LOAD",
-        ),
+      maxDailyLoad: this.getOptionalPositiveValue(values, "MAX_DAILY_LOAD"),
 
-      maxWeeklyLoad:
-        this.getOptionalPositiveValue(
-          values,
-          "MAX_WEEKLY_LOAD",
-        ),
+      maxWeeklyLoad: this.getOptionalPositiveValue(values, "MAX_WEEKLY_LOAD"),
     };
   }
 
   private async fetchConstraintSettings() {
-    return this.loadConstraints(
-      await this.fetchConstraintRows(),
-    );
+    return this.loadConstraints(await this.fetchConstraintRows());
   }
 
   private fetchConstraintRows() {
@@ -1052,11 +921,7 @@ export class ProxyService {
     for (const key of keys) {
       const value = values.get(key);
 
-      if (
-        value !== undefined &&
-        Number.isFinite(value) &&
-        value >= 0
-      ) {
+      if (value !== undefined && Number.isFinite(value) && value >= 0) {
         return value;
       }
     }
@@ -1064,15 +929,10 @@ export class ProxyService {
     return fallback;
   }
 
-  private getOptionalPositiveValue(
-    values: Map<string, number>,
-    key: string,
-  ) {
+  private getOptionalPositiveValue(values: Map<string, number>, key: string) {
     const value = values.get(key);
 
-    return value !== undefined &&
-      Number.isFinite(value) &&
-      value > 0
+    return value !== undefined && Number.isFinite(value) && value > 0
       ? value
       : undefined;
   }
@@ -1091,13 +951,9 @@ export class ProxyService {
     day: string,
     period: number,
   ) {
-    const countByTeacher = new Map<
-      string,
-      number
-    >();
+    const countByTeacher = new Map<string, number>();
 
-    const busyTeacherIds =
-      new Set<string>();
+    const busyTeacherIds = new Set<string>();
 
     for (const assignment of assignments) {
       if (!assignment.proxyTeacherId) {
@@ -1106,18 +962,14 @@ export class ProxyService {
 
       countByTeacher.set(
         assignment.proxyTeacherId,
-        (countByTeacher.get(
-          assignment.proxyTeacherId,
-        ) ?? 0) + 1,
+        (countByTeacher.get(assignment.proxyTeacherId) ?? 0) + 1,
       );
 
       if (
         assignment.timetableSlot.day === day &&
         assignment.timetableSlot.period === period
       ) {
-        busyTeacherIds.add(
-          assignment.proxyTeacherId,
-        );
+        busyTeacherIds.add(assignment.proxyTeacherId);
       }
     }
 
@@ -1157,76 +1009,51 @@ export class ProxyService {
     weeklyLectures: number;
     proxyCount: number;
   }): EligibleCandidate {
-    const effectiveDailyLimit =
-      Math.min(
-        input.staff.maxPeriodsPerDay,
-        input.maxDailyLoad ??
-        input.staff.maxPeriodsPerDay,
-      );
+    const effectiveDailyLimit = Math.min(
+      input.staff.maxPeriodsPerDay,
+      input.maxDailyLoad ?? input.staff.maxPeriodsPerDay,
+    );
 
-    const effectiveWeeklyLimit =
-      Math.min(
-        input.staff.maxPeriodsPerWeek,
-        input.maxWeeklyLoad ??
-        input.staff.maxPeriodsPerWeek,
-      );
+    const effectiveWeeklyLimit = Math.min(
+      input.staff.maxPeriodsPerWeek,
+      input.maxWeeklyLoad ?? input.staff.maxPeriodsPerWeek,
+    );
 
     return {
       id: input.staff.id,
       name: input.staff.name,
       department: input.staff.department,
 
-      maxPeriodsPerDay:
-        effectiveDailyLimit,
+      maxPeriodsPerDay: effectiveDailyLimit,
 
-      maxPeriodsPerWeek:
-        effectiveWeeklyLimit,
+      maxPeriodsPerWeek: effectiveWeeklyLimit,
 
-      maxProxiesPerDay:
-        input.staff.maxProxiesPerDay,
+      maxProxiesPerDay: input.staff.maxProxiesPerDay,
 
-      isActive:
-        input.staff.isActive,
+      isActive: input.staff.isActive,
 
-      isPreferred:
-        input.isPreferred,
+      isPreferred: input.isPreferred,
 
-      sameDepartment:
-        input.staff.department ===
-        input.absentDepartment,
+      sameDepartment: input.staff.department === input.absentDepartment,
 
-      isOnLeave:
-        input.isOnLeave,
+      isOnLeave: input.isOnLeave,
 
-      isBusy:
-        input.isBusy,
+      isBusy: input.isBusy,
 
-      hasProxyClash:
-        input.hasProxyClash,
+      hasProxyClash: input.hasProxyClash,
 
       metrics: {
-        dailyLectures:
-          input.dailyLectures,
+        dailyLectures: input.dailyLectures,
 
-        weeklyLectures:
-          input.weeklyLectures,
+        weeklyLectures: input.weeklyLectures,
 
-        proxyCount:
-          input.proxyCount,
+        proxyCount: input.proxyCount,
 
         dailyWorkloadPercentage:
-          input.dailyLectures /
-          Math.max(
-            1,
-            effectiveDailyLimit,
-          ),
+          input.dailyLectures / Math.max(1, effectiveDailyLimit),
 
         weeklyWorkloadPercentage:
-          input.weeklyLectures /
-          Math.max(
-            1,
-            effectiveWeeklyLimit,
-          ),
+          input.weeklyLectures / Math.max(1, effectiveWeeklyLimit),
       },
     };
   }
@@ -1237,23 +1064,15 @@ export class ProxyService {
    * A teacher failing any one of these rules
    * must never appear in the top-3 recommendations.
    */
-  private isEligible(
-    candidate: EligibleCandidate,
-  ) {
+  private isEligible(candidate: EligibleCandidate) {
     return (
       candidate.isActive &&
       !candidate.isOnLeave &&
       !candidate.isBusy &&
       !candidate.hasProxyClash &&
-
-      candidate.metrics.dailyLectures + 1 <=
-      candidate.maxPeriodsPerDay &&
-
-      candidate.metrics.weeklyLectures + 1 <=
-      candidate.maxPeriodsPerWeek &&
-
-      candidate.metrics.proxyCount + 1 <=
-      candidate.maxProxiesPerDay
+      candidate.metrics.dailyLectures + 1 <= candidate.maxPeriodsPerDay &&
+      candidate.metrics.weeklyLectures + 1 <= candidate.maxPeriodsPerWeek &&
+      candidate.metrics.proxyCount + 1 <= candidate.maxProxiesPerDay
     );
   }
 
@@ -1270,44 +1089,29 @@ export class ProxyService {
      * Calculate the deterministic score before
      * constructing the recommendation.
      */
-    const score =
-      this.calculateScore(
-        candidate,
-        weights,
-      );
+    const score = this.calculateScore(candidate, weights);
 
     return {
       teacherId: candidate.id,
 
-      teacherName:
-        candidate.name,
+      teacherName: candidate.name,
 
       score,
 
-      reasons:
-        this.buildReasons(
-          candidate,
-          subjectName,
-          period,
-        ),
+      reasons: this.buildReasons(candidate, subjectName, period),
 
-      currentLectures:
-        candidate.metrics.dailyLectures,
+      currentLectures: candidate.metrics.dailyLectures,
 
-      currentProxies:
-        candidate.metrics.proxyCount,
+      currentProxies: candidate.metrics.proxyCount,
 
-      sameDepartment:
-        candidate.sameDepartment,
+      sameDepartment: candidate.sameDepartment,
 
       /**
        * Required by ProxyRecommendation.
        */
-      isPreferred:
-        candidate.isPreferred,
+      isPreferred: candidate.isPreferred,
 
-      department:
-        candidate.department,
+      department: candidate.department,
     };
   }
 
@@ -1316,51 +1120,27 @@ export class ProxyService {
    *
    * Eligibility is handled separately.
    */
-  private calculateScore(
-    candidate: EligibleCandidate,
-    weights: ProxyWeights,
-  ) {
-    const normalizedDailyLoad =
-      Math.min(
-        1,
-        candidate.metrics
-          .dailyWorkloadPercentage,
-      );
+  private calculateScore(candidate: EligibleCandidate, weights: ProxyWeights) {
+    const normalizedDailyLoad = Math.min(
+      1,
+      candidate.metrics.dailyWorkloadPercentage,
+    );
 
-    const normalizedWeeklyLoad =
-      Math.min(
-        1,
-        candidate.metrics
-          .weeklyWorkloadPercentage,
-      );
+    const normalizedWeeklyLoad = Math.min(
+      1,
+      candidate.metrics.weeklyWorkloadPercentage,
+    );
 
-    const normalizedLoad =
-      (normalizedDailyLoad +
-        normalizedWeeklyLoad) /
-      2;
+    const normalizedLoad = (normalizedDailyLoad + normalizedWeeklyLoad) / 2;
 
-    const workloadScore =
-      Math.round(
-        (1 - normalizedLoad) *
-        weights.workload,
-      );
+    const workloadScore = Math.round((1 - normalizedLoad) * weights.workload);
 
     return (
       weights.freeSlot +
-
-      (candidate.sameDepartment
-        ? weights.sameDepartment
-        : 0) +
-
+      (candidate.sameDepartment ? weights.sameDepartment : 0) +
       workloadScore +
-
-      (candidate.metrics.proxyCount === 0
-        ? weights.noPreviousProxy
-        : 0) +
-
-      (candidate.isPreferred
-        ? weights.preferredTeacher
-        : 0)
+      (candidate.metrics.proxyCount === 0 ? weights.noPreviousProxy : 0) +
+      (candidate.isPreferred ? weights.preferredTeacher : 0)
     );
   }
 
@@ -1374,31 +1154,21 @@ export class ProxyService {
 
       `Qualified ${subjectName} teacher`,
 
-      `Only ${candidate.metrics.dailyLectures
-      } lecture${candidate.metrics.dailyLectures === 1
-        ? ""
-        : "s"
+      `Only ${candidate.metrics.dailyLectures} lecture${
+        candidate.metrics.dailyLectures === 1 ? "" : "s"
       } today`,
     ];
 
     if (candidate.sameDepartment) {
-      reasons.push(
-        "Same department",
-      );
+      reasons.push("Same department");
     }
 
-    if (
-      candidate.metrics.proxyCount === 0
-    ) {
-      reasons.push(
-        "No proxy assigned today",
-      );
+    if (candidate.metrics.proxyCount === 0) {
+      reasons.push("No proxy assigned today");
     }
 
     if (candidate.isPreferred) {
-      reasons.push(
-        "Preferred subject teacher",
-      );
+      reasons.push("Preferred subject teacher");
     }
 
     return reasons;
@@ -1413,23 +1183,16 @@ export class ProxyService {
         id: proxyAssignmentId,
       },
       data: {
-        recommendations:
-          JSON.stringify(
-            recommendations,
-          ),
+        recommendations: JSON.stringify(recommendations),
       },
     });
 
     return recommendations;
   }
 
-  private parseRecommendations(
-    recommendations: string,
-  ): ProxyRecommendation[] {
+  private parseRecommendations(recommendations: string): ProxyRecommendation[] {
     try {
-      const parsed = JSON.parse(
-        recommendations || "[]",
-      );
+      const parsed = JSON.parse(recommendations || "[]");
 
       if (!Array.isArray(parsed)) {
         return [];
@@ -1442,5 +1205,4 @@ export class ProxyService {
   }
 }
 
-export const proxyService =
-  new ProxyService();
+export const proxyService = new ProxyService();

@@ -1,13 +1,22 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { useRouter } from "next/navigation";
 import { UserSession } from "./index";
 
 interface AuthContextType {
   currentUser: UserSession | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  login: (
+    email: string,
+    password: string,
+  ) => Promise<{ ok: boolean; error?: string }>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
   isAdmin: boolean;
@@ -39,7 +48,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refresh().finally(() => setIsLoaded(true));
   }, [refresh]);
 
-  const login = async (email: string, password: string): Promise<{ ok: boolean; error?: string }> => {
+  const login = async (
+    email: string,
+    password: string,
+  ): Promise<{ ok: boolean; error?: string }> => {
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
@@ -86,7 +98,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ currentUser, isAuthenticated, login, logout, refresh, isAdmin, isTeacher }}
+      value={{
+        currentUser,
+        isAuthenticated,
+        login,
+        logout,
+        refresh,
+        isAdmin,
+        isTeacher,
+      }}
     >
       {children}
     </AuthContext.Provider>

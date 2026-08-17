@@ -1,7 +1,4 @@
-export type ProxyAssignmentStatus =
-  | "PENDING"
-  | "ASSIGNED"
-  | "CANCELLED";
+export type ProxyAssignmentStatus = "PENDING" | "ASSIGNED" | "CANCELLED";
 
 export type ProxyRecommendation = {
   teacherId: string;

@@ -35,7 +35,10 @@ export async function middleware(req: NextRequest) {
 
   if (!authenticated) {
     if (pathname.startsWith("/api/")) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 },
+      );
     }
     const loginUrl = new URL("/landing", req.url);
     return NextResponse.redirect(loginUrl);
@@ -46,5 +49,7 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   // Protect everything except Next internals & static assets
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|tesseract/|.*\\.(?:png|jpg|jpeg|svg|webp|ico|css|js)$).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|tesseract/|.*\\.(?:png|jpg|jpeg|svg|webp|ico|css|js)$).*)",
+  ],
 };

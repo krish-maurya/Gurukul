@@ -11,7 +11,9 @@ export async function GET() {
     const staff = await prisma.staff.findMany({
       orderBy: { name: "asc" },
       include: {
-        subjectQualifications: { include: { subject: { select: { name: true } } } },
+        subjectQualifications: {
+          include: { subject: { select: { name: true } } },
+        },
         user: { select: { id: true, role: true, isActive: true } },
         invitation: { select: { usedAt: true, expiresAt: true } },
       },
@@ -28,17 +30,27 @@ export async function GET() {
         isActive: s.isActive,
         subjects: s.subjectQualifications.map((q) => q.subject.name),
         accountStatus: s.user
-          ? s.user.role === "ADMIN" ? "ADMIN" : "ACTIVE"
+          ? s.user.role === "ADMIN"
+            ? "ADMIN"
+            : "ACTIVE"
           : s.invitation && !s.invitation.usedAt
-          ? s.invitation.expiresAt < new Date() ? "INVITE_EXPIRED" : "INVITED"
-          : "NO_ACCOUNT",
+            ? s.invitation.expiresAt < new Date()
+              ? "INVITE_EXPIRED"
+              : "INVITED"
+            : "NO_ACCOUNT",
       })),
     });
   } catch (error) {
     if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: error.status });
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status },
+      );
     }
     console.error("[api/staff] GET failed:", error);
-    return NextResponse.json({ error: "Failed to fetch staff" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch staff" },
+      { status: 500 },
+    );
   }
 }

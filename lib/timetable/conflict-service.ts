@@ -66,19 +66,21 @@ export class ConflictService {
       }
 
       if (!targetRoom.isAvailable) {
-        throw new RoomConflictError(`Room ${targetRoom.roomNumber} is currently unavailable.`);
+        throw new RoomConflictError(
+          `Room ${targetRoom.roomNumber} is currently unavailable.`,
+        );
       }
 
       // 3. Confirm room type matches subject requirement
       if (slot.subject.requiresLab && targetRoom.type !== "LAB") {
         throw new RoomConflictError(
-          `Subject ${slot.subject.name} requires a laboratory, but ${targetRoom.roomNumber} is not a lab.`
+          `Subject ${slot.subject.name} requires a laboratory, but ${targetRoom.roomNumber} is not a lab.`,
         );
       }
 
       if (!slot.subject.requiresLab && targetRoom.type === "LAB") {
         throw new RoomConflictError(
-          `Subject ${slot.subject.name} does not require a laboratory; standard lecture room is expected.`
+          `Subject ${slot.subject.name} does not require a laboratory; standard lecture room is expected.`,
         );
       }
 
@@ -89,7 +91,7 @@ export class ConflictService {
 
       if (targetRoom.capacity < classSize) {
         throw new RoomConflictError(
-          `${slot.grade} has ${classSize} admitted students but ${targetRoom.roomNumber} only holds ${targetRoom.capacity}.`
+          `${slot.grade} has ${classSize} admitted students but ${targetRoom.roomNumber} only holds ${targetRoom.capacity}.`,
         );
       }
 
@@ -105,7 +107,7 @@ export class ConflictService {
 
       if (existingSlot) {
         throw new RoomConflictError(
-          `Room ${targetRoom.roomNumber} is already occupied on ${slot.day} Period ${slot.period}.`
+          `Room ${targetRoom.roomNumber} is already occupied on ${slot.day} Period ${slot.period}.`,
         );
       }
 
@@ -122,7 +124,7 @@ export class ConflictService {
 
         if (reservation) {
           throw new RoomConflictError(
-            `Room ${targetRoom.roomNumber} has an active reservation on ${date} Period ${slot.period}.`
+            `Room ${targetRoom.roomNumber} has an active reservation on ${date} Period ${slot.period}.`,
           );
         }
       }
@@ -139,18 +141,34 @@ export class ConflictService {
   }
 
   private buildIndexes(
-    slots: Array<{ id: string; period: number; roomId: string; teacherId: string; grade: string }>,
-    reservations: Array<{ roomId: string; period: number; timetableSlotId: string | null }>,
+    slots: Array<{
+      id: string;
+      period: number;
+      roomId: string;
+      teacherId: string;
+      grade: string;
+    }>,
+    reservations: Array<{
+      roomId: string;
+      period: number;
+      timetableSlotId: string | null;
+    }>,
     studentCounts: Array<{ grade: string; _count: { _all: number } }>,
   ) {
     const roomPeriod = new Map<string, string[]>();
     const teacherPeriod = new Map<string, string[]>();
     const occupiedRoomPeriods = new Set<string>();
-    const gradeCounts = new Map(studentCounts.map((entry) => [entry.grade, entry._count._all]));
+    const gradeCounts = new Map(
+      studentCounts.map((entry) => [entry.grade, entry._count._all]),
+    );
 
     slots.forEach((slot) => {
       this.addToIndex(roomPeriod, `${slot.roomId}:${slot.period}`, slot.id);
-      this.addToIndex(teacherPeriod, `${slot.teacherId}:${slot.period}`, slot.id);
+      this.addToIndex(
+        teacherPeriod,
+        `${slot.teacherId}:${slot.period}`,
+        slot.id,
+      );
       occupiedRoomPeriods.add(`${slot.roomId}:${slot.period}`);
     });
 
@@ -170,11 +188,21 @@ export class ConflictService {
       roomId: string;
       teacherId: string;
       grade: string;
-      room: { roomNumber: string; capacity: number; type: string; isAvailable: boolean };
+      room: {
+        roomNumber: string;
+        capacity: number;
+        type: string;
+        isAvailable: boolean;
+      };
       subject: { requiresLab: boolean };
       teacher: { name: string };
     }>,
-    rooms: Array<{ id: string; roomNumber: string; capacity: number; type: string }>,
+    rooms: Array<{
+      id: string;
+      roomNumber: string;
+      capacity: number;
+      type: string;
+    }>,
     indexes: ReturnType<ConflictService["buildIndexes"]>,
     day: string,
   ) {
@@ -190,9 +218,15 @@ export class ConflictService {
         slot,
         rooms,
         indexes.occupiedRoomPeriods,
-        indexes.gradeCounts.get(slot.grade) ?? 0
+        indexes.gradeCounts.get(slot.grade) ?? 0,
       );
-      const suggestions = this.findScheduleSuggestions(slot, slots, rooms, indexes, alternatives);
+      const suggestions = this.findScheduleSuggestions(
+        slot,
+        slots,
+        rooms,
+        indexes,
+        alternatives,
+      );
 
       if (teacherSlots.length > 1 && !handled.has(`teacher:${teacherKey}`)) {
         handled.add(`teacher:${teacherKey}`);
@@ -202,8 +236,8 @@ export class ConflictService {
             slot.id,
             `${slot.teacher.name} is assigned to multiple lectures on ${day} period ${slot.period}.`,
             alternatives,
-            suggestions
-          )
+            suggestions,
+          ),
         );
       }
 
@@ -217,8 +251,8 @@ export class ConflictService {
             slot.id,
             `${slot.room.roomNumber} is double-booked on ${day} period ${slot.period}.`,
             alternatives,
-            suggestions
-          )
+            suggestions,
+          ),
         );
       }
 
@@ -230,8 +264,8 @@ export class ConflictService {
             slot.id,
             `${slot.grade} has ${classSize} admitted students but ${slot.room.roomNumber} holds ${slot.room.capacity}.`,
             alternatives,
-            suggestions
-          )
+            suggestions,
+          ),
         );
       }
 
@@ -242,8 +276,8 @@ export class ConflictService {
             slot.id,
             `${slot.room.roomNumber} is unavailable.`,
             alternatives,
-            suggestions
-          )
+            suggestions,
+          ),
         );
       }
 
@@ -254,8 +288,8 @@ export class ConflictService {
             slot.id,
             `${slot.grade} requires a lab for this subject, but ${slot.room.roomNumber} is not a lab.`,
             alternatives,
-            suggestions
-          )
+            suggestions,
+          ),
         );
       }
     }
@@ -264,8 +298,18 @@ export class ConflictService {
   }
 
   private findAlternativeRooms(
-    slot: { roomId: string; period: number; room: { type: string }; subject: { requiresLab: boolean } },
-    rooms: Array<{ id: string; roomNumber: string; capacity: number; type: string }>,
+    slot: {
+      roomId: string;
+      period: number;
+      room: { type: string };
+      subject: { requiresLab: boolean };
+    },
+    rooms: Array<{
+      id: string;
+      roomNumber: string;
+      capacity: number;
+      type: string;
+    }>,
     occupiedRoomPeriods: Set<string>,
     classSize: number,
   ): RoomSuggestion[] {
@@ -276,9 +320,13 @@ export class ConflictService {
           room.id !== slot.roomId &&
           room.type === requiredType &&
           room.capacity >= classSize &&
-          !occupiedRoomPeriods.has(`${room.id}:${slot.period}`)
+          !occupiedRoomPeriods.has(`${room.id}:${slot.period}`),
       )
-      .sort((a, b) => a.capacity - classSize - (b.capacity - classSize) || a.roomNumber.localeCompare(b.roomNumber))
+      .sort(
+        (a, b) =>
+          a.capacity - classSize - (b.capacity - classSize) ||
+          a.roomNumber.localeCompare(b.roomNumber),
+      )
       .slice(0, 3)
       .map((room) => ({
         roomId: room.id,
@@ -290,9 +338,27 @@ export class ConflictService {
   }
 
   private findScheduleSuggestions(
-    slot: { id: string; period: number; teacherId: string; grade: string; roomId: string },
-    slots: Array<{ id: string; period: number; teacherId: string; grade: string; roomId: string; room: { type: string; capacity: number } }>,
-    rooms: Array<{ id: string; roomNumber: string; capacity: number; type: string }>,
+    slot: {
+      id: string;
+      period: number;
+      teacherId: string;
+      grade: string;
+      roomId: string;
+    },
+    slots: Array<{
+      id: string;
+      period: number;
+      teacherId: string;
+      grade: string;
+      roomId: string;
+      room: { type: string; capacity: number };
+    }>,
+    rooms: Array<{
+      id: string;
+      roomNumber: string;
+      capacity: number;
+      type: string;
+    }>,
     indexes: ReturnType<ConflictService["buildIndexes"]>,
     alternatives: RoomSuggestion[],
   ) {
@@ -300,7 +366,9 @@ export class ConflictService {
       (period) =>
         period !== slot.period &&
         !indexes.teacherPeriod.get(`${slot.teacherId}:${period}`)?.length &&
-        !slots.some((item) => item.grade === slot.grade && item.period === period)
+        !slots.some(
+          (item) => item.grade === slot.grade && item.period === period,
+        ),
     );
 
     const swapSlotIds = slots
@@ -308,7 +376,7 @@ export class ConflictService {
         (other) =>
           other.id !== slot.id &&
           other.period === slot.period &&
-          other.roomId !== slot.roomId
+          other.roomId !== slot.roomId,
       )
       .map((other) => other.id)
       .slice(0, 3);
@@ -321,9 +389,16 @@ export class ConflictService {
     timetableSlotId: string,
     description: string,
     alternativeRooms: RoomSuggestion[],
-    suggestions: { freePeriods: number[]; swapSlotIds: string[] }
+    suggestions: { freePeriods: number[]; swapSlotIds: string[] },
   ): ScheduleConflict {
-    return { type, severity: "CRITICAL", timetableSlotId, description, alternativeRooms, ...suggestions };
+    return {
+      type,
+      severity: "CRITICAL",
+      timetableSlotId,
+      description,
+      alternativeRooms,
+      ...suggestions,
+    };
   }
 
   private addToIndex(index: Map<string, string[]>, key: string, value: string) {
@@ -335,7 +410,7 @@ export class ConflictService {
   private async persistConflicts(
     conflicts: ScheduleConflict[],
     slots: Array<{ id: string; day: string; period: number }>,
-    day: string
+    day: string,
   ) {
     const slotById = new Map(slots.map((slot) => [slot.id, slot]));
     await prisma.$transaction(async (tx) => {

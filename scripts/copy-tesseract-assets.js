@@ -22,7 +22,13 @@ fs.mkdirSync(coreDir, { recursive: true });
 fs.mkdirSync(langDir, { recursive: true });
 
 // 1) worker
-const workerSrc = path.join(root, "node_modules", "tesseract.js", "dist", "worker.min.js");
+const workerSrc = path.join(
+  root,
+  "node_modules",
+  "tesseract.js",
+  "dist",
+  "worker.min.js",
+);
 fs.copyFileSync(workerSrc, path.join(outDir, "worker.min.js"));
 console.log("✔ copied worker.min.js");
 
@@ -46,6 +52,6 @@ if (fs.existsSync(langFile)) {
   console.warn(
     "⚠ public/tesseract/lang/eng.traineddata.gz is MISSING.\n" +
       "  Download it once and commit it:\n" +
-      "  curl -L -o public/tesseract/lang/eng.traineddata.gz https://tessdata.projectnaptha.com/4.0.0/eng.traineddata.gz"
+      "  curl -L -o public/tesseract/lang/eng.traineddata.gz https://tessdata.projectnaptha.com/4.0.0/eng.traineddata.gz",
   );
 }

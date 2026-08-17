@@ -49,20 +49,24 @@ export async function GET() {
       }),
     ]);
 
-    const draftCount = await prisma.parentMessage.count({ where: { status: "DRAFT" } });
+    const draftCount = await prisma.parentMessage.count({
+      where: { status: "DRAFT" },
+    });
 
     const isAdmin = session.role === "ADMIN";
 
     const items: NotificationItem[] = [
       ...(draftCount > 0
-        ? [{
-            id: "parent-drafts",
-            type: "PARENT_MSG" as const,
-            title: "Parent messages ready to send",
-            detail: `${draftCount} draft${draftCount === 1 ? "" : "s"} waiting for review`,
-            href: "/communications",
-            createdAt: new Date().toISOString(),
-          }]
+        ? [
+            {
+              id: "parent-drafts",
+              type: "PARENT_MSG" as const,
+              title: "Parent messages ready to send",
+              detail: `${draftCount} draft${draftCount === 1 ? "" : "s"} waiting for review`,
+              href: "/communications",
+              createdAt: new Date().toISOString(),
+            },
+          ]
         : []),
       ...docs.map((d) => ({
         id: `doc-${d.id}`,
@@ -106,7 +110,10 @@ export async function GET() {
     return NextResponse.json({ items, count: items.length });
   } catch (error) {
     if (error instanceof AuthError) {
-      return NextResponse.json({ error: error.message }, { status: error.status });
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status },
+      );
     }
     console.error("[api/notifications] failed:", error);
     return NextResponse.json({ items: [], count: 0 });

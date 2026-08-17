@@ -10,7 +10,10 @@ export async function ensurePortalToken(studentId: string): Promise<string> {
   });
   if (student?.portalToken) return student.portalToken;
   const token = randomBytes(20).toString("hex");
-  await prisma.student.update({ where: { id: studentId }, data: { portalToken: token } });
+  await prisma.student.update({
+    where: { id: studentId },
+    data: { portalToken: token },
+  });
   return token;
 }
 
@@ -22,7 +25,7 @@ export async function ensurePortalToken(studentId: string): Promise<string> {
 export async function draftAbsenceMessages(
   absentees: { studentId: string }[],
   date: string,
-  grade: string
+  grade: string,
 ): Promise<number> {
   if (absentees.length === 0) return 0;
   const ids = absentees.map((a) => a.studentId);
@@ -33,7 +36,11 @@ export async function draftAbsenceMessages(
       select: { id: true, name: true, parentName: true },
     }),
     prisma.parentMessage.findMany({
-      where: { studentId: { in: ids }, type: "ABSENCE", title: { contains: date } },
+      where: {
+        studentId: { in: ids },
+        type: "ABSENCE",
+        title: { contains: date },
+      },
       select: { studentId: true },
     }),
   ]);
@@ -71,7 +78,9 @@ export async function draftFeeReminders(): Promise<number> {
       status: { in: ["PENDING", "PARTIAL", "OVERDUE"] },
       dueDate: { lt: today },
     },
-    include: { student: { select: { id: true, name: true, parentName: true } } },
+    include: {
+      student: { select: { id: true, name: true, parentName: true } },
+    },
     take: 200,
   });
   if (overdue.length === 0) return 0;

@@ -11,7 +11,9 @@ export interface AIExplanation {
 /**
  * Formulates clear, plain-language AI explanatory insights for timetable conflicts
  */
-export function generateAIConflictExplanation(conflict: TimetableConflictDetail): AIExplanation {
+export function generateAIConflictExplanation(
+  conflict: TimetableConflictDetail,
+): AIExplanation {
   if (conflict.type === "TEACHER_CLASH") {
     return {
       headline: `Faculty Scheduling Overlap Detected`,

@@ -18,7 +18,8 @@ const syne = Syne({
 
 export const metadata: Metadata = {
   title: "GURUKUL | AI-first School Operating System",
-  description: "Intelligent school administration command center with Document OCR Intelligence and Timetable Optimization Engine.",
+  description:
+    "Intelligent school administration command center with Document OCR Intelligence and Timetable Optimization Engine.",
 };
 
 export default function RootLayout({

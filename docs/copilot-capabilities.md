@@ -2,21 +2,21 @@
 
 The assistant only answers questions it can verify through authorized GURUKUL data or approved documents.
 
-| Task | Example | Access |
-| --- | --- | --- |
-| Student lookup | `Show Sameer's profile` | Admin, Teacher (teacher scope) |
-| Class enrollment count | `How many students in Grade 10A?` | Admin, Teacher (teacher scope) |
-| Exact attendance status | `Is Sameer present in Grade 10A on 28/09/2026?` | Admin, Teacher (teacher scope) |
-| Daily absences | `Who was absent yesterday?` | Admin, Teacher (teacher scope) |
-| Attendance-risk list | `Who is below 75% attendance?` | Admin, Teacher (teacher scope) |
-| Fee outstanding | `Who has pending fees?` | Admin only |
-| Policy/document retrieval | `What is the attendance policy?` | Admin, Teacher |
-| Class timetable | `Show Grade 10A timetable on Monday` | Admin, Teacher |
-| Teacher schedule | `Prof. Alan Turing's timetable` / `My schedule` | Admin, Teacher |
-| Timetable conflicts | `Any timetable clashes?` | Admin, Teacher |
-| Faculty lookup | `Who teaches in Physics department?` | Admin, Teacher |
-| School statistics | `How many students are enrolled?` | Admin, Teacher (scoped) |
-| Authorized navigation | `Open attendance` | Only routes permitted to the current role |
+| Task                      | Example                                         | Access                                    |
+| ------------------------- | ----------------------------------------------- | ----------------------------------------- |
+| Student lookup            | `Show Sameer's profile`                         | Admin, Teacher (teacher scope)            |
+| Class enrollment count    | `How many students in Grade 10A?`               | Admin, Teacher (teacher scope)            |
+| Exact attendance status   | `Is Sameer present in Grade 10A on 28/09/2026?` | Admin, Teacher (teacher scope)            |
+| Daily absences            | `Who was absent yesterday?`                     | Admin, Teacher (teacher scope)            |
+| Attendance-risk list      | `Who is below 75% attendance?`                  | Admin, Teacher (teacher scope)            |
+| Fee outstanding           | `Who has pending fees?`                         | Admin only                                |
+| Policy/document retrieval | `What is the attendance policy?`                | Admin, Teacher                            |
+| Class timetable           | `Show Grade 10A timetable on Monday`            | Admin, Teacher                            |
+| Teacher schedule          | `Prof. Alan Turing's timetable` / `My schedule` | Admin, Teacher                            |
+| Timetable conflicts       | `Any timetable clashes?`                        | Admin, Teacher                            |
+| Faculty lookup            | `Who teaches in Physics department?`            | Admin, Teacher                            |
+| School statistics         | `How many students are enrolled?`               | Admin, Teacher (scoped)                   |
+| Authorized navigation     | `Open attendance`                               | Only routes permitted to the current role |
 
 ## Accuracy rules
 

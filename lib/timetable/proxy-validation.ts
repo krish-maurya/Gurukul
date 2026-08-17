@@ -17,26 +17,17 @@ const isValidCalendarDate = (value: string): boolean => {
 };
 
 const absenceSchema = z.object({
-  teacherId: z
-    .string()
-    .trim()
-    .min(1, "teacherId is required"),
+  teacherId: z.string().trim().min(1, "teacherId is required"),
 
   date: z
     .string()
     .trim()
-    .refine(
-      isValidCalendarDate,
-      "A valid YYYY-MM-DD date is required"
-    ),
+    .refine(isValidCalendarDate, "A valid YYYY-MM-DD date is required"),
 
   reason: z
     .string()
     .trim()
-    .max(
-      500,
-      "reason must be 500 characters or fewer"
-    )
+    .max(500, "reason must be 500 characters or fewer")
     .optional(),
 });
 
@@ -49,7 +40,7 @@ export class InvalidAbsenceRequestError extends Error {
     public readonly issues: Array<{
       path: string;
       message: string;
-    }>
+    }>,
   ) {
     super("Invalid absence request");
     this.name = "InvalidAbsenceRequestError";
@@ -57,7 +48,7 @@ export class InvalidAbsenceRequestError extends Error {
 }
 
 export function validateTeacherAbsenceInput(
-  input: unknown
+  input: unknown,
 ): TeacherAbsenceInput {
   const parsed = absenceSchema.safeParse(input);
 
@@ -66,7 +57,7 @@ export function validateTeacherAbsenceInput(
       parsed.error.issues.map((issue) => ({
         path: issue.path.join("."),
         message: issue.message,
-      }))
+      })),
     );
   }
 

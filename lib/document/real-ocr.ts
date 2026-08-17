@@ -21,7 +21,9 @@ export interface RealOCRResult {
  * Falls back gracefully to the original input during SSR or on any error.
  * ==========================================================================*/
 
-async function loadImageElement(input: File | string): Promise<HTMLImageElement> {
+async function loadImageElement(
+  input: File | string,
+): Promise<HTMLImageElement> {
   const url = typeof input === "string" ? input : URL.createObjectURL(input);
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -32,12 +34,17 @@ async function loadImageElement(input: File | string): Promise<HTMLImageElement>
   });
 }
 
-async function preprocessForOCR(input: File | string): Promise<HTMLCanvasElement | File | string> {
+async function preprocessForOCR(
+  input: File | string,
+): Promise<HTMLCanvasElement | File | string> {
   if (typeof document === "undefined") return input; // SSR guard
   try {
     const img = await loadImageElement(input);
     const MAX_DIM = 4200;
-    let scale = Math.min(2.2, MAX_DIM / Math.max(img.naturalWidth, img.naturalHeight));
+    let scale = Math.min(
+      2.2,
+      MAX_DIM / Math.max(img.naturalWidth, img.naturalHeight),
+    );
     if (scale < 1) scale = Math.max(scale, 0.9); // never shrink drastically
     const w = Math.round(img.naturalWidth * scale);
     const h = Math.round(img.naturalHeight * scale);
@@ -64,10 +71,24 @@ async function preprocessForOCR(input: File | string): Promise<HTMLCanvasElement
 
     // 2) contrast stretch between the 2nd and 98th percentile
     const total = w * h;
-    let lo = 0, hi = 255, acc = 0;
-    for (let i = 0; i < 256; i++) { acc += hist[i]; if (acc >= total * 0.02) { lo = i; break; } }
+    let lo = 0,
+      hi = 255,
+      acc = 0;
+    for (let i = 0; i < 256; i++) {
+      acc += hist[i];
+      if (acc >= total * 0.02) {
+        lo = i;
+        break;
+      }
+    }
     acc = 0;
-    for (let i = 255; i >= 0; i--) { acc += hist[i]; if (acc >= total * 0.02) { hi = i; break; } }
+    for (let i = 255; i >= 0; i--) {
+      acc += hist[i];
+      if (acc >= total * 0.02) {
+        hi = i;
+        break;
+      }
+    }
     const range = Math.max(1, hi - lo);
     const lut = new Uint8ClampedArray(256);
     for (let i = 0; i < 256; i++) {
@@ -94,7 +115,7 @@ async function preprocessForOCR(input: File | string): Promise<HTMLCanvasElement
 
 export async function processRealImageOCR(
   fileOrUrl: File | string,
-  progressCallback?: (status: string, progress: number) => void
+  progressCallback?: (status: string, progress: number) => void,
 ): Promise<RealOCRResult> {
   let imagePreviewUrl: string | undefined;
   if (typeof fileOrUrl !== "string") {
@@ -110,7 +131,8 @@ export async function processRealImageOCR(
     if (progressCallback) progressCallback("Enhancing Image for OCR...", 5);
     const source = await preprocessForOCR(fileOrUrl);
 
-    if (progressCallback) progressCallback("Initializing Tesseract OCR Engine...", 12);
+    if (progressCallback)
+      progressCallback("Initializing Tesseract OCR Engine...", 12);
 
     // SELF-HOSTED assets (no CDN downloads in production).
     // Served from /public/tesseract — kept in sync by scripts/copy-tesseract-assets.js
@@ -130,7 +152,10 @@ export async function processRealImageOCR(
         if (progressCallback && m.status) {
           const pct = Math.round((m.progress || 0) * 100);
           const statusText = m.status.replace(/_/g, " ");
-          progressCallback(`${statusText} (${pct}%)`, 15 + Math.round(pct * 0.7));
+          progressCallback(
+            `${statusText} (${pct}%)`,
+            15 + Math.round(pct * 0.7),
+          );
         }
       },
       errorHandler: (err) => console.warn("Tesseract Worker Warning:", err),
@@ -144,14 +169,16 @@ export async function processRealImageOCR(
       user_defined_dpi: "300",
     });
 
-    if (progressCallback) progressCallback("Scanning Image & Extracting Text...", 40);
+    if (progressCallback)
+      progressCallback("Scanning Image & Extracting Text...", 40);
     const ret = await worker.recognize(source as any);
     rawText = ret.data.text || "";
     baseConfidence = ret.data.confidence || 0;
 
     // If the enhanced pass produced almost nothing, retry on the original.
     if (rawText.replace(/\s/g, "").length < 40 && source !== fileOrUrl) {
-      if (progressCallback) progressCallback("Retrying on original image...", 60);
+      if (progressCallback)
+        progressCallback("Retrying on original image...", 60);
       const retry = await worker.recognize(fileOrUrl as any);
       if ((retry.data.text || "").length > rawText.length) {
         rawText = retry.data.text || "";
@@ -165,11 +192,14 @@ export async function processRealImageOCR(
     rawText = "";
   }
 
-  if (progressCallback) progressCallback("Parsing Structured Form Fields...", 90);
+  if (progressCallback)
+    progressCallback("Parsing Structured Form Fields...", 90);
 
   const extracted = parseAdmissionFormText(rawText, baseConfidence || 85);
 
-  const matchedFields = Object.values(extracted).filter((f) => f.value.trim().length > 0);
+  const matchedFields = Object.values(extracted).filter(
+    (f) => f.value.trim().length > 0,
+  );
   let overallConfidence = 0;
   if (matchedFields.length > 0) {
     const sum = matchedFields.reduce((acc, curr) => acc + curr.confidence, 0);
@@ -187,16 +217,31 @@ export async function processRealImageOCR(
 
 /** Common OCR digit confusions, applied only inside numeric-looking tokens. */
 const DIGIT_MAP: Record<string, string> = {
-  O: "0", o: "0", Q: "0", D: "0",
-  l: "1", I: "1", i: "1", "|": "1", "!": "1",
-  "]": "1", "[": "1", "}": "1", "{": "1",
-  Z: "2", z: "2",
+  O: "0",
+  o: "0",
+  Q: "0",
+  D: "0",
+  l: "1",
+  I: "1",
+  i: "1",
+  "|": "1",
+  "!": "1",
+  "]": "1",
+  "[": "1",
+  "}": "1",
+  "{": "1",
+  Z: "2",
+  z: "2",
   A: "4",
-  S: "5", s: "5",
-  G: "6", b: "6", "é": "6",
+  S: "5",
+  s: "5",
+  G: "6",
+  b: "6",
+  é: "6",
   T: "7",
   B: "8",
-  g: "9", q: "9",
+  g: "9",
+  q: "9",
 };
 
 function digitRatio(tok: string): number {
@@ -213,17 +258,21 @@ function fixNumericToken(tok: string): string {
   if (digitRatio(tok) < 0.5) return tok;
   return tok
     .split("")
-    .map((c) => (/[0-9\s\/\-.+()]/.test(c) ? c : DIGIT_MAP[c] ?? c))
+    .map((c) => (/[0-9\s\/\-.+()]/.test(c) ? c : (DIGIT_MAP[c] ?? c)))
     .join("");
 }
 
 /** Apply numeric fixing to every token of a string. */
 function fixNumbersInString(s: string): string {
-  return s.split(/(\s+)/).map((t) => (/\S/.test(t) ? fixNumericToken(t) : t)).join("");
+  return s
+    .split(/(\s+)/)
+    .map((t) => (/\S/.test(t) ? fixNumericToken(t) : t))
+    .join("");
 }
 
 function levenshtein(a: string, b: string): number {
-  const m = a.length, n = b.length;
+  const m = a.length,
+    n = b.length;
   if (!m) return n;
   if (!n) return m;
   const dp = new Array(n + 1);
@@ -233,7 +282,11 @@ function levenshtein(a: string, b: string): number {
     dp[0] = i;
     for (let j = 1; j <= n; j++) {
       const tmp = dp[j];
-      dp[j] = Math.min(dp[j] + 1, dp[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1));
+      dp[j] = Math.min(
+        dp[j] + 1,
+        dp[j - 1] + 1,
+        prev + (a[i - 1] === b[j - 1] ? 0 : 1),
+      );
       prev = tmp;
     }
   }
@@ -241,11 +294,35 @@ function levenshtein(a: string, b: string): number {
 }
 
 const OCCUPATIONS = [
-  "Engineer", "Teacher", "Doctor", "Lawyer", "Accountant", "Business",
-  "Businessman", "Businesswoman", "Homemaker", "Housewife", "Professor",
-  "Nurse", "Farmer", "Manager", "Architect", "Pilot", "Service", "Banker",
-  "Clerk", "Advocate", "Pharmacist", "Dentist", "Consultant", "Designer",
-  "Developer", "Officer", "Self-Employed", "Entrepreneur", "Shopkeeper",
+  "Engineer",
+  "Teacher",
+  "Doctor",
+  "Lawyer",
+  "Accountant",
+  "Business",
+  "Businessman",
+  "Businesswoman",
+  "Homemaker",
+  "Housewife",
+  "Professor",
+  "Nurse",
+  "Farmer",
+  "Manager",
+  "Architect",
+  "Pilot",
+  "Service",
+  "Banker",
+  "Clerk",
+  "Advocate",
+  "Pharmacist",
+  "Dentist",
+  "Consultant",
+  "Designer",
+  "Developer",
+  "Officer",
+  "Self-Employed",
+  "Entrepreneur",
+  "Shopkeeper",
 ];
 
 /** Fuzzy-match a token to a known occupation ("Feather"/"Heathen" -> "Teacher"). */
@@ -270,10 +347,25 @@ function matchOccupation(token: string): string | null {
 function fixAlphaToken(tok: string): string {
   const letters = (tok.match(/[A-Za-z]/g) || []).length;
   if (!tok.length || letters / tok.length < 0.6) return tok;
-  return tok.replace(/[|!1]/g, "l").replace(/0/g, "o").replace(/\$/g, "s").replace(/[\/\\]+$/g, "");
+  return tok
+    .replace(/[|!1]/g, "l")
+    .replace(/0/g, "o")
+    .replace(/\$/g, "s")
+    .replace(/[\/\\]+$/g, "");
 }
 
-const SCHOOL_WORDS = ["School", "Public", "Academy", "Vidyalaya", "High", "Convent", "English", "Primary", "Secondary", "International"];
+const SCHOOL_WORDS = [
+  "School",
+  "Public",
+  "Academy",
+  "Vidyalaya",
+  "High",
+  "Convent",
+  "English",
+  "Primary",
+  "Secondary",
+  "International",
+];
 
 /** Canonicalize garbled school-name words: "Cohoo|/" -> "School". */
 function fixSchoolWords(s: string): string {
@@ -284,7 +376,11 @@ function fixSchoolWords(s: string): string {
       if (t.length < 4) return tok;
       for (const w of SCHOOL_WORDS) {
         if (t.toLowerCase() === w.toLowerCase()) return w;
-        if (Math.abs(w.length - t.length) <= 1 && levenshtein(t.toLowerCase(), w.toLowerCase()) <= 2) return w;
+        if (
+          Math.abs(w.length - t.length) <= 1 &&
+          levenshtein(t.toLowerCase(), w.toLowerCase()) <= 2
+        )
+          return w;
       }
       return tok;
     })
@@ -298,18 +394,44 @@ function fixSchoolWords(s: string): string {
  * ==========================================================================*/
 
 const LABEL_PHRASES = [
-  "Academic Year", "Application Date", "Full Name", "Student Name",
-  "Date of Birth", "DD/MM/YYYY", "Gender", "Nationality", "Religion",
-  "Residential Address", "Res. Address", "City", "State", "Zip",
-  "Grade / Class Applied For", "Grade/Class Applied For", "Class Applied For",
-  "Last School Attended", "Medium of Instruction", "Transfer Certificate Number",
-  "Transfer Certificate", "Father's Name", "Fathers Name", "Mother's Name",
-  "Mothers Name", "Occupation", "Primary Contact Number", "Email Address",
-  "Emergency Contact Person", "Phone", "Parent / Guardian Signature",
-  "Signature", "Medical Notes", "Medical / Health Notes",
+  "Academic Year",
+  "Application Date",
+  "Full Name",
+  "Student Name",
+  "Date of Birth",
+  "DD/MM/YYYY",
+  "Gender",
+  "Nationality",
+  "Religion",
+  "Residential Address",
+  "Res. Address",
+  "City",
+  "State",
+  "Zip",
+  "Grade / Class Applied For",
+  "Grade/Class Applied For",
+  "Class Applied For",
+  "Last School Attended",
+  "Medium of Instruction",
+  "Transfer Certificate Number",
+  "Transfer Certificate",
+  "Father's Name",
+  "Fathers Name",
+  "Mother's Name",
+  "Mothers Name",
+  "Occupation",
+  "Primary Contact Number",
+  "Email Address",
+  "Emergency Contact Person",
+  "Phone",
+  "Parent / Guardian Signature",
+  "Signature",
+  "Medical Notes",
+  "Medical / Health Notes",
 ];
 
-const SECTION_RE = /(?:^\|?\s*[0-9]\s*[.)]\s)|STUDENT\s+INFORMATION|ACADEMIC\s+DETAILS|GUARDIAN\s+DETAILS|ADMISSION\s+APPLICATION|VERIFIED|REGISTRAR/i;
+const SECTION_RE =
+  /(?:^\|?\s*[0-9]\s*[.)]\s)|STUDENT\s+INFORMATION|ACADEMIC\s+DETAILS|GUARDIAN\s+DETAILS|ADMISSION\s+APPLICATION|VERIFIED|REGISTRAR/i;
 
 function stripLabelPhrases(line: string): string {
   let out = line;
@@ -317,7 +439,10 @@ function stripLabelPhrases(line: string): string {
     const esc = p.replace(/[.*+?^${}()|[\]\\\/]/g, "\\$&").replace(/'/g, "'?");
     out = out.replace(new RegExp(esc, "gi"), " ");
   }
-  return out.replace(/\(DD\/MM\/YYYY\)/gi, " ").replace(/\s+/g, " ").trim();
+  return out
+    .replace(/\(DD\/MM\/YYYY\)/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /** A line that is only form labels (no user data). */
@@ -333,7 +458,9 @@ function isNoiseLine(line: string): boolean {
   const alnum = (trimmed.match(/[A-Za-z0-9]/g) || []).length;
   if (alnum / trimmed.length < 0.45) return true;
   const tokens = trimmed.split(/\s+/);
-  const avgLen = tokens.reduce((a, t) => a + t.replace(/[^A-Za-z0-9]/g, "").length, 0) / tokens.length;
+  const avgLen =
+    tokens.reduce((a, t) => a + t.replace(/[^A-Za-z0-9]/g, "").length, 0) /
+    tokens.length;
   if (tokens.length >= 3 && avgLen < 2.2) return true;
   if (trimmed.length <= 2 && !/^\d\d$/.test(trimmed)) return true;
   return false;
@@ -347,18 +474,28 @@ function isValueLine(line: string): boolean {
  * STRUCTURED PARSER
  * ==========================================================================*/
 
-export function parseAdmissionFormText(rawText: string, baseConfidence: number): ExtractedDocument {
-  const lines = rawText.split(/\r?\n/).map((l) => l.replace(/\s+/g, " ").trim()).filter(Boolean);
+export function parseAdmissionFormText(
+  rawText: string,
+  baseConfidence: number,
+): ExtractedDocument {
+  const lines = rawText
+    .split(/\r?\n/)
+    .map((l) => l.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
   const base = Math.min(96, Math.max(55, Math.round(baseConfidence)));
 
   const field = (val: string, conf?: number): ExtractedField => {
     const cleaned = cleanFieldValue(val);
     if (!cleaned) return { value: "", confidence: 0 };
-    return { value: cleaned, confidence: Math.min(98, Math.max(40, conf ?? base)) };
+    return {
+      value: cleaned,
+      confidence: Math.min(98, Math.max(40, conf ?? base)),
+    };
   };
 
   const findLine = (regex: RegExp, from = 0): number => {
-    for (let i = from; i < lines.length; i++) if (regex.test(lines[i])) return i;
+    for (let i = from; i < lines.length; i++)
+      if (regex.test(lines[i])) return i;
     return -1;
   };
 
@@ -370,7 +507,8 @@ export function parseAdmissionFormText(rawText: string, baseConfidence: number):
       if (stop && stop.test(lines[i])) break;
       if (SECTION_RE.test(lines[i])) break;
       if (isValueLine(lines[i])) out.push(lines[i]);
-      else if (isLabelOnlyLine(lines[i]) && out.length === 0) continue; // skip adjacent label rows
+      else if (isLabelOnlyLine(lines[i]) && out.length === 0)
+        continue; // skip adjacent label rows
       else if (isNoiseLine(lines[i])) continue;
       else break;
     }
@@ -380,8 +518,10 @@ export function parseAdmissionFormText(rawText: string, baseConfidence: number):
   /* ---- 1. Academic Year --------------------------------------------------*/
   let academicYear = "";
   {
-    const m = rawText.match(/Academic\s*Year[^0-9]{0,10}(20\d{2})\s*[-–—~]?\s*([0-9]{2,4})?/i)
-      || rawText.match(/(20\d{2})\s*[-–—]\s*(20\d{2})/);
+    const m =
+      rawText.match(
+        /Academic\s*Year[^0-9]{0,10}(20\d{2})\s*[-–—~]?\s*([0-9]{2,4})?/i,
+      ) || rawText.match(/(20\d{2})\s*[-–—]\s*(20\d{2})/);
     if (m) {
       const y1 = m[1];
       let y2 = m[2] || "";
@@ -394,9 +534,13 @@ export function parseAdmissionFormText(rawText: string, baseConfidence: number):
   let applicationDate = "";
   {
     const appIdx = findLine(/Application\s*Date/i);
-    const scan = appIdx >= 0 ? lines[appIdx] + " " + (lines[appIdx + 1] || "") : rawText;
-    const m = fixNumbersInString(scan).match(/(\d{1,2})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*(20\d{2})/);
-    if (m) applicationDate = `${m[1].padStart(2, "0")}/${m[2].padStart(2, "0")}/${m[3]}`;
+    const scan =
+      appIdx >= 0 ? lines[appIdx] + " " + (lines[appIdx + 1] || "") : rawText;
+    const m = fixNumbersInString(scan).match(
+      /(\d{1,2})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*(20\d{2})/,
+    );
+    if (m)
+      applicationDate = `${m[1].padStart(2, "0")}/${m[2].padStart(2, "0")}/${m[3]}`;
   }
 
   /* ---- 3. Full Name -------------------------------------------------------*/
@@ -417,10 +561,15 @@ export function parseAdmissionFormText(rawText: string, baseConfidence: number):
       const end = stopIdx > idx ? stopIdx : Math.min(lines.length, idx + 4);
       for (let i = idx; i < end; i++) {
         const fixed = fixNumbersInString(lines[i]);
-        const m = fixed.match(/(\d{1,2})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*((?:19|20)\d{2})/);
+        const m = fixed.match(
+          /(\d{1,2})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*((?:19|20)\d{2})/,
+        );
         if (m) {
           const cand = `${m[1].padStart(2, "0")}/${m[2].padStart(2, "0")}/${m[3]}`;
-          if (cand !== applicationDate) { dob = cand; break; } // never reuse the app date
+          if (cand !== applicationDate) {
+            dob = cand;
+            break;
+          } // never reuse the app date
         }
       }
     }
@@ -430,10 +579,14 @@ export function parseAdmissionFormText(rawText: string, baseConfidence: number):
   let gender = "";
   {
     const gIdx = findLine(/Gender|Date\s*of\s*Birth/i);
-    const endIdx = findLine(/Nationality|Religion|Residential/i, Math.max(0, gIdx));
-    const region = gIdx >= 0
-      ? lines.slice(gIdx, endIdx > gIdx ? endIdx : gIdx + 4).join(" ")
-      : rawText;
+    const endIdx = findLine(
+      /Nationality|Religion|Residential/i,
+      Math.max(0, gIdx),
+    );
+    const region =
+      gIdx >= 0
+        ? lines.slice(gIdx, endIdx > gIdx ? endIdx : gIdx + 4).join(" ")
+        : rawText;
     // explicit circle artifact: "(Male", "CMale)", "@Male"
     const circled = region.match(/[C(@©]\s*(Male|Female|Other)\b/i);
     if (circled) {
@@ -444,7 +597,11 @@ export function parseAdmissionFormText(rawText: string, baseConfidence: number):
       const hasMale = /\bmale\b/i.test(region);
       const hasFemale = /\bfemale\b/i.test(region);
       const hasOther = /\bother\b/i.test(region);
-      const missing = [!hasMale && "Male", !hasFemale && "Female", !hasOther && "Other"].filter(Boolean) as string[];
+      const missing = [
+        !hasMale && "Male",
+        !hasFemale && "Female",
+        !hasOther && "Other",
+      ].filter(Boolean) as string[];
       if (missing.length === 1) gender = missing[0];
       else if (hasMale && !hasFemale) gender = "Male";
       else if (hasFemale && !hasMale) gender = "Female";
@@ -458,7 +615,10 @@ export function parseAdmissionFormText(rawText: string, baseConfidence: number):
     const idx = findLine(/Nationality/i);
     if (idx >= 0) {
       const inline = stripLabelPhrases(lines[idx]);
-      const vals = inline.length > 2 ? [inline] : valuesAfter(idx, 2, /Residential|Address/i);
+      const vals =
+        inline.length > 2
+          ? [inline]
+          : valuesAfter(idx, 2, /Residential|Address/i);
       if (vals.length) {
         const tokens = vals[0].split(/\s+/).filter((t) => /[A-Za-z]/.test(t));
         if (tokens.length >= 2) {
@@ -466,7 +626,8 @@ export function parseAdmissionFormText(rawText: string, baseConfidence: number):
           religion = tokens.slice(1).join(" ");
         } else {
           nationality = vals[0];
-          if (vals[1] && !/Residential|Address/i.test(vals[1])) religion = vals[1];
+          if (vals[1] && !/Residential|Address/i.test(vals[1]))
+            religion = vals[1];
         }
       }
     }
@@ -482,9 +643,12 @@ export function parseAdmissionFormText(rawText: string, baseConfidence: number):
   {
     const idx = findLine(/Residential\s*Address|Res\.?\s*Address/i);
     const inline = idx >= 0 ? stripLabelPhrases(lines[idx]) : "";
-    address = inline.length > 4 ? inline : valuesAfter(idx, 1, /^City\b/i)[0] || "";
+    address =
+      inline.length > 4 ? inline : valuesAfter(idx, 1, /^City\b/i)[0] || "";
     // frequent confusions in addresses
-    address = address.replace(/^8-/, "B-").replace(/Apartmente/gi, "Apartments");
+    address = address
+      .replace(/^8-/, "B-")
+      .replace(/Apartmente/gi, "Apartments");
   }
 
   /* ---- 9. City / State / Zip ------------------------------------------------*/
@@ -492,7 +656,10 @@ export function parseAdmissionFormText(rawText: string, baseConfidence: number):
   let zipRepaired = false;
   {
     const idx = findLine(/^City\b/i);
-    const endIdx = findLine(/CLASS\s*&|ACADEMIC\s*DETAILS|Grade/i, Math.max(0, idx));
+    const endIdx = findLine(
+      /CLASS\s*&|ACADEMIC\s*DETAILS|Grade/i,
+      Math.max(0, idx),
+    );
     if (idx >= 0) {
       const collected: string[] = [];
       const stop = endIdx > idx ? endIdx : Math.min(lines.length, idx + 7);
@@ -500,7 +667,14 @@ export function parseAdmissionFormText(rawText: string, baseConfidence: number):
         const rest = stripLabelPhrases(lines[i]);
         if (rest && !isNoiseLine(rest)) collected.push(rest);
       }
-      let tokens = collected.join(" ").split(/\s+/).filter((t) => t.replace(/[^A-Za-z0-9]/g, "").length > 1 || /^\d$/.test(t) === false);
+      let tokens = collected
+        .join(" ")
+        .split(/\s+/)
+        .filter(
+          (t) =>
+            t.replace(/[^A-Za-z0-9]/g, "").length > 1 ||
+            /^\d$/.test(t) === false,
+        );
       tokens = tokens.filter((t) => /[A-Za-z0-9]/.test(t));
       let zip = "";
       // zip = last mostly-numeric token
@@ -527,9 +701,12 @@ export function parseAdmissionFormText(rawText: string, baseConfidence: number):
     const idx = findLine(/Class\s*Applied|Grade\s*Applied|Last\s*School/i);
     const vals = valuesAfter(idx, 2, /Medium|Transfer/i);
     const joined = vals.join(" ");
-    const gm = joined.match(/\b(Grade|Class|Std\.?)\s*[:\-]?\s*([0-9]{1,2}|[IVX]{1,4})\s*([A-Z]\b)?/i);
+    const gm = joined.match(
+      /\b(Grade|Class|Std\.?)\s*[:\-]?\s*([0-9]{1,2}|[IVX]{1,4})\s*([A-Z]\b)?/i,
+    );
     if (gm) {
-      grade = `${gm[1][0].toUpperCase() + gm[1].slice(1).toLowerCase()} ${gm[2]}${gm[3] ? " " + gm[3] : ""}`.trim();
+      grade =
+        `${gm[1][0].toUpperCase() + gm[1].slice(1).toLowerCase()} ${gm[2]}${gm[3] ? " " + gm[3] : ""}`.trim();
       previousSchool = joined.replace(gm[0], " ").replace(/\s+/g, " ").trim();
     } else if (vals.length >= 2) {
       grade = vals[0];
@@ -539,7 +716,7 @@ export function parseAdmissionFormText(rawText: string, baseConfidence: number):
     }
     // canonical fixes for common school-word garbling ("Schoo!" / "Cohoo|" -> "School")
     previousSchool = fixSchoolWords(
-      previousSchool.replace(/^[\s,.;:|\-]+|[\s,.;:\-]+$/g, "")
+      previousSchool.replace(/^[\s,.;:|\-]+|[\s,.;:\-]+$/g, ""),
     );
   }
 
@@ -548,9 +725,12 @@ export function parseAdmissionFormText(rawText: string, baseConfidence: number):
   {
     const idx = findLine(/Medium\s*of\s*Instruction/i);
     const endIdx = findLine(/PARENT|GUARDIAN|Father/i, Math.max(0, idx));
-    const region = idx >= 0
-      ? lines.slice(idx, endIdx > idx ? endIdx : Math.min(lines.length, idx + 4)).join(" ")
-      : "";
+    const region =
+      idx >= 0
+        ? lines
+            .slice(idx, endIdx > idx ? endIdx : Math.min(lines.length, idx + 4))
+            .join(" ")
+        : "";
     const circled = region.match(/[C(@©]\s*(English|Hindi)\)?/i);
     if (circled) {
       medium = circled[1][0].toUpperCase() + circled[1].slice(1).toLowerCase();
@@ -573,16 +753,26 @@ export function parseAdmissionFormText(rawText: string, baseConfidence: number):
       for (let i = idx; i < Math.min(lines.length, idx + 4); i++) {
         const cand = stripLabelPhrases(lines[i]);
         if (!cand || !/[0-9]/.test(cand)) continue;
-        if (!/\//.test(cand) && !/20\d\d/.test(fixNumbersInString(cand))) continue;
+        if (!/\//.test(cand) && !/20\d\d/.test(fixNumbersInString(cand)))
+          continue;
         // must be digit-heavy: prevents grabbing neighbouring text lines
         if (digitRatio(cand) < 0.4) continue;
         // split into slash groups and repair digits
-        const groups = cand.split(/[\/\\]/).map((g) => g.trim()).filter(Boolean);
-        const fixedGroups = groups.map((g) => fixNumericToken(g.replace(/\s+/g, "")));
+        const groups = cand
+          .split(/[\/\\]/)
+          .map((g) => g.trim())
+          .filter(Boolean);
+        const fixedGroups = groups.map((g) =>
+          fixNumericToken(g.replace(/\s+/g, "")),
+        );
         const year = fixedGroups.find((g) => /^(?:19|20)\d{2}$/.test(g));
-        const serial = [...fixedGroups].reverse().find((g) => g !== year && /^\d{2,6}$/.test(g));
+        const serial = [...fixedGroups]
+          .reverse()
+          .find((g) => g !== year && /^\d{2,6}$/.test(g));
         if (year) {
-          tcNumber = `TC / ${year} / ${serial || ""}`.replace(/\/\s*$/, "").trim();
+          tcNumber = `TC / ${year} / ${serial || ""}`
+            .replace(/\/\s*$/, "")
+            .trim();
           tcRepaired = true;
         } else {
           tcNumber = cand;
@@ -593,7 +783,9 @@ export function parseAdmissionFormText(rawText: string, baseConfidence: number):
   }
 
   /* ---- helper: split "<name> <occupation>" value lines ------------------------*/
-  const splitNameOccupation = (vals: string[]): { name: string; occ: string } => {
+  const splitNameOccupation = (
+    vals: string[],
+  ): { name: string; occ: string } => {
     let name = "";
     let occ = "";
     const rest: string[] = [];
@@ -601,7 +793,10 @@ export function parseAdmissionFormText(rawText: string, baseConfidence: number):
       const tokens = v.split(/\s+/);
       if (tokens.length === 1) {
         const m = matchOccupation(tokens[0]);
-        if (m && !occ) { occ = m; continue; }
+        if (m && !occ) {
+          occ = m;
+          continue;
+        }
       }
       rest.push(v);
     }
@@ -611,7 +806,9 @@ export function parseAdmissionFormText(rawText: string, baseConfidence: number):
       for (let take = 1; take <= 2 && tokens.length - take >= 2; take++) {
         const tail = tokens.slice(tokens.length - take).join(" ");
         const m = matchOccupation(tail.replace(/\s+/g, ""));
-        const direct = OCCUPATIONS.find((o) => o.toLowerCase() === tail.toLowerCase());
+        const direct = OCCUPATIONS.find(
+          (o) => o.toLowerCase() === tail.toLowerCase(),
+        );
         if (direct || m) {
           if (!occ) occ = direct || (m as string);
           tokens.splice(tokens.length - take, take);
@@ -652,16 +849,25 @@ export function parseAdmissionFormText(rawText: string, baseConfidence: number):
   let email = "";
   {
     const idx = findLine(/Primary\s*Contact/i);
-    const region = idx >= 0 ? lines.slice(idx, Math.min(lines.length, idx + 4)).join(" ") : rawText;
+    const region =
+      idx >= 0
+        ? lines.slice(idx, Math.min(lines.length, idx + 4)).join(" ")
+        : rawText;
     // email first (so its digits don't pollute the phone match)
-    let em = (region.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/) ||
-      rawText.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/));
+    let em =
+      region.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/) ||
+      rawText.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
     let emRawMatch = em ? em[0] : "";
     if (!em) {
       // tolerant matcher: OCR sometimes inserts spaces/accents before the @
       // e.g. "deshmukh.rohan2 é @gmail.com" -> "deshmukh.rohan26@gmail.com"
-      const tol = region.match(/([A-Za-z0-9._%+\-]+(?:\s[A-Za-z0-9._%+\-é]{1,4})*)\s*@\s*([A-Za-z0-9.\-]+\.[A-Za-z]{2,})/) ||
-        rawText.match(/([A-Za-z0-9._%+\-]+(?:\s[A-Za-z0-9._%+\-é]{1,4})*)\s*@\s*([A-Za-z0-9.\-]+\.[A-Za-z]{2,})/);
+      const tol =
+        region.match(
+          /([A-Za-z0-9._%+\-]+(?:\s[A-Za-z0-9._%+\-é]{1,4})*)\s*@\s*([A-Za-z0-9.\-]+\.[A-Za-z]{2,})/,
+        ) ||
+        rawText.match(
+          /([A-Za-z0-9._%+\-]+(?:\s[A-Za-z0-9._%+\-é]{1,4})*)\s*@\s*([A-Za-z0-9.\-]+\.[A-Za-z]{2,})/,
+        );
       if (tol) {
         emRawMatch = tol[0];
         const local = tol[1].replace(/\s+/g, "").replace(/é/g, "6");
@@ -676,7 +882,9 @@ export function parseAdmissionFormText(rawText: string, baseConfidence: number):
         .replace(/\.c0m$/i, ".com");
     }
     const phoneRegion = emRawMatch ? region.replace(emRawMatch, " ") : region;
-    const pm = fixNumbersInString(phoneRegion).match(/\+?\d{1,3}[\s-]?\d{4,5}[\s-]?\d{4,6}|\d{10,12}/);
+    const pm = fixNumbersInString(phoneRegion).match(
+      /\+?\d{1,3}[\s-]?\d{4,5}[\s-]?\d{4,6}|\d{10,12}/,
+    );
     if (pm) {
       contact = pm[0].trim();
       // "+91" is very often misread as "+11"/"+41"/"+31" on handwritten Indian
@@ -696,7 +904,10 @@ export function parseAdmissionFormText(rawText: string, baseConfidence: number):
       const pm = fixed.match(/\d[\d\s.\/\-]{5,}\d/);
       const hasWords = /[A-Za-z]{3,}/.test(v.replace(/\bPhone\b/gi, ""));
       if (pm && !emergPhone) {
-        emergPhone = pm[0].replace(/[^\d\s]/g, "").replace(/\s{2,}/g, " ").trim();
+        emergPhone = pm[0]
+          .replace(/[^\d\s]/g, "")
+          .replace(/\s{2,}/g, " ")
+          .trim();
       }
       if (hasWords && !emergPerson) {
         let person = v;
@@ -731,22 +942,39 @@ export function parseAdmissionFormText(rawText: string, baseConfidence: number):
   }
 
   /* ---- assemble with per-field confidence tuning -------------------------------------------*/
-  const boost = (v: string, ok: boolean) => (v ? (ok ? Math.min(97, base + 6) : Math.max(45, base - 15)) : 0);
+  const boost = (v: string, ok: boolean) =>
+    v ? (ok ? Math.min(97, base + 6) : Math.max(45, base - 15)) : 0;
 
   return {
-    academicYear: field(academicYear, boost(academicYear, /^20\d{2} - 20\d{2}$/.test(academicYear))),
-    applicationDate: field(applicationDate, boost(applicationDate, /^\d{2}\/\d{2}\/20\d{2}$/.test(applicationDate))),
+    academicYear: field(
+      academicYear,
+      boost(academicYear, /^20\d{2} - 20\d{2}$/.test(academicYear)),
+    ),
+    applicationDate: field(
+      applicationDate,
+      boost(applicationDate, /^\d{2}\/\d{2}\/20\d{2}$/.test(applicationDate)),
+    ),
     studentName: field(studentName),
     dob: field(dob, boost(dob, /^\d{2}\/\d{2}\/(?:19|20)\d{2}$/.test(dob))),
     gender: field(gender, gender ? base : 0),
     nationality: field(nationality),
     religion: field(religion),
     address: field(address),
-    cityStateZip: field(cityStateZip, zipRepaired ? Math.max(45, base - 10) : undefined),
+    cityStateZip: field(
+      cityStateZip,
+      zipRepaired ? Math.max(45, base - 10) : undefined,
+    ),
     grade: field(grade),
     previousSchool: field(previousSchool),
     mediumOfInstruction: field(medium, medium ? Math.max(50, base - 5) : 0),
-    tcNumber: field(tcNumber, tcNumber ? (tcRepaired ? Math.max(45, base - 12) : Math.max(45, base - 20)) : 0),
+    tcNumber: field(
+      tcNumber,
+      tcNumber
+        ? tcRepaired
+          ? Math.max(45, base - 12)
+          : Math.max(45, base - 20)
+        : 0,
+    ),
     fatherName: field(fatherName),
     fatherOccupation: field(fatherOcc),
     motherName: field(motherName),
@@ -768,7 +996,10 @@ function cleanFieldValue(val: string): string {
   if (!val) return "";
   let cleaned = val
     .replace(/\(DD\/MM\/YYYY\)/gi, "")
-    .replace(/(?:1\.\s*STUDENT INFORMATION|2\.\s*CLASS & ACADEMIC DETAILS|3\.\s*PARENT \/ GUARDIAN DETAILS)/gi, "")
+    .replace(
+      /(?:1\.\s*STUDENT INFORMATION|2\.\s*CLASS & ACADEMIC DETAILS|3\.\s*PARENT \/ GUARDIAN DETAILS)/gi,
+      "",
+    )
     .replace(/_{2,}/g, "")
     .replace(/\s{2,}/g, " ")
     .replace(/^[\s:\-|_,.;]+|[\s:\-|_,.;]+$/g, "")
@@ -779,7 +1010,9 @@ function cleanFieldValue(val: string): string {
     cleaned === "//20" ||
     cleaned === "20" ||
     /^DD\/MM\/YYYY$/i.test(cleaned) ||
-    /^(?:Full Name|Date of Birth|Gender|Nationality|Religion|Residential Address|City|State|Zip|Grade|Last School(?:\s*Attended)?|Medium(?:\s*of\s*Instruction)?|Transfer(?:\s*Certificate(?:\s*Number)?)?|Father'?s? Name|Mother'?s? Name|Primary Contact(?:\s*Number)?|Email(?:\s*Address)?|Emergency Contact(?:\s*Person)?|Occupation|Phone|Other|Date)$/i.test(cleaned)
+    /^(?:Full Name|Date of Birth|Gender|Nationality|Religion|Residential Address|City|State|Zip|Grade|Last School(?:\s*Attended)?|Medium(?:\s*of\s*Instruction)?|Transfer(?:\s*Certificate(?:\s*Number)?)?|Father'?s? Name|Mother'?s? Name|Primary Contact(?:\s*Number)?|Email(?:\s*Address)?|Emergency Contact(?:\s*Person)?|Occupation|Phone|Other|Date)$/i.test(
+      cleaned,
+    )
   ) {
     return "";
   }
