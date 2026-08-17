@@ -137,7 +137,6 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
                 <span className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--green)" }} />
                 <span>Online</span>
               </div>
-              <span className="font-mono">v2.0</span>
             </div>
 
             <div className="p-2 rounded-lg flex items-center justify-between" style={{ background: "var(--soft)", border: "1px solid var(--line)" }}>

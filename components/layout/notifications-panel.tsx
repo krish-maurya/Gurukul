@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Bell, X, FileText, CalendarClock, UserPlus2, UserMinus, Inbox, RefreshCw, MessagesSquare } from "lucide-react";
 
@@ -13,12 +14,12 @@ interface NotificationItem {
   createdAt: string;
 }
 
-const TYPE_META: Record<NotificationItem["type"], { icon: React.ElementType; label: string }> = {
-  DOCUMENT: { icon: FileText, label: "Documents" },
-  PROXY: { icon: CalendarClock, label: "Coverage" },
-  ADMISSION: { icon: UserPlus2, label: "Admissions" },
-  LEAVE: { icon: UserMinus, label: "Leave" },
-  PARENT_MSG: { icon: MessagesSquare, label: "Parents" },
+const TYPE_META: Record<NotificationItem["type"], { icon: React.ElementType; label: string; cls: string }> = {
+  DOCUMENT: { icon: FileText, label: "Documents", cls: "bg-amber-50 text-amber-700 border-amber-100" },
+  PROXY: { icon: CalendarClock, label: "Coverage", cls: "bg-violet-50 text-violet-700 border-violet-100" },
+  ADMISSION: { icon: UserPlus2, label: "Admissions", cls: "bg-sky-50 text-sky-700 border-sky-100" },
+  LEAVE: { icon: UserMinus, label: "Leave", cls: "bg-rose-50 text-rose-700 border-rose-100" },
+  PARENT_MSG: { icon: MessagesSquare, label: "Parents", cls: "bg-emerald-50 text-emerald-700 border-emerald-100" },
 };
 
 function timeAgo(iso: string): string {
@@ -36,6 +37,8 @@ export function NotificationsBell() {
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   const load = useCallback(() => {
     setIsLoading(true);
@@ -47,93 +50,153 @@ export function NotificationsBell() {
   }, []);
 
   useEffect(() => {
+    setMounted(true);
     load();
     const t = setInterval(load, 60000);
     return () => clearInterval(t);
   }, [load]);
 
+  const close = useCallback(() => {
+    setVisible(false);
+    setTimeout(() => setIsOpen(false), 220);
+  }, []);
+
+  const open = useCallback(() => {
+    setIsOpen(true);
+    load();
+    requestAnimationFrame(() => setVisible(true));
+  }, [load]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") close(); };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [isOpen, close]);
+
   const openItem = (item: NotificationItem) => {
-    setIsOpen(false);
+    close();
     router.push(item.href);
   };
+
+  const overlay = isOpen && mounted ? createPortal(
+    <div
+      className="fixed inset-0 z-[250]"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Notifications"
+    >
+      {/* Full-screen dim + blur — covers sidebar, header, content, Ask AI */}
+      <button
+        type="button"
+        aria-label="Close notifications"
+        onClick={close}
+        className={`absolute inset-0 bg-gurukul-ink/30 backdrop-blur-md transition-opacity duration-200 ${visible ? "opacity-100" : "opacity-0"}`}
+      />
+
+      {/* Panel */}
+      <aside
+        className={`absolute right-0 top-0 flex h-full w-full max-w-[380px] flex-col border-l border-white/20 bg-white shadow-2xl transition-transform duration-200 ease-out ${visible ? "translate-x-0" : "translate-x-full"}`}
+      >
+        <div className="flex items-center justify-between border-b border-gurukul-line px-5 py-4">
+          <div>
+            <h2 className="text-sm font-semibold text-gurukul-ink" style={{ fontFamily: "var(--font-syne)" }}>
+              Notifications
+            </h2>
+            <p className="text-[10px] text-gurukul-muted mt-0.5">
+              {items.length ? `${items.length} item${items.length === 1 ? "" : "s"} need attention` : "You're all caught up"}
+            </p>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={load}
+              className="p-2 rounded-lg text-gurukul-muted hover:bg-gurukul-soft hover:text-gurukul-ink transition-colors"
+              aria-label="Refresh"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+            </button>
+            <button
+              onClick={close}
+              className="p-2 rounded-lg text-gurukul-muted hover:bg-gurukul-soft hover:text-gurukul-ink transition-colors"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          {items.length === 0 ? (
+            <div className="flex h-full min-h-[280px] flex-col items-center justify-center px-8 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-gurukul-soft flex items-center justify-center mb-3">
+                <Inbox className="w-6 h-6 text-gurukul-muted" />
+              </div>
+              <p className="text-sm font-medium text-gurukul-ink">All caught up</p>
+              <p className="text-xs text-gurukul-muted mt-1">No notifications right now.</p>
+            </div>
+          ) : (
+            <ul className="divide-y divide-gurukul-line/60 p-2">
+              {items.map((item) => {
+                const meta = TYPE_META[item.type];
+                const Icon = meta.icon;
+                return (
+                  <li key={item.id}>
+                    <button
+                      onClick={() => openItem(item)}
+                      className="w-full text-left rounded-xl px-3 py-3 transition-colors hover:bg-gurukul-soft flex gap-3 group"
+                    >
+                      <div className={`w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 ${meta.cls}`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-semibold uppercase tracking-wide text-gurukul-muted">{meta.label}</p>
+                            <p className="text-xs font-semibold text-gurukul-ink mt-0.5 group-hover:text-gurukul-accent transition-colors">{item.title}</p>
+                          </div>
+                          <span className="text-[9px] text-gurukul-muted shrink-0 pt-0.5">{timeAgo(item.createdAt)}</span>
+                        </div>
+                        <p className="text-[11px] text-gurukul-muted mt-1 line-clamp-2">{item.detail}</p>
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        {items.length > 0 && (
+          <div className="border-t border-gurukul-line px-5 py-3 bg-gurukul-canvas/80">
+            <p className="text-[10px] text-center text-gurukul-muted">Tap a notification to open it</p>
+          </div>
+        )}
+      </aside>
+    </div>,
+    document.body,
+  ) : null;
 
   return (
     <>
       <button
-        onClick={() => { setIsOpen(true); load(); }}
-        className="relative p-1.5 rounded-md transition-colors"
-        style={{ color: "var(--faint)" }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = "var(--soft)"; e.currentTarget.style.color = "var(--ink)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--faint)"; }}
+        onClick={open}
+        className="relative p-1.5 rounded-md transition-colors text-gurukul-muted hover:bg-gurukul-soft hover:text-gurukul-ink"
         aria-label={`Notifications${items.length ? ` (${items.length})` : ""}`}
+        aria-expanded={isOpen}
       >
         <Bell className="w-4 h-4" />
         {items.length > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 px-1 rounded-full text-white text-[8px] font-bold flex items-center justify-center" style={{ background: "var(--accent)" }}>
+          <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 px-1 rounded-full bg-gurukul-accent text-white text-[8px] font-bold flex items-center justify-center">
             {items.length > 99 ? "99+" : items.length}
           </span>
         )}
       </button>
-
-      {isOpen && (
-        <div className="fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" onClick={() => setIsOpen(false)} />
-          <aside className="absolute right-0 top-0 h-full w-full max-w-sm bg-white border-l shadow-modal flex flex-col animate-[notifSlide_.2s_ease-out]" style={{ borderColor: "var(--line)" }}>
-            <style>{`@keyframes notifSlide { from { transform: translateX(100%); } to { transform: translateX(0); } }`}</style>
-
-            <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: "var(--line)" }}>
-              <h2 className="text-xs font-semibold text-gurukul-ink" style={{ fontFamily: "var(--font-syne)" }}>Notifications</h2>
-              <div className="flex items-center gap-1">
-                <button onClick={load} className="p-1 rounded-md transition-colors" style={{ color: "var(--faint)" }} aria-label="Refresh">
-                  <RefreshCw className={`w-3 h-3 ${isLoading ? "animate-spin" : ""}`} />
-                </button>
-                <button onClick={() => setIsOpen(false)} className="p-1 rounded-md transition-colors" style={{ color: "var(--faint)" }} aria-label="Close">
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
-              {items.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-center px-6">
-                  <Inbox className="w-8 h-8 mb-2" style={{ color: "var(--line-strong)" }} />
-                  <p className="text-xs font-medium" style={{ color: "var(--muted)" }}>All caught up</p>
-                  <p className="text-[10px] mt-0.5" style={{ color: "var(--faint)" }}>No notifications.</p>
-                </div>
-              ) : (
-                <ul className="divide-y" style={{ borderColor: "var(--hover)" }}>
-                  {items.map((item) => {
-                    const meta = TYPE_META[item.type];
-                    const Icon = meta.icon;
-                    return (
-                      <li key={item.id}>
-                        <button
-                          onClick={() => openItem(item)}
-                          className="w-full text-left px-4 py-3 transition-colors flex gap-2.5"
-                          style={{ background: "transparent" }}
-                          onMouseEnter={(e) => { e.currentTarget.style.background = "var(--hover)"; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-                        >
-                          <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--accent-soft)", color: "var(--accent-text)" }}>
-                            <Icon className="w-3.5 h-3.5" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center justify-between gap-2">
-                              <p className="text-[11px] font-medium text-gurukul-ink">{item.title}</p>
-                              <span className="text-[9px] shrink-0" style={{ color: "var(--faint)" }}>{timeAgo(item.createdAt)}</span>
-                            </div>
-                            <p className="text-[10px] truncate mt-0.5" style={{ color: "var(--faint)" }}>{item.detail}</p>
-                          </div>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
-          </aside>
-        </div>
-      )}
+      {overlay}
     </>
   );
 }

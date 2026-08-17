@@ -157,7 +157,7 @@ function AttendanceContent() {
               Present
             </span>
             <span className="flex items-center gap-1" style={{ color: "var(--muted)" }}>
-              <span className="h-2.5 w-2.5 rounded-sm" style={{ background: "var(--accent)" }} />
+              <span className="h-2.5 w-2.5 rounded-sm" style={{ background: "#dc2626" }} />
               Absent
             </span>
           </div>
@@ -185,8 +185,16 @@ function AttendanceContent() {
                   }`}
                   style={
                     isAbsent
-                      ? { background: "var(--accent)", borderColor: "var(--accent)", color: "#ffffff" }
-                      : { background: "var(--hover)", borderColor: "var(--line)", color: "var(--muted)" }
+                      ? { 
+                          background: "#dc2626", // Red color
+                          borderColor: "#dc2626", 
+                          color: "#ffffff" 
+                        }
+                      : { 
+                          background: "var(--hover)", 
+                          borderColor: "var(--line)", 
+                          color: "var(--muted)" 
+                        }
                   }
                   onMouseEnter={(e) => {
                     if (!isSubmitted && !isAbsent) {
