@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireSession, AuthError } from "@/lib/auth/server";
-import { ensurePortalToken } from "@/lib/communication/engine";
-import { sendMail, buildNewMessageEmail } from "@/lib/mail";
+
 
 export const dynamic = "force-dynamic";
 
 /**
  * POST /api/communications/[id]/send — the manual Send click.
- * Marks the message SENT so it appears on the parent portal, and
- * (best-effort) emails the parent that a new message is waiting.
+ * Marks the message SENT so it appears in the student's private parent portal.
+ * Only the initial admission/portal-link message is emailed.
  */
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   try {
@@ -24,33 +23,14 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       return NextResponse.json({ error: "Message was already sent" }, { status: 409 });
     }
 
-    const token = await ensurePortalToken(message.student.id);
-    const origin = req.headers.get("origin") || `http://${req.headers.get("host") || "localhost:3000"}`;
-    const portalUrl = `${origin}/p/${token}`;
-
     const updated = await prisma.parentMessage.update({
       where: { id: message.id },
       data: { status: "SENT", sentAt: new Date(), sentByName: session.name },
     });
 
-    // Best-effort email notification — the portal is the source of truth
-    let emailed = false;
-    if (message.student.parentEmail && process.env.BREVO_API_KEY) {
-      try {
-        const mail = buildNewMessageEmail({
-          parentName: message.student.parentName,
-          studentName: message.student.name,
-          title: message.title,
-          portalUrl,
-        });
-        await sendMail({ to: { email: message.student.parentEmail, name: message.student.parentName }, ...mail });
-        emailed = true;
-      } catch (e) {
-        console.warn("[communications/send] email notify failed:", e);
-      }
-    }
-
-    return NextResponse.json({ message: updated, emailed, portalUrl });
+    // The parent receives the first portal-link email at admission. Every
+    // subsequent school message is delivered inside that private portal only.
+    return NextResponse.json({ message: updated, emailed: false });
   } catch (error) {
     if (error instanceof AuthError) return NextResponse.json({ error: error.message }, { status: error.status });
     console.error("[api/communications/send] failed:", error);

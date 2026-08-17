@@ -140,6 +140,7 @@ export default function DocumentIntelligencePage() {
         dob: updatedValues.dob,
         grade: updatedValues.grade,
         parentName: updatedValues.parentName || updatedValues.fatherName || updatedValues.motherName,
+        parentEmail: updatedValues.email,
         contact: updatedValues.contact || updatedValues.emergencyPhone,
         address: updatedValues.address,
         medicalNotes: updatedValues.medicalNotes,

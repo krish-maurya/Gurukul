@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { ensurePortalToken } from "@/lib/communication/engine";
+import { sendMail, buildPortalLinkEmail } from "@/lib/mail";
 import { requireSession, AuthError } from "@/lib/auth/server";
 
 export const dynamic = "force-dynamic";
@@ -66,7 +68,24 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       },
     });
 
-    return NextResponse.json(student);
+    // Send this student's private portal link when an admin first records or
+    // changes the parent's email. Ordinary profile edits do not resend it.
+    let parentEmailSent = false;
+    if (parentEmail && parentEmail !== existing.parentEmail && process.env.NEXT_PUBLIC_APP_URL) {
+      try {
+        const token = await ensurePortalToken(student.id);
+        const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")}/p/${token}`;
+        await sendMail({
+          to: { email: parentEmail, name: student.parentName },
+          ...buildPortalLinkEmail({ parentName: student.parentName, studentName: student.name, portalUrl }),
+        });
+        parentEmailSent = true;
+      } catch (mailError) {
+        console.error("[api/students/id] parent portal email failed:", mailError);
+      }
+    }
+
+    return NextResponse.json({ ...student, parentEmailSent });
   } catch (error) {
     if (error instanceof AuthError) return NextResponse.json({ error: error.message }, { status: error.status });
     console.error("[api/students/id] PATCH failed:", error);

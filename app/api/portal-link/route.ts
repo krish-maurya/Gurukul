@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     }
 
     const token = await ensurePortalToken(studentId);
-    const origin = req.headers.get("origin") || `http://${req.headers.get("host") || "localhost:3000"}`;
+    const origin = process.env.NEXT_PUBLIC_APP_URL || req.headers.get("origin") || `http://${req.headers.get("host") || "localhost:3000"}`;
     const portalUrl = `${origin}/p/${token}`;
 
     const targetEmail = email || student.parentEmail;
