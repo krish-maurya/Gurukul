@@ -25,10 +25,10 @@ export default function WelcomePage() {
 
   const options = [
     {
-      href: "/attendance",
+      href: "/attendance/take",
       icon: ClipboardCheck,
       title: "Take Attendance",
-      description: "Your class and today's date are pre-selected - just mark and submit.",
+      description: "Your class and today's date are pre-selected — just mark and submit.",
     },
     {
       href: "/timetable",

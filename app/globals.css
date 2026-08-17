@@ -186,6 +186,9 @@
   /* ── FAB ── */
   .copilot-fab {
     @apply flex items-center gap-2.5 rounded-xl py-2 pl-2.5 pr-4 text-left;
+    position: fixed;
+    right: 1rem;
+    z-index: 200;
     background: #0a0a0a;
     border: 1px solid #262626;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);

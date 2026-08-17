@@ -137,7 +137,6 @@ export function Sidebar() {
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 <span>Online</span>
               </div>
-              <span className="text-neutral-300 font-mono">v2.0</span>
             </div>
 
             <div className="p-2 rounded-lg bg-neutral-50 border border-neutral-200/50 flex items-center justify-between">

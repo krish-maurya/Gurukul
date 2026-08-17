@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import {
   ArrowUp,
@@ -23,11 +24,23 @@ type Message = {
 };
 
 const SUGGESTIONS = [
-  { label: "Grade 10A timetable", icon: "📋" },
   { label: "Who is absent today?", icon: "🔍" },
+  { label: "Grade 10A timetable", icon: "📋" },
   { label: "Timetable conflicts?", icon: "⚠️" },
-  { label: "Students at risk", icon: "📊" },
+  { label: "How to see timetable clash?", icon: "🧭" },
 ];
+
+const SESSION_KEY = "gurukul_copilot_messages";
+
+function loadStoredMessages(): Message[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    return raw ? (JSON.parse(raw) as Message[]) : [];
+  } catch {
+    return [];
+  }
+}
 
 export function ChatDrawer() {
   const { currentUser, isAuthenticated } = useAuth();
@@ -36,9 +49,24 @@ export function ChatDrawer() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [hydrated, setHydrated] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    setMessages(loadStoredMessages());
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(messages.slice(-40)));
+    } catch { /* ignore quota */ }
+  }, [messages, hydrated]);
 
   useEffect(() => {
     if (open) {
@@ -70,7 +98,7 @@ export function ChatDrawer() {
     setInput("");
     setLoading(true);
     try {
-      const history = messages.slice(-6).map((m) => ({
+      const history = messages.slice(-12).map((m) => ({
         role: m.sender === "user" ? "user" : "assistant",
         content: m.text,
         intent: m.response?.intent,
@@ -106,6 +134,7 @@ export function ChatDrawer() {
 
   function clear() {
     setMessages([]);
+    try { sessionStorage.removeItem(SESSION_KEY); } catch { /* ignore */ }
     setInput("");
     textareaRef.current?.focus();
   }
@@ -115,10 +144,12 @@ export function ChatDrawer() {
     setTimeout(() => setOpen(false), 250);
   }
 
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated || !mounted) return null;
 
-  return (
-    <div className={`fixed right-4 z-50 font-sans ${pathname === "/attendance" ? "bottom-24" : "bottom-4"}`}>
+  const bottomOffset = pathname === "/attendance" || pathname === "/attendance/take" ? "bottom-24" : "bottom-4";
+
+  const ui = (
+    <div className={`fixed right-4 z-[200] font-sans ${bottomOffset}`}>
       {/* FAB */}
       {!open && (
         <button
@@ -324,4 +355,6 @@ export function ChatDrawer() {
       )}
     </div>
   );
+
+  return createPortal(ui, document.body);
 }

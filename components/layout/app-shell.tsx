@@ -14,6 +14,7 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
   const [shellReady, setShellReady] = useState(false);
 
   const isPublicPage = pathname === "/login" || pathname === "/landing" || pathname.startsWith("/p/") || pathname.startsWith("/invite/");
+  const isFocusAttendance = pathname === "/attendance/take";
   const isTeacherRestrictedPage = isTeacher && (pathname === "/staff" || pathname.startsWith("/staff/"));
 
   useEffect(() => {
@@ -39,13 +40,22 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-screen bg-white text-gurukul-dark font-sans">
         {children}
-        <ChatDrawer />
+        {!isFocusAttendance && <ChatDrawer />}
       </div>
     );
   }
 
   if (isTeacherRestrictedPage) {
     return null;
+  }
+
+  // Teacher focus mode — attendance only, no sidebar/header/AI
+  if (isFocusAttendance) {
+    return (
+      <div className="min-h-screen bg-gurukul-white text-gurukul-dark antialiased">
+        {children}
+      </div>
+    );
   }
 
   return (

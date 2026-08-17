@@ -101,7 +101,7 @@ export async function understandCopilotRequest(
   }
   try {
     // Build conversation context for Groq
-    const contextLines = history.slice(-4).map((m) =>
+    const contextLines = history.slice(-8).map((m) =>
       `${m.role === "user" ? "User" : "Assistant"}: ${m.content.slice(0, 200)}`
     ).join("\n");
     const fullInput = contextLines

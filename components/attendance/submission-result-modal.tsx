@@ -8,9 +8,10 @@ interface SubmissionResultModalProps {
   title: string;
   message: string;
   onClose: () => void;
+  doneLabel?: string;
 }
 
-export function SubmissionResultModal({ type, title, message, onClose }: SubmissionResultModalProps) {
+export function SubmissionResultModal({ type, title, message, onClose, doneLabel }: SubmissionResultModalProps) {
   const isSuccess = type === "success";
 
   return (
@@ -38,7 +39,7 @@ export function SubmissionResultModal({ type, title, message, onClose }: Submiss
             ? "bg-gurukul-dark text-white hover:bg-neutral-800"
             : "bg-white border border-neutral-200 text-gurukul-dark hover:bg-neutral-50"
         }`}>
-          {isSuccess ? "Done" : "Try Again"}
+          {isSuccess ? (doneLabel || "Done") : "Try Again"}
         </button>
       </div>
     </div>
