@@ -4,7 +4,7 @@ import { jwtVerify } from "jose";
 const COOKIE_NAME = "gurukul_session";
 
 /** Paths reachable without a session */
-const PUBLIC_PAGES = ["/login", "/landing"];
+const PUBLIC_PAGES = ["/login", "/landing", "/mobile-app"];
 const PUBLIC_PAGE_PREFIXES = ["/invite/", "/p/"];
 const PUBLIC_API = ["/api/auth/login", "/api/auth/logout", "/api/auth/me"];
 const PUBLIC_API_PREFIXES = ["/api/auth/invite/", "/api/portal/"]; // token-protected public endpoints

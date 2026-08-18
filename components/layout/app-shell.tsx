@@ -40,6 +40,7 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
   const isPublicPage =
     pathname === "/login" ||
     pathname === "/landing" ||
+    pathname === "/mobile-app" ||
     pathname.startsWith("/p/") ||
     pathname.startsWith("/invite/");
   const isTeacherRestrictedPage =
@@ -49,11 +50,13 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
     if (isTeacherRestrictedPage) router.replace("/students");
   }, [isTeacherRestrictedPage, router]);
 
+  // Public screens must stay free of authenticated workspace controls. This also
+  // prevents the Copilot button from flashing between a successful login and
+  // the subsequent dashboard navigation.
   if (isPublicPage || !isAuthenticated) {
     return (
       <div className="min-h-screen bg-gurukul-canvas text-gurukul-ink font-sans">
         {children}
-        <ChatDrawer />
       </div>
     );
   }
