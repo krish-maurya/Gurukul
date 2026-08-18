@@ -3,6 +3,10 @@ import { prisma } from "@/lib/prisma";
 import { draftAbsenceMessages } from "@/lib/communication/engine";
 import { AuthError, requireSession } from "@/lib/auth/server";
 
+// Attendance is request-specific and reads from the database; never evaluate
+// this route while Next.js is collecting build-time data.
+export const dynamic = "force-dynamic";
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
