@@ -59,7 +59,7 @@ function StaffDirectory() {
   const [showInvite, setShowInvite] = useState(false);
   const [editStaff, setEditStaff] = useState<StaffMember | null>(null);
 
-  // invite form state
+  // invite form state 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [department, setDepartment] = useState("");
