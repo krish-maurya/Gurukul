@@ -20,6 +20,9 @@ export const metadata: Metadata = {
   title: "GURUKUL | AI-first School Operating System",
   description:
     "Intelligent school administration command center with Document OCR Intelligence and Timetable Optimization Engine.",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
