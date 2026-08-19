@@ -34,20 +34,8 @@ const parentFeatures = [
 
 const PARENT_APP_DOWNLOAD_URL =
   "https://expo.dev/accounts/snehp.03/projects/gurukul-parent/builds/31176960-38d3-4705-a483-50a8419609ec";
-
-function StoreButton({ label }: { label: string }) {
-  return (
-    <button
-      type="button"
-      className="inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold text-white transition-transform hover:-translate-y-0.5"
-      style={{ background: "var(--ink-deep)" }}
-      aria-label={`${label} app download coming soon`}
-    >
-      <Download className="h-3.5 w-3.5" />
-      {label}
-    </button>
-  );
-}
+const SCHOOL_APP_DOWNLOAD_URL =
+  "https://expo.dev/accounts/snehp.03/projects/gurukul/builds/d9882f3a-fb3a-43ac-a152-0aa9bf44b3ba";
 
 export default function MobileAppPage() {
   return (
@@ -109,7 +97,19 @@ export default function MobileAppPage() {
                 <ul className="mt-6 space-y-3">
                   {staffFeatures.map((feature) => <li key={feature} className="flex gap-2.5 text-xs leading-relaxed" style={{ color: "var(--muted)" }}><CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: "var(--accent)" }} />{feature}</li>)}
                 </ul>
-                <div className="mt-7 flex flex-wrap gap-2"><StoreButton label="Install School App" /></div>
+                <div className="mt-7 flex flex-wrap gap-2">
+                  <a
+                    href={SCHOOL_APP_DOWNLOAD_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold text-white transition-transform hover:-translate-y-0.5"
+                    style={{ background: "var(--accent)" }}
+                    aria-label="Install the Gurukul School app"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    Install School App
+                  </a>
+                </div>
                 <p className="mt-3 text-[11px]" style={{ color: "var(--faint)" }}>For authorised school administrators and teachers.</p>
               </div>
             </article>
