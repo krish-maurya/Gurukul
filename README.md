@@ -1,102 +1,171 @@
-# Gurukul — School Operations Platform
+## 🎥 Product Demonstration
 
-Gurukul is an AI-assisted school operating system for administrators, teachers, and parents. It centralises admissions, student records, attendance, timetable operations, fees, parent communication, documents, notifications, and an AI assistant.
+Watch the complete product demonstration:
 
-## Product summary
+**Demo Video:** [▶ Watch the Gurukul Demo on YouTube](https://youtu.be/X7kbqcGKZMU)
 
-- **Admin workspace:** operational dashboard, student registry, admissions OCR, staff, timetable management, fee setup, parent communication, document review, and important notifications.
-- **Teacher workspace:** a focused first-login decision screen for taking attendance or opening a personal timetable. The selected task opens without the normal dashboard sidebar or AI assistant.
-- **Parent portal:** private, token-based access to a child’s attendance, fees, timetable, and school messages.
+The demonstration covers the major workflows across the Admin, Teacher, and Parent experiences.
 
-## Core features
+---
 
-### Authentication and roles
+## 🌐 Live Application
 
-- Secure Admin and Teacher login.
-- Teacher accounts are linked to staff records.
-- Role-based routing and permissions.
-- Admin-only access to configuration, staff, and bulk operations.
+**Live Website:** [Gurukul](https://gurukul-edu.vercel.app/)
 
-### Student registry and admissions
+### Available Experiences
 
-- Central student profiles with class/division, roll number, parent contact, address, medical notes, prior school, fees, and attendance.
-- Natural registry order: standard, division, then roll number, for example **10A → 10B → 11A**, each in roll-number order.
-- OCR admission-document upload, field extraction, human review, and editable verification.
-- **Approve & Create Record** creates an admitted student in the database.
-- A successful OCR admission automatically creates and sends a parent-portal welcome/admission confirmation.
-- Processing Queue is database-backed, not sample data.
+| User Role | Application |
+|---|---|
+| 👨‍💼 **Administrator** | Full School Operations Dashboard |
+| 👨‍🏫 **Teacher** | Teacher Operations & Classroom Workflows |
+| 👨‍👩‍👧 **Parent** | Dedicated Parent Portal |
 
-### Attendance
+---
 
-- Class and date selection with roll-grid attendance marking.
-- One attendance record per class/division per day.
-- Teacher focus mode removes navigation, dashboard chrome, and Ask AI controls.
-- Attendance is saved transactionally.
-- Students marked absent automatically receive an absence notice in the parent portal. Email delivery can additionally be enabled through the configured mail provider.
-- Attendance review identifies present and absent totals before submission.
+## 🔑 Demo Credentials
 
-### Timetable
+| Role | Email | Password |
+|---|---|---|
+| Admin | `admin@gurukul.edu` | `admin123` |
+| Teacher | `turing@gurukul.edu` | `teacher123` |
 
-- Weekly school timetable with day and period slots.
-- Teacher timetable only exposes that teacher’s scheduled classes.
-- Date picker and scheduling controls.
-- Teacher focus timetable includes a clear **Go to Dashboard** action but no sidebar or AI assistant.
-- Admin management for room assignments, conflicts, absences, proxy coverage, and schedule updates.
-- Responsive date selector keeps “Schedule Date” on one line.
+# Gurukul — AI-Assisted School Operations Platform
 
-### Fees and parent communication
+> **Gurukul** is a unified school operations platform designed to simplify administrative workflows, streamline teacher operations, improve parent communication, and provide AI-assisted access to school information.
 
-- Student fee accounts, payments, due dates, and overdue status.
-- Class/division fee configuration and individual fee adjustments.
-- Parent Connect supports Draft, Sent, Read, All, and Absent Students views.
-- Search messages by student.
-- Parent portal links can be generated and emailed.
-- Fee reminders are generated from live fee-account data and should be scoped to the selected class/division when configured.
+Gurukul brings **student management, admissions, OCR, attendance, timetables, fees, staff operations, parent communication, documents, notifications, and AI assistance** into a single platform.
 
-### Notifications
+The platform provides dedicated, role-based experiences for **Administrators, Teachers, and Parents**, ensuring that each user can access the information and workflows relevant to their responsibilities.
 
-- Notification bell is reserved for operationally important events such as documents requiring review, admissions needing action, timetable/proxy issues, and parent-message events.
-- The notification list is database-driven and refreshes automatically.
+---
 
-### Dashboard and AI
+## 🧪 OCR Admission Test
 
-- Admin overview should report real database metrics: active student count, attendance status, outstanding fees, documents requiring review, timetable conflicts, and recent operational activity.
-- Ask AI supports queries about attendance, students, staff, timetable, and school operations.
-- Ask AI must never obscure critical task controls such as the attendance submission button.
+Gurukul includes an OCR-powered admission workflow that extracts student information from admission documents and presents the extracted information to an administrator for verification before creating the student record.
 
-## Technology
+**Sample OCR Document:** [📥 Download OCR Sample](https://github.com/krish-maurya/Gurukul/raw/refs/heads/main/public/demo/ocr-demo.png)
 
-- Next.js 14, React, TypeScript
-- Prisma ORM with PostgreSQL
-- Tailwind CSS
-- OCR with Tesseract
-- Optional email delivery through Brevo
-- Role-based server-side API authorization
+### OCR Pipeline
 
-## Local setup
+```text
+Admission Document
+       │
+       ▼
+   OCR Processing
+       │
+       ▼
+  Field Extraction
+       │
+       ▼
+ Administrator Review
+       │
+       ▼
+ Approve & Create Record
+       │
+       ▼
+ Student Database
+       │
+       ▼
+ Parent Portal / Notification
+````
 
-1. Install Node.js 20+ and PostgreSQL.
-2. Clone the repository and install packages:
-   ```bash
-   npm install
-   ```
-3. Create `.env` from the required environment values:
-   ```env
-   DATABASE_URL="postgresql://..."
-   JWT_SECRET="use-a-long-random-secret"
-   BREVO_API_KEY="optional-for-email-delivery"
-   ```
-4. Generate the Prisma client and apply the schema:
-   ```bash
-   npm run db:generate
-   npm run db:push
-   npm run db:seed
-   ```
-5. Start the application:
-   ```bash
-   npm run dev
-   ```
-6. Validate a production build:
-   ```bash
-   npm run build
-   ```
+This approach combines automation with human verification to reduce manual data-entry effort while maintaining administrative control over the final student record.
+
+## 🚨 Problem
+
+School operations are often fragmented across spreadsheets, paperwork, and separate communication channels, making it difficult to manage:
+
+- Student records & admissions
+- Attendance
+- Fees
+- Timetables
+- Documents
+- Parent communication
+
+## 💡 Solution
+
+Gurukul provides a single platform with role-based experiences:
+
+- **Admin** → Manage the complete school operation
+- **Teacher** → Attendance & timetable workflows
+- **Parent** → Child attendance, fees, timetable & messages
+
+## ✨ Key Features
+
+- 📊 Admin operational dashboard
+- 👨‍🎓 Student & staff management
+- 📄 OCR-based admission processing
+- 👨‍🏫 Teacher attendance management
+- 🗓️ Timetable & conflict management
+- 💰 Fee tracking & reminders
+- 📢 Parent communication
+- 🔔 Operational notifications
+- 🤖 AI assistant for school data
+- 🔐 Server-side role-based authorization
+
+## 🔄 Example Workflow
+
+Admission Document
+↓
+OCR
+↓
+Verification
+↓
+Student Record
+↓
+Parent Portal
+
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js 14, React, Tailwind CSS |
+| Language | TypeScript |
+| Backend | Next.js Server APIs |
+| Database | PostgreSQL |
+| ORM | Prisma |
+| OCR | Tesseract |
+| Email | Brevo |
+| AI | AI-Assisted Operations |
+
+## 🚀 Run Locally
+
+### 1. Clone & Install
+
+```bash
+git clone <YOUR_REPOSITORY_URL>
+cd <YOUR_PROJECT_DIRECTORY>
+npm install
+```
+
+### 2. Configure `.env`
+
+```env
+DATABASE_URL="postgresql://..."
+JWT_SECRET="your-secret"
+BREVO_API_KEY="optional"
+```
+
+### 3. Setup Database
+
+```bash
+npm run db:generate
+npm run db:push
+npm run db:seed
+```
+
+### 4. Start
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000)
+
+## Gurukul
+
+**AI-Assisted School Operations Platform**
+
+*One platform for administrators. Simpler workflows for teachers. Better access for parents.*
+
