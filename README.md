@@ -76,8 +76,8 @@ Gurukul unifies student management, admissions, OCR, attendance, timetables, fee
 ## 🚀 Run Locally
 
 ```bash
-git clone <YOUR_REPOSITORY_URL>
-cd <YOUR_PROJECT_DIRECTORY>
+git clone https://github.com/krish-maurya/Gurukul.git
+cd Gurukul
 npm install
 ```
 
