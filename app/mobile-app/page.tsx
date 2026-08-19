@@ -53,7 +53,13 @@ export default function MobileAppPage() {
   return (
     <main className="min-h-screen overflow-hidden bg-white text-gurukul-ink">
       <style jsx global>{`
-        .mobile-app-page { --brass: #a9803f; --ink-deep: #0c1230; }
+        .mobile-app-page {
+          --brass: #a9803f;
+          --ink-deep: #0c1230;
+          --saffron: #e87900;
+          --saffron-text: #ad5700;
+          --saffron-soft: #fff3df;
+        }
         @keyframes mobile-app-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         .mobile-app-float { animation: mobile-app-float 5s ease-in-out infinite; }
         @media (prefers-reduced-motion: reduce) { .mobile-app-float { animation: none; } }
@@ -109,18 +115,18 @@ export default function MobileAppPage() {
             </article>
 
             <article className="group relative overflow-hidden rounded-2xl border p-6 sm:p-8" style={{ background: "var(--soft)", borderColor: "var(--line)", boxShadow: "0 16px 40px -28px rgba(15,31,82,.35)" }}>
-              <div className="absolute bottom-0 right-0 h-44 w-44 rounded-tl-full" style={{ background: "var(--green-soft)" }} />
+              <div className="absolute bottom-0 right-0 h-44 w-44 rounded-tl-full" style={{ background: "var(--saffron-soft)" }} />
               <div className="relative">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <span className="text-[11px] font-medium tracking-[0.14em]" style={{ color: "var(--green-text)" }}>FOR PARENTS & GUARDIANS</span>
+                    <span className="text-[11px] font-medium tracking-[0.14em]" style={{ color: "var(--saffron-text)" }}>FOR PARENTS & GUARDIANS</span>
                     <h2 className="mt-2 text-2xl font-bold tracking-tight" style={{ fontFamily: "var(--font-syne)", color: "var(--ink-deep)" }}>Gurukul Parents</h2>
                   </div>
-                  <div className="mobile-app-float flex h-12 w-12 items-center justify-center rounded-xl" style={{ background: "var(--green)", color: "white", animationDelay: "-2s" }}><HeartHandshake className="h-5 w-5" /></div>
+                  <div className="mobile-app-float flex h-12 w-12 items-center justify-center rounded-xl" style={{ background: "var(--saffron)", color: "white", animationDelay: "-2s" }}><HeartHandshake className="h-5 w-5" /></div>
                 </div>
                 <p className="mt-4 max-w-md text-sm leading-relaxed" style={{ color: "var(--muted)" }}>A calm, clear view of your child’s school life—built to inform you without adding to the noise of the day.</p>
                 <ul className="mt-6 space-y-3">
-                  {parentFeatures.map((feature) => <li key={feature} className="flex gap-2.5 text-xs leading-relaxed" style={{ color: "var(--muted)" }}><CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: "var(--green-text)" }} />{feature}</li>)}
+                  {parentFeatures.map((feature) => <li key={feature} className="flex gap-2.5 text-xs leading-relaxed" style={{ color: "var(--muted)" }}><CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: "var(--saffron-text)" }} />{feature}</li>)}
                 </ul>
                 <div className="mt-7 flex flex-wrap gap-2">
                   <a
@@ -128,7 +134,7 @@ export default function MobileAppPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold text-white transition-transform hover:-translate-y-0.5"
-                    style={{ background: "var(--green)" }}
+                    style={{ background: "var(--saffron)" }}
                     aria-label="Install the Gurukul Parents app"
                   >
                     <Download className="h-3.5 w-3.5" />

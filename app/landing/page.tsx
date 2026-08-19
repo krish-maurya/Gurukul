@@ -16,9 +16,13 @@ import {
   MessageSquare,
   Smartphone,
   QrCode,
-  Download,
   Star,
 } from "lucide-react";
+
+const SCHOOL_APP_DOWNLOAD_URL =
+  "https://expo.dev/accounts/snehp.03/projects/gurukul/builds/d9882f3a-fb3a-43ac-a152-0aa9bf44b3ba";
+const PARENT_APP_DOWNLOAD_URL =
+  "https://expo.dev/accounts/snehp.03/projects/gurukul-parent/builds/31176960-38d3-4705-a483-50a8419609ec";
 
 export default function LandingPage() {
   return (
@@ -29,6 +33,7 @@ export default function LandingPage() {
         .gurukul-landing {
           --brass: #a9803f;
           --brass-soft: #f4ecdb;
+          --saffron: #e87900;
           --ink-deep: #0c1230;
           --font-body: "Inter", system-ui, sans-serif;
           --font-mono: "JetBrains Mono", ui-monospace, monospace;
@@ -388,7 +393,9 @@ export default function LandingPage() {
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
               <a
-                href="#"
+                href={SCHOOL_APP_DOWNLOAD_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center gap-2.5 px-4 py-2.5 rounded-lg text-white transition-all"
                 style={{ background: "var(--ink-deep)" }}
                 onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; }}
@@ -396,21 +403,23 @@ export default function LandingPage() {
               >
                 <Smartphone className="w-4 h-4" />
                 <span className="leading-tight text-left">
-                  <span className="block text-[9px] opacity-70">Download on the</span>
-                  <span className="block text-xs font-semibold">App Store</span>
+                  <span className="block text-[9px] opacity-70">Gurukul School</span>
+                  <span className="block text-xs font-semibold">Install school app</span>
                 </span>
               </a>
               <a
-                href="#"
+                href={PARENT_APP_DOWNLOAD_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center gap-2.5 px-4 py-2.5 rounded-lg text-white transition-all"
-                style={{ background: "var(--ink-deep)" }}
+                style={{ background: "var(--saffron)" }}
                 onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
               >
-                <Download className="w-4 h-4" />
+                <Smartphone className="w-4 h-4" />
                 <span className="leading-tight text-left">
-                  <span className="block text-[9px] opacity-70">Get it on</span>
-                  <span className="block text-xs font-semibold">Google Play</span>
+                  <span className="block text-[9px] opacity-70">Gurukul Parents</span>
+                  <span className="block text-xs font-semibold">Install parent app</span>
                 </span>
               </a>
 
