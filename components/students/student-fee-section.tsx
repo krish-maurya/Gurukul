@@ -17,6 +17,9 @@ export interface FeeAccountView {
   payments: FeePaymentRow[];
 }
 
+
+//color classes for different fee statuses
+
 const STATUS_CLS: Record<string, string> = {
   PAID: "bg-emerald-100 text-emerald-800 border border-emerald-200",
   PARTIAL: "bg-sky-100 text-sky-800 border border-sky-200",
